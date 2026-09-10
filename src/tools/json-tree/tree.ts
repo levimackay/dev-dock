@@ -174,7 +174,11 @@ export function searchTree(value: JsonValue, term: string): SearchOutcome {
     }
 
     if (Array.isArray(node)) {
-      for (let i = 0; i < node.length && matches.length < MAX_SEARCH_RESULTS; i++) {
+      for (let i = 0; i < node.length; i++) {
+        if (matches.length >= MAX_SEARCH_RESULTS) {
+          truncated = true
+          break
+        }
         const item = node[i]
         if (item !== undefined) visit(item, `${path}[${i}]`, undefined)
       }

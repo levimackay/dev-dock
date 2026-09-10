@@ -1,0 +1,4 @@
+# Single-page app: every path that is not a real file serves index.html so the
+# client router can handle it. Without this, a deep link like /t/base64 404s on
+# a hard refresh. Copy to `public/_redirects` for Netlify.
+/*    /index.html   200
