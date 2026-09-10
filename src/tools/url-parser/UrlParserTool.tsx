@@ -138,7 +138,14 @@ export default function UrlParserTool() {
               <div className={styles.partsGrid}>
                 <PartRow label="protocol" value={result.parts.protocol} />
                 <PartRow label="username" value={result.parts.username} />
-                <PartRow label="password" value={result.parts.password ? '••••••' : ''} />
+                {/* Masked for display, but the copy button carries the real value: a
+              button that copies six bullet characters is worse than no button.
+              This is a URL the user pasted, in a tool for taking URLs apart. */}
+          <PartRow
+            label="password"
+            value={result.parts.password}
+            display={result.parts.password ? '••••••' : ''}
+          />
                 <PartRow label="host" value={result.parts.host} />
                 <PartRow label="hostname" value={result.parts.hostname} />
                 <PartRow label="port" value={result.parts.port} />
@@ -278,12 +285,14 @@ export default function UrlParserTool() {
   )
 }
 
-function PartRow({ label, value }: { label: string; value: string }) {
+/** `display` overrides what is shown without changing what is copied. */
+function PartRow({ label, value, display }: { label: string; value: string; display?: string }) {
+  const shown = display ?? value
   return (
     <>
       <span className={styles.partLabel}>{label}</span>
-      <span className={value ? styles.partValue : `${styles.partValue} ${styles.empty}`}>
-        {value || '(empty)'}
+      <span className={shown ? styles.partValue : `${styles.partValue} ${styles.empty}`}>
+        {shown || '(empty)'}
       </span>
       <CopyButton
         value={value}

@@ -13,6 +13,7 @@ import { shapeValidator, useShareState } from '@/tools/useShareState'
 import { useHotkey } from '@/lib/useHotkey'
 import { byteLength, formatBytes, pluralize } from '@/lib/format'
 import { useToast } from '@/components/Toast'
+import { copyText } from '@/lib/clipboard'
 import { bytesToBase64, decodeBase64, encodeBase64, looksLikeBase64 } from './base64'
 
 interface State {
@@ -93,7 +94,12 @@ export default function Base64Tool() {
     'mod+shift+c',
     (e) => {
       e.preventDefault()
-      void navigator.clipboard?.writeText(result.output)
+      // `copyText`, not `navigator.clipboard` directly: the shared helper has
+      // the non-secure-context fallback, so the shortcut works on a plain-HTTP
+      // LAN address instead of silently doing nothing and looking broken.
+      void copyText(result.output).then((ok) => {
+        toast.show(ok ? 'Output copied.' : 'Could not write to the clipboard.', ok ? 'ok' : 'err')
+      })
     },
     { allowInInput: true },
   )

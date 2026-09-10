@@ -306,7 +306,7 @@ export default function CodeDiffTool() {
         ) : (
           <>
             {result.degraded && (
-              <Callout tone="warn" title="These inputs are too dissimilar for a precise diff">
+              <Callout tone="warn" title="These inputs are too dissimilar for a precise diff" live>
                 The edit distance exceeded the safety ceiling, so the result below is a coarse
                 remove-then-add rather than a real line-by-line alignment.
               </Callout>

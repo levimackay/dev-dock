@@ -201,7 +201,7 @@ export default function JwtDecoderTool() {
         ) : (
           <>
             {decoded.algNone && (
-              <Callout tone="err" title={`alg: "${decoded.header?.alg}", no signature is possible`}>
+              <Callout tone="err" title={`alg: "${decoded.header?.alg}", no signature is possible`} live>
                 This token declares the JWS "none" algorithm, which has no signature at all. A
                 server that honours <code>alg: none</code> on an incoming token is trivially
                 bypassable. This is a real, historical vulnerability class, not a theoretical one.

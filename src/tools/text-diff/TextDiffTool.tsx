@@ -184,7 +184,7 @@ export default function TextDiffTool() {
         ) : (
           <>
             {result.degraded && (
-              <Callout tone="warn" title="These inputs are too dissimilar for a precise diff">
+              <Callout tone="warn" title="These inputs are too dissimilar for a precise diff" live>
                 The edit distance between the two texts exceeded the safety ceiling this tool uses
                 to stay responsive, so every line below is shown as a coarse remove-then-add instead
                 of a real line-by-line alignment.
