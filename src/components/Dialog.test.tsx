@@ -108,6 +108,37 @@ describe('Dialog', () => {
     expect(document.activeElement).toBe(third)
   })
 
+  it('ignores elements that carry tabindex="-1" when wrapping', async () => {
+    // The command palette's option rows are buttons with tabindex="-1": they
+    // are activated with the arrow keys, never with Tab. A trap that counted
+    // them would compute a "last" element the browser never focuses, and Tab
+    // would leave the dialog entirely. This is that regression.
+    const user = userEvent.setup()
+    function WithRovingItems() {
+      const [open, setOpen] = useState(false)
+      return (
+        <div id="root">
+          <button onClick={() => setOpen(true)}>Open</button>
+          <button>Outside</button>
+          <Dialog open={open} onClose={() => setOpen(false)} title="Palette">
+            <input aria-label="Search" />
+            <button tabIndex={-1}>Row one</button>
+            <button tabIndex={-1}>Row two</button>
+          </Dialog>
+        </div>
+      )
+    }
+
+    render(<WithRovingItems />)
+    await user.click(screen.getByText('Open'))
+    await screen.findByRole('dialog')
+
+    for (let i = 0; i < 6; i++) await user.tab()
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.contains(document.activeElement)).toBe(true)
+  })
+
   it('marks the app root inert while open so screen readers cannot escape it', async () => {
     const user = userEvent.setup()
     const { container } = render(<Harness />)

@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react'
 import styles from './CommandPalette.module.css'
 import { Dialog } from '@/components/Dialog'
 import { IconSearch } from '@/components/Icon'
@@ -31,7 +31,7 @@ export interface CommandPaletteProps {
 export function CommandPalette({ open, onClose, commands }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
-  const listRef = useRef<HTMLUListElement | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
   const baseId = useId()
 
   const results = useMemo(() => rankCommands(commands, query), [commands, query])
@@ -122,45 +122,49 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
           search to browse everything.
         </p>
       ) : (
-        <ul
+        <div
           className={styles.results}
           id={listId}
           role="listbox"
           aria-label="Results"
           ref={listRef}
         >
-          {results.map((result, index) => {
-            const showSection = startsSection[index]
-            return (
-              <li key={result.id}>
-                {showSection && (
-                  <p className={styles.sectionLabel} role="presentation">
-                    {result.section}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  id={optionId(index)}
-                  role="option"
-                  aria-selected={index === active}
-                  data-active={index === active}
-                  tabIndex={-1}
-                  className={cx(styles.row, index === active && styles.rowActive)}
-                  onMouseMove={() => setActive(index)}
-                  onClick={() => run(result)}
-                >
-                  <span className={styles.rowMain}>
-                    <span className={styles.rowName}>
-                      <Highlighted result={result} />
-                    </span>
-                    <span className={styles.rowDesc}>{result.description}</span>
+          {results.map((result, index) => (
+            <Fragment key={result.id}>
+              {/* A listbox may contain only options and groups. The <li> that
+                  used to wrap each row sat between the two and broke the ARIA
+                  parent/child contract, which axe reports as critical. The
+                  section name is now a separator carrying the label, hidden
+                  from assistive tech because the group boundary already says
+                  what it says. */}
+              {startsSection[index] && (
+                <p className={styles.sectionLabel} role="presentation" aria-hidden="true">
+                  {result.section}
+                </p>
+              )}
+              <button
+                type="button"
+                id={optionId(index)}
+                role="option"
+                aria-selected={index === active}
+                aria-label={`${result.name}. ${result.section}. ${result.description}`}
+                data-active={index === active}
+                tabIndex={-1}
+                className={cx(styles.row, index === active && styles.rowActive)}
+                onMouseMove={() => setActive(index)}
+                onClick={() => run(result)}
+              >
+                <span className={styles.rowMain}>
+                  <span className={styles.rowName}>
+                    <Highlighted result={result} />
                   </span>
-                  <span className={styles.rowTag}>{result.tag}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
+                  <span className={styles.rowDesc}>{result.description}</span>
+                </span>
+                <span className={styles.rowTag}>{result.tag}</span>
+              </button>
+            </Fragment>
+          ))}
+        </div>
       )}
 
       <div className={styles.footer}>

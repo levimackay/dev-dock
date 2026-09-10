@@ -18,7 +18,19 @@ import { TOOL_IDS } from './toolIds'
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 async function scan(page: Page) {
-  return new AxeBuilder({ page }).withTags(TAGS).analyze()
+  return (
+    new AxeBuilder({ page })
+      .withTags(TAGS)
+      // `[data-color-demo]` marks the Color Converter's preview swatches. Their
+      // colours are chosen by the user and the point of the demo is to show a
+      // pairing pass *or fail*, so a contrast rule fires on them by design.
+      // They are already `aria-hidden`; axe evaluates contrast visually, so it
+      // needs telling separately. This is the only exclusion in the suite, and
+      // it is deliberately expressed as a marked element rather than a rule
+      // switched off across the app.
+      .exclude('[data-color-demo]')
+      .analyze()
+  )
 }
 
 /**
@@ -40,6 +52,7 @@ test.describe('accessibility', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`home page has no violations in ${theme} mode`, async ({ page }) => {
       await page.goto('/')
+      await page.getByRole('heading', { level: 1 }).waitFor()
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
       expect(summarise(await scan(page))).toEqual([])
     })
@@ -55,6 +68,7 @@ test.describe('accessibility', () => {
 
   test('the command palette has no violations while open', async ({ page }) => {
     await page.goto('/')
+    await page.getByRole('button', { name: /Search 22 tools/ }).waitFor()
     await page.keyboard.press('ControlOrMeta+k')
     await page.getByRole('dialog').waitFor()
     expect(summarise(await scan(page))).toEqual([])
@@ -62,6 +76,7 @@ test.describe('accessibility', () => {
 
   test('the shortcut dialog has no violations while open', async ({ page }) => {
     await page.goto('/')
+    await page.getByRole('button', { name: /Search 22 tools/ }).waitFor()
     await page.keyboard.press('Shift+/')
     await page.getByRole('dialog', { name: 'Keyboard shortcuts' }).waitFor()
     expect(summarise(await scan(page))).toEqual([])

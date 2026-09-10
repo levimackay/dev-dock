@@ -1,7 +1,16 @@
 import { useEffect, type RefObject } from 'react'
 
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+// Broad on purpose, then filtered: see the note on the same constant in
+// Dialog.tsx for why the "not tabbable" test cannot live in the selector.
+const FOCUSABLE = 'a[href],button,input,select,textarea,[tabindex]'
+
+function isTabbable(el: HTMLElement): boolean {
+  if (el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true') return false
+  if (el.tabIndex < 0) return false
+  if (el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return false
+  if (typeof el.checkVisibility === 'function') return el.checkVisibility()
+  return true
+}
 
 /**
  * Makes the mobile tool rail behave like the modal it looks like.
@@ -32,7 +41,7 @@ export function useDrawerFocus(
     if (!drawer) return
 
     const previouslyFocused = document.activeElement as HTMLElement | null
-    drawer.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+    ;[...drawer.querySelectorAll<HTMLElement>(FOCUSABLE)].find(isTabbable)?.focus()
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -42,7 +51,7 @@ export function useDrawerFocus(
       }
       if (event.key !== 'Tab') return
 
-      const items = [...drawer.querySelectorAll<HTMLElement>(FOCUSABLE)]
+      const items = [...drawer.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(isTabbable)
       const first = items[0]
       const last = items[items.length - 1]
       if (!first || !last) return

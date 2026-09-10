@@ -20,14 +20,27 @@ export interface DialogProps {
   children: ReactNode
 }
 
-function isVisible(el: HTMLElement): boolean {
+/**
+ * Candidate focusable elements.
+ *
+ * Deliberately broad, then filtered in `isTabbable` below. An earlier version
+ * tried to express "not tabbable" in the selector itself as
+ * `button:not([disabled]), …, [tabindex]:not([tabindex="-1"])`, which reads
+ * correctly and is wrong: the clauses are an OR, so `button` matched every
+ * button *including* the ones carrying `tabindex="-1"`. The command palette's
+ * option rows are exactly that, so the trap computed a last element the browser
+ * would never focus, never recognised the end of the list, and let Tab walk
+ * straight out of the dialog.
+ */
+const FOCUSABLE = 'a[href],button,input,select,textarea,[tabindex]'
+
+function isTabbable(el: HTMLElement): boolean {
+  if (el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true') return false
+  if (el.tabIndex < 0) return false
   if (el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return false
   if (typeof el.checkVisibility === 'function') return el.checkVisibility()
   return true
 }
-
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
 /**
  * A modal dialog with a real focus trap.
@@ -77,7 +90,7 @@ export function Dialog({
       if (!panel) return
       const target =
         panel.querySelector<HTMLElement>('[data-autofocus]') ??
-        panel.querySelector<HTMLElement>(FOCUSABLE) ??
+        [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].find(isTabbable) ??
         panel
       target.focus()
     }, 0)
@@ -103,13 +116,11 @@ export function Dialog({
 
       const panel = panelRef.current
       if (!panel) return
-      // Visibility is checked with `checkVisibility()` where the browser has it,
-      // and with an attribute check otherwise. An earlier version used
-      // `offsetParent !== null`, which is wrong here: `offsetParent` is null for
-      // every descendant of a `position: fixed` element — which the dialog is —
-      // so it silently reduced the focusable set to one element and broke the
-      // wrap in both directions.
-      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(isVisible)
+      // Visibility is checked with `checkVisibility()` where the browser has
+      // it. An earlier version used `offsetParent !== null`, which is wrong
+      // here: `offsetParent` is null for every descendant of a
+      // `position: fixed` element, which the dialog is.
+      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(isTabbable)
       if (items.length === 0) {
         event.preventDefault()
         return
@@ -169,7 +180,12 @@ export function Dialog({
             </Button>
           </header>
         )}
-        <div className={styles.body}>{children}</div>
+        {/* The body scrolls when the content overflows, so it takes a tab stop:
+            a scroll container that no keyboard user can reach is content they
+            cannot read. WCAG 2.1.1, and axe's scrollable-region-focusable. */}
+        <div className={styles.body} tabIndex={0}>
+          {children}
+        </div>
       </div>
     </div>,
     document.body,

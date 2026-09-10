@@ -5,7 +5,9 @@ test('every registered tool loads, names itself, and logs no errors', async ({ p
   await page.goto('/')
 
   // Guard against the duplicated slug list in toolIds.ts drifting from the app.
+  await page.getByRole('heading', { level: 1 }).waitFor()
   const rendered = await page
+    .getByRole('main')
     .locator('a[href^="/t/"]')
     .evaluateAll((links) => [
       ...new Set(links.map((a) => a.getAttribute('href')!.replace('/t/', ''))),

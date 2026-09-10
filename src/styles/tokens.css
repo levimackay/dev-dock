@@ -91,11 +91,12 @@
 
   --fg: oklch(0.24 0.009 65);
   --fg-muted: oklch(0.47 0.008 65);
-  /* 0.615 measured 3.2:1 against --bg-sunken (rail category labels, panel
-     chrome) — below the 4.5:1 AA floor for the small mono text this token is
-     actually used for. Darkened to the minimum that clears 4.5:1 against the
-     worst background it sits on, same hue and chroma. */
-  --fg-subtle: oklch(0.53 0.007 65);
+  /* Measured against every surface this text is ever painted on, including the
+     interactive ones: bg, raised, inset, sunken, hover, active, and selected.
+     The worst pairing is --bg-selected at 4.56:1, which clears the 4.5:1 AA
+     floor for the small text this token carries (rail labels, panel chrome,
+     taglines, placeholders). Same hue and chroma as before, lightness only. */
+  --fg-subtle: oklch(0.5 0.007 65);
   --fg-onAccent: oklch(0.99 0.004 60);
 
   --line: oklch(0.885 0.006 75);
@@ -145,10 +146,8 @@
 
   --fg: oklch(0.925 0.005 75);
   --fg-muted: oklch(0.712 0.007 75);
-  /* 0.565 measured 3.68:1 against --bg-raised (the worst of the four surface
-     tokens this text sits on) — below 4.5:1 AA for body-size text. Lightened
-     to the minimum that clears it, same hue and chroma. */
-  --fg-subtle: oklch(0.62 0.008 75);
+  /* Same measurement in dark: worst pairing is --bg-active at 4.52:1. */
+  --fg-subtle: oklch(0.66 0.008 75);
   --fg-onAccent: oklch(0.16 0.02 40);
 
   --line: oklch(0.303 0.007 65);

@@ -8,19 +8,30 @@ import { expect, test } from '@playwright/test'
  * fallback, and the pre-paint theme script all survive minification.
  */
 
+/**
+ * The app is a client-rendered SPA behind a lazy entry chunk, so `page.goto`
+ * resolving on `load` does not mean React has mounted. Every test that presses
+ * a key or asserts on app markup waits for a control the shell renders first;
+ * without it the suite is a coin toss on a cold cache.
+ */
+async function openApp(page: import('@playwright/test').Page, path = '/') {
+  await page.goto(path)
+  await page.getByRole('button', { name: /Search 22 tools/ }).waitFor()
+}
+
 test.describe('home page', () => {
   test('lists every tool grouped by category', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Twenty-two tools')
 
-    // Six categories, and one link per tool in the catalogue.
-    await expect(page.getByRole('heading', { level: 2 })).toHaveCount(6)
-    const toolLinks = page.locator('a[href^="/t/"]')
-    expect(await toolLinks.count()).toBeGreaterThanOrEqual(22)
+    // Scoped to <main>: the rail carries its own category headings.
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { level: 2 })).toHaveCount(6)
+    expect(await main.locator('a[href^="/t/"]').count()).toBeGreaterThanOrEqual(22)
   })
 
   test('states the privacy claim and its one exception', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await expect(page.getByText('Nothing leaves the tab')).toBeVisible()
     await expect(page.getByText('One labelled exception')).toBeVisible()
   })
@@ -28,7 +39,7 @@ test.describe('home page', () => {
 
 test.describe('command palette', () => {
   test('opens with the keyboard, filters, and navigates', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.keyboard.press('ControlOrMeta+k')
 
     const search = page.getByRole('combobox', { name: 'Search tools and actions' })
@@ -44,7 +55,7 @@ test.describe('command palette', () => {
   })
 
   test('arrow keys move the selection without moving focus', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.keyboard.press('ControlOrMeta+k')
     const search = page.getByRole('combobox', { name: 'Search tools and actions' })
 
@@ -57,14 +68,14 @@ test.describe('command palette', () => {
   })
 
   test('explains an empty result instead of showing a blank list', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.keyboard.press('ControlOrMeta+k')
     await page.getByRole('combobox', { name: 'Search tools and actions' }).fill('zzzzqqqq')
     await expect(page.getByText(/Nothing matches/)).toBeVisible()
   })
 
   test('Escape closes it and returns focus to the trigger', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     const trigger = page.getByRole('button', { name: /Search 22 tools/ })
     await trigger.click()
     await expect(page.getByRole('dialog')).toBeVisible()
@@ -74,7 +85,7 @@ test.describe('command palette', () => {
   })
 
   test('traps focus while open', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.keyboard.press('ControlOrMeta+k')
     for (let i = 0; i < 12; i++) await page.keyboard.press('Tab')
     const inDialog = await page.evaluate(
@@ -86,7 +97,7 @@ test.describe('command palette', () => {
 
 test.describe('theme', () => {
   test('cycles and survives a reload', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     const toggle = page.getByRole('button', { name: /^Theme:/ })
 
     await toggle.click()
@@ -99,7 +110,7 @@ test.describe('theme', () => {
   })
 
   test('the pre-paint script applies the stored theme before React runs', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.evaluate(() => localStorage.setItem('devdock:theme', '"dark"'))
     await page.reload()
     // Read the attribute at the earliest opportunity; if the inline script were
@@ -111,20 +122,21 @@ test.describe('theme', () => {
 
 test.describe('pins and recents', () => {
   test('pinning a tool adds it to the rail and persists', async ({ page }) => {
-    await page.goto('/t/uuid-generator')
-    await page.getByRole('button', { name: 'Pin UUID Generator' }).click()
+    await openApp(page, '/t/uuid-generator')
+    const toolbar = page.getByRole('main')
+    await toolbar.getByRole('button', { name: 'Pin UUID Generator' }).click()
 
     const rail = page.getByRole('navigation', { name: 'Tools' })
     await expect(rail.getByRole('heading', { name: /Pinned/ })).toBeVisible()
 
     await page.reload()
     await expect(rail.getByRole('heading', { name: /Pinned/ })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Unpin UUID Generator' })).toBeVisible()
+    await expect(toolbar.getByRole('button', { name: 'Unpin UUID Generator' })).toBeVisible()
   })
 
   test('visiting a tool adds it to Recent', async ({ page }) => {
-    await page.goto('/t/base64')
-    await page.goto('/t/url-parser')
+    await openApp(page, '/t/base64')
+    await openApp(page, '/t/url-parser')
     const rail = page.getByRole('navigation', { name: 'Tools' })
     await expect(rail.getByRole('heading', { name: /Recent/ })).toBeVisible()
   })
@@ -132,18 +144,19 @@ test.describe('pins and recents', () => {
 
 test.describe('routing', () => {
   test('a deep link loads the tool directly', async ({ page }) => {
-    await page.goto('/t/hash-generator')
+    await openApp(page, '/t/hash-generator')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hash Generator')
   })
 
   test('an unknown tool suggests close matches instead of dead-ending', async ({ page }) => {
-    await page.goto('/t/json-formater')
+    await openApp(page, '/t/json-formater')
     await expect(page.getByText(/No tool called/)).toBeVisible()
-    await expect(page.getByRole('link', { name: 'JSON Formatter' })).toBeVisible()
+    // Scoped: the rail links to every tool by name as well.
+    await expect(page.getByRole('main').getByRole('link', { name: 'JSON Formatter' })).toBeVisible()
   })
 
   test('the skip link reaches the tool region', async ({ page }) => {
-    await page.goto('/t/base64')
+    await openApp(page, '/t/base64')
     await page.keyboard.press('Tab')
     const skip = page.getByRole('link', { name: 'Skip to tool' })
     await expect(skip).toBeFocused()
@@ -154,13 +167,13 @@ test.describe('routing', () => {
 
 test.describe('keyboard shortcuts', () => {
   test('? opens the shortcut reference', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.keyboard.press('Shift+/')
     await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toBeVisible()
   })
 
   test('the shortcut list is rendered for this platform', async ({ page }) => {
-    await page.goto('/')
+    await openApp(page)
     await page.keyboard.press('Shift+/')
     const dialog = page.getByRole('dialog', { name: 'Keyboard shortcuts' })
     await expect(dialog.getByText('Open the command palette')).toBeVisible()

@@ -7,6 +7,7 @@ import { expect, test } from '@playwright/test'
 
 test('the rail is a drawer that opens, navigates, and closes itself', async ({ page }) => {
   await page.goto('/')
+  await page.getByRole('button', { name: 'Show tool list' }).waitFor()
 
   const rail = page.getByRole('navigation', { name: 'Tools' })
   await expect(rail).toBeHidden()
@@ -24,9 +25,10 @@ test('the rail is a drawer that opens, navigates, and closes itself', async ({ p
 test('the tool toolbar stays usable at 390px', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/t/base64')
+  await page.getByRole('heading', { level: 1 }).waitFor()
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Pin Base64/ })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('button', { name: /Pin Base64/ })).toBeVisible()
 
   // The frame must never scroll sideways.
   const overflow = await page.evaluate(

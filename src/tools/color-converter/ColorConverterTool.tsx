@@ -101,7 +101,13 @@ export default function ColorConverterTool() {
         </Panel>
 
         <Panel label="Preview">
-          <div className={styles.preview}>
+          {/* The two "Aa" samples are a demonstration, not content: their whole
+              purpose is to show black and white type over whatever colour the
+              user chose, which means one of them is *supposed* to fail contrast
+              at any given moment. They are hidden from assistive technology,
+              and the readable version of the same information is the measured
+              ratio and the WCAG verdicts further down the page. */}
+          <div className={styles.preview} aria-hidden="true" data-color-demo>
             <div
               className={styles.previewHalf}
               style={{ background: formatRgb(rgb), color: '#000' }}
@@ -115,6 +121,9 @@ export default function ColorConverterTool() {
               Aa
             </div>
           </div>
+          <p className="visually-hidden">
+            A preview swatch of {rgbToHex(rgb)} with black and white sample text over it.
+          </p>
         </Panel>
 
         <Panel label="Formats" bodyClassName={styles.section}>
@@ -307,8 +316,14 @@ export default function ColorConverterTool() {
             <ContrastBadge label="UI components" pass={verdict.uiComponent} />
           </div>
 
+          {/* Same reasoning as the swatch above: this line of text exists to
+              show the user's own pairing failing or passing, so a contrast
+              checker flagging it is measuring the demo, not a defect. The
+              ratio and the five verdicts above carry the information. */}
           <div
             className={styles.preview}
+            aria-hidden="true"
+            data-color-demo
             style={{ height: '3.5rem', background: formatRgb(rgb), color: formatRgb(compareRgb) }}
           >
             <div

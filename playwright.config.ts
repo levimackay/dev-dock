@@ -25,7 +25,14 @@ export default defineConfig({
   },
 
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      // The mobile specs assert on the drawer layout, which only exists below
+      // 60rem. Without this they also run at desktop width, where the rail is a
+      // permanent sidebar, and fail for the right reason at the wrong size.
+      testIgnore: /.*\.mobile\.spec\.ts/,
+    },
     {
       name: 'mobile',
       use: { ...devices['Pixel 7'] },
