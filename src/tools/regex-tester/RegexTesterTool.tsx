@@ -240,6 +240,11 @@ export default function RegexTesterTool() {
                   Matches highlight here as you type, with a 150ms debounce so every keystroke does
                   not run the pattern.
                 </EmptyState>
+              ) : !state.text ? (
+                <EmptyState compact title="Now add some text to test" mark={<IconSearch size={24} />}>
+                  Paste into the left pane, or load one of the samples above to get a pattern and
+                  matching text together.
+                </EmptyState>
               ) : response === null ? (
                 <EmptyState compact title="Waiting…" mark={<IconSearch size={24} />} />
               ) : !response.ok ? (

@@ -1,0 +1,155 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.partsGrid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--sp-1) var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.partLabel {
+  color: var(--fg-subtle);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.partValue {
+  color: var(--fg);
+  word-break: break-all;
+  align-self: center;
+}
+
+.partValue.empty {
+  color: var(--fg-subtle);
+  font-style: italic;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.15rem var(--sp-2);
+  border-radius: var(--radius-pill);
+  border: var(--hairline) solid var(--line-strong);
+  background: var(--bg-inset);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.badgeWarn {
+  border-color: color-mix(in oklab, var(--warn) 45%, var(--line));
+  background: var(--warn-quiet);
+  color: var(--warn);
+}
+
+.segments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.segment {
+  padding: 0.1rem var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  border: var(--hairline) solid var(--line);
+}
+
+.slash {
+  color: var(--fg-subtle);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  font-weight: 400;
+  padding: var(--sp-2) var(--sp-2);
+  border-bottom: var(--hairline) solid var(--line);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: var(--hairline) solid var(--line-faint);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.cellInput {
+  width: 100%;
+  min-width: 6rem;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  white-space: nowrap;
+}
+
+.trackingNote {
+  color: var(--warn);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.decodedHint {
+  color: var(--fg-subtle);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.reorderCol {
+  width: 1%;
+}
+
+.encodeCol {
+  width: 1%;
+  text-align: center;
+}
+
+.tableFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-2) var(--sp-3);
+  border-top: var(--hairline) solid var(--line-faint);
+}
