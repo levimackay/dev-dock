@@ -127,6 +127,28 @@ describe('app integration', () => {
     expect(await screen.findByRole('combobox', { name: 'Search tools and actions' })).toBeVisible()
   })
 
+  it('moves focus to <main> and announces the new page on navigation', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+    await screen.findByRole('heading', { level: 1 })
+
+    const rail = within(screen.getByRole('navigation', { name: 'Tools' }))
+    await user.click(rail.getByRole('link', { name: 'Base64' }))
+
+    await screen.findByRole('heading', { level: 1, name: 'Base64' })
+    // Nothing else in the app moves focus on a route change — <main> is the
+    // one landmark that persists across every tool, so it is what has to
+    // pick focus up when the outlet swaps out from under whatever had it.
+    await waitFor(() => expect(screen.getByRole('main')).toHaveFocus())
+    expect(screen.getByText('Base64 · Dev Dock')).toBeInTheDocument()
+  })
+
+  it('does not steal focus on the very first render', async () => {
+    renderApp('/t/base64')
+    await screen.findByRole('heading', { level: 1, name: 'Base64' })
+    expect(screen.getByRole('main')).not.toHaveFocus()
+  })
+
   it('survives a tool that throws, without taking the shell down', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     renderApp('/t/base64')

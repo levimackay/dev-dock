@@ -70,6 +70,18 @@ export function processJson(input: string, mode: JsonMode, options: JsonFormatOp
     return { ok: false, error: describeJsonError(input, error) }
   }
 
+  const stats = measure(value)
+
+  // Validate only needs `measure`, which cannot overflow, so it answers at any
+  // depth. Re-serialising recurses, so past the cap it is refused with a
+  // message rather than allowed to throw RangeError into the render path.
+  if (mode !== 'validate' && stats.maxDepth > MAX_JSON_DEPTH) {
+    return {
+      ok: false,
+      error: `This document nests ${stats.maxDepth.toLocaleString()} levels deep, past the ${MAX_JSON_DEPTH.toLocaleString()}-level limit for re-serialising it. Switch to Validate to inspect it without rewriting it.`,
+    }
+  }
+
   const shaped = options.sortKeys ? sortKeysDeep(value) : value
   const bytesBefore = byteLength(input)
 
@@ -79,7 +91,7 @@ export function processJson(input: string, mode: JsonMode, options: JsonFormatOp
     return {
       ok: true,
       output: '',
-      stats: { ...measure(shaped), bytesBefore, bytesAfter: bytesBefore },
+      stats: { ...stats, bytesBefore, bytesAfter: bytesBefore },
     }
   }
 
@@ -92,7 +104,7 @@ export function processJson(input: string, mode: JsonMode, options: JsonFormatOp
   return {
     ok: true,
     output,
-    stats: { ...measure(shaped), bytesBefore, bytesAfter: byteLength(output) },
+    stats: { ...stats, bytesBefore, bytesAfter: byteLength(output) },
   }
 }
 
@@ -100,15 +112,37 @@ function byteLength(text: string): number {
   return new TextEncoder().encode(text).length
 }
 
-/** Recursively sorts object keys. Array order is left alone — order is data there. */
-export function sortKeysDeep(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeysDeep)
+/**
+ * How deep a document may be before this module refuses to walk it.
+ *
+ * `JSON.parse` will happily build a 200,000-level structure. Everything that
+ * walks the result afterwards recurses, though — `JSON.stringify` included,
+ * which was a surprise and is worth knowing: V8 implements it recursively, so
+ * `"[".repeat(10000) + "1" + "]".repeat(10000)`, twenty kilobytes of perfectly
+ * valid JSON, throws RangeError on serialisation. The tool crashes on paste.
+ *
+ * Worse, both JSON tools hydrate from a share link before their first render,
+ * so a link alone would do it with no interaction at all — which is exactly the
+ * "whoever sends the user a link" case in the threat model.
+ *
+ * Real documents are shallow: a deeply nested API response is twenty levels.
+ * A thousand is far past any honest use and comfortably inside the stack.
+ *
+ * `measure` is the exception: it is rewritten with an explicit stack, so the
+ * depth can always be *reported* even when it cannot be processed.
+ */
+export const MAX_JSON_DEPTH = 1000
+
+/** Recursively sorts object keys. Array order is left alone: order is data there. */
+export function sortKeysDeep(value: unknown, depth = 0): unknown {
+  if (depth >= MAX_JSON_DEPTH) return value
+  if (Array.isArray(value)) return value.map((item) => sortKeysDeep(item, depth + 1))
   if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
       a.localeCompare(b),
     )
     const out: Record<string, unknown> = {}
-    for (const [key, entryValue] of entries) out[key] = sortKeysDeep(entryValue)
+    for (const [key, entryValue] of entries) out[key] = sortKeysDeep(entryValue, depth + 1)
     return out
   }
   return value
@@ -129,26 +163,36 @@ export function escapeNonAsciiText(text: string): string {
   return out
 }
 
+/**
+ * Counts containers, keys, and depth.
+ *
+ * Written with an explicit stack rather than recursion. The measurement runs on
+ * every keystroke over whatever was pasted, so it is the one walk that must not
+ * be able to fail: an explicit stack has no frame limit to exceed, and costs
+ * about four extra lines.
+ */
 function measure(value: unknown): Omit<JsonStats, 'bytesBefore' | 'bytesAfter'> {
   let objectCount = 0
   let arrayCount = 0
   let keyCount = 0
   let maxDepth = 0
 
-  const walk = (node: unknown, depth: number): void => {
+  const stack: Array<{ node: unknown; depth: number }> = [{ node: value, depth: 1 }]
+
+  while (stack.length > 0) {
+    const { node, depth } = stack.pop()!
     if (Array.isArray(node)) {
-      maxDepth = Math.max(maxDepth, depth)
+      if (depth > maxDepth) maxDepth = depth
       arrayCount++
-      for (const item of node) walk(item, depth + 1)
+      for (const item of node) stack.push({ node: item, depth: depth + 1 })
     } else if (node !== null && typeof node === 'object') {
-      maxDepth = Math.max(maxDepth, depth)
+      if (depth > maxDepth) maxDepth = depth
       objectCount++
       const entries = Object.entries(node as Record<string, unknown>)
       keyCount += entries.length
-      for (const [, entryValue] of entries) walk(entryValue, depth + 1)
+      for (const [, entryValue] of entries) stack.push({ node: entryValue, depth: depth + 1 })
     }
   }
-  walk(value, 1)
 
   const root = Array.isArray(value)
     ? 'array'

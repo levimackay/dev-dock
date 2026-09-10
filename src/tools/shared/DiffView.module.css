@@ -51,7 +51,7 @@
 
 .side {
   display: grid;
-  grid-template-columns: 3rem 1fr;
+  grid-template-columns: 3rem 1.1rem 1fr;
   align-items: baseline;
   min-width: 0;
   padding: 0.05rem 0;
@@ -71,6 +71,20 @@
 
 .sideRemoved {
   background: var(--err-quiet);
+}
+
+.sideMarker {
+  text-align: center;
+  color: var(--fg-subtle);
+  user-select: none;
+}
+
+.sideAdded .sideMarker {
+  color: var(--ok);
+}
+
+.sideRemoved .sideMarker {
+  color: var(--err);
 }
 
 .gutter {

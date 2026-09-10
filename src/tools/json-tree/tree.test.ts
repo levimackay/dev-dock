@@ -244,3 +244,28 @@ describe('childEntries / isContainer', () => {
     expect(isContainer('x')).toBe(false)
   })
 })
+
+describe('deeply nested documents', () => {
+  const deepArray = (levels: number): JsonValue => {
+    let node: JsonValue = 1
+    for (let i = 0; i < levels; i++) node = [node]
+    return node
+  }
+
+  it('collects container paths on a document deeper than the call stack', () => {
+    expect(() => containerPaths(deepArray(50000))).not.toThrow()
+  })
+
+  it('still respects an explicit maxDepth on a deep document', () => {
+    expect(containerPaths(deepArray(50000), 2).size).toBe(2)
+  })
+
+  it('searches a deep document without overflowing, and says it truncated', () => {
+    const outcome = searchTree(deepArray(50000), 'nothing-matches-this')
+    expect(outcome.truncated).toBe(true)
+  })
+
+  it('resolves a path against a deep document without overflowing', () => {
+    expect(() => queryPath(deepArray(50000), '$[0][0][0]')).not.toThrow()
+  })
+})

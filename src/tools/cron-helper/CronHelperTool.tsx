@@ -5,7 +5,7 @@ import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
 import { SegmentedControl, TextInput } from '@/components/Field'
-import { IconClock, IconTrash } from '@/components/Icon'
+import { IconClock, IconTrash, IconWarning } from '@/components/Icon'
 import { PaneStack } from '@/tools/shared/TwoPane'
 import { shapeValidator, useShareState } from '@/tools/useShareState'
 import { pluralize } from '@/lib/format'
@@ -118,10 +118,17 @@ export default function CronHelperTool() {
                       type="button"
                       key={`${token.field}-${i}`}
                       className={cx(styles.cell, errored && styles.cellError)}
-                      title={`Select the ${token.field} field`}
+                      title={`Select the ${token.field} field${errored ? ' — invalid' : ''}`}
                       onClick={() => selectField(token.start, token.end)}
                     >
-                      <span className={styles.cellLabel}>{token.field}</span>
+                      <span className={styles.cellLabel}>
+                        {/* The error tone on this cell was colour-only — a
+                            colourblind user had no way to tell it apart from
+                            a valid field. The icon carries the same
+                            information as a shape, not just a hue. */}
+                        {errored && <IconWarning size={10} className={styles.cellErrorIcon} />}
+                        {token.field}
+                      </span>
                       <span className={styles.cellToken}>{token.text}</span>
                     </button>
                   )
@@ -139,7 +146,12 @@ export default function CronHelperTool() {
                 {parsed.error.message}
               </Callout>
             ) : (
-              <Callout tone="info" title={describeCron(parsed.expression)} live />
+              // Not `live`: this recomputes on every keystroke while the
+              // expression stays parseable, so announcing it every time would
+              // be the over-announce anti-pattern, not a screen-reader
+              // courtesy. The error branch above stays live — that is a real
+              // state transition, not a per-keystroke redraw.
+              <Callout tone="info" title={describeCron(parsed.expression)} />
             )}
           </div>
         </Panel>

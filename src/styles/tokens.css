@@ -91,7 +91,11 @@
 
   --fg: oklch(0.24 0.009 65);
   --fg-muted: oklch(0.47 0.008 65);
-  --fg-subtle: oklch(0.615 0.007 65);
+  /* 0.615 measured 3.2:1 against --bg-sunken (rail category labels, panel
+     chrome) — below the 4.5:1 AA floor for the small mono text this token is
+     actually used for. Darkened to the minimum that clears 4.5:1 against the
+     worst background it sits on, same hue and chroma. */
+  --fg-subtle: oklch(0.53 0.007 65);
   --fg-onAccent: oklch(0.99 0.004 60);
 
   --line: oklch(0.885 0.006 75);
@@ -105,7 +109,10 @@
 
   --ok: oklch(0.5 0.13 152);
   --ok-quiet: oklch(0.935 0.038 152);
-  --warn: oklch(0.58 0.13 68);
+  /* 0.58 measured 3.7:1 against --warn-quiet — the Callout warn title sits
+     directly on that background at body size, so it needs 4.5:1. Darkened to
+     the minimum that clears it, same hue and chroma. */
+  --warn: oklch(0.53 0.13 68);
   --warn-quiet: oklch(0.945 0.05 78);
   --err: oklch(0.52 0.2 26);
   --err-quiet: oklch(0.945 0.032 26);
@@ -130,7 +137,10 @@
 
   --fg: oklch(0.925 0.005 75);
   --fg-muted: oklch(0.712 0.007 75);
-  --fg-subtle: oklch(0.565 0.008 75);
+  /* 0.565 measured 3.68:1 against --bg-raised (the worst of the four surface
+     tokens this text sits on) — below 4.5:1 AA for body-size text. Lightened
+     to the minimum that clears it, same hue and chroma. */
+  --fg-subtle: oklch(0.62 0.008 75);
   --fg-onAccent: oklch(0.16 0.02 40);
 
   --line: oklch(0.303 0.007 65);
@@ -169,7 +179,8 @@
 
     --fg: oklch(0.925 0.005 75);
     --fg-muted: oklch(0.712 0.007 75);
-    --fg-subtle: oklch(0.565 0.008 75);
+    /* Keep in sync with the [data-theme='dark'] block above. */
+    --fg-subtle: oklch(0.62 0.008 75);
     --fg-onAccent: oklch(0.16 0.02 40);
 
     --line: oklch(0.303 0.007 65);

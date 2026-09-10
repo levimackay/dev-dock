@@ -235,7 +235,10 @@ export default function CodeDiffTool() {
             >
               ‹ Prev
             </Button>
-            <span className={styles.changeCount}>
+            {/* Live: Prev/Next is a discrete user action, not a per-keystroke
+                redraw, so announcing the new position is the courtesy case
+                rather than the over-announce one. */}
+            <span className={styles.changeCount} role="status" aria-live="polite">
               {changeGroups.length === 0
                 ? '0 of 0'
                 : `${changeIndex + 1} of ${changeGroups.length}`}

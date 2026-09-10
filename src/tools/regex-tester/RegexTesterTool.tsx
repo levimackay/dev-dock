@@ -264,7 +264,12 @@ export default function RegexTesterTool() {
                   The pattern is valid but does not match anything in the test text.
                 </EmptyState>
               ) : (
-                <div className={styles.highlighted} role="status" aria-live="polite">
+                // Not a live region: this recomputes on every keystroke in
+                // the text pane (debounced 150ms), and re-announcing the
+                // whole highlighted blob that often is worse than silence.
+                // The match count is available non-live via the panel's
+                // `status`, and the "Matches" list below is fully browsable.
+                <div className={styles.highlighted}>
                   {renderHighlighted(state.text, response.matches)}
                 </div>
               )}
@@ -290,7 +295,13 @@ export default function RegexTesterTool() {
                           <span className={styles.groupLabel}>${gi + 1}</span>
                           <code className={styles.groupValue}>{g ?? '(no match)'}</code>
                           {g !== undefined && (
-                            <CopyButton value={g} size="sm" variant="ghost" iconOnly />
+                            <CopyButton
+                              value={g}
+                              size="sm"
+                              variant="ghost"
+                              iconOnly
+                              label={`Copy group ${gi + 1}`}
+                            />
                           )}
                         </li>
                       ))}
@@ -299,7 +310,13 @@ export default function RegexTesterTool() {
                           <span className={styles.groupLabel}>{name}</span>
                           <code className={styles.groupValue}>{value ?? '(no match)'}</code>
                           {value !== undefined && (
-                            <CopyButton value={value} size="sm" variant="ghost" iconOnly />
+                            <CopyButton
+                              value={value}
+                              size="sm"
+                              variant="ghost"
+                              iconOnly
+                              label={`Copy group ${name}`}
+                            />
                           )}
                         </li>
                       ))}

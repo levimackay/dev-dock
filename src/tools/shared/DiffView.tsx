@@ -371,9 +371,15 @@ function Side({
   if (!line) return <span className={cx(styles.side, styles.sideEmpty)} />
   const tone =
     line.op === 'insert' ? styles.sideAdded : line.op === 'delete' ? styles.sideRemoved : undefined
+  // Side-by-side previously told added/removed apart by background tint
+  // alone. Unified mode already has a +/- marker column; mirroring it here
+  // means the change is not colour-only (WCAG 1.4.1), for a colourblind
+  // sighted user and for a screen reader reading the row's text content.
+  const marker = line.op === 'insert' ? '+' : line.op === 'delete' ? '-' : ' '
   return (
     <span className={cx(styles.side, tone)}>
       <span className={styles.gutter}>{lineNo ?? ''}</span>
+      <span className={styles.sideMarker}>{marker}</span>
       <span className={styles.text}>{renderWords(line.text, words)}</span>
     </span>
   )

@@ -101,14 +101,31 @@ export function queryPath(value: JsonValue, rawPath: string): QueryResult {
   return { ok: true, matches }
 }
 
-function resolve(value: JsonValue, segments: PathSegment[], pathSoFar: string): QueryMatch[] {
+/**
+ * Every walk in this module carries a depth cap.
+ *
+ * `JSON.parse` accepts arbitrarily deep input, but anything that recurses over
+ * the result runs out of JS stack somewhere in the low thousands of frames.
+ * Twenty kilobytes of `[[[[…1…]]]]` is valid JSON and would otherwise take the
+ * tool down on paste, or on opening a share link, before the user touches
+ * anything. See MAX_JSON_DEPTH in the JSON formatter for the full note.
+ */
+export const MAX_TREE_DEPTH = 1000
+
+function resolve(
+  value: JsonValue,
+  segments: PathSegment[],
+  pathSoFar: string,
+  depth = 0,
+): QueryMatch[] {
+  if (depth >= MAX_TREE_DEPTH) return []
   const segment = segments[0]
   if (segment === undefined) return [{ path: pathSoFar, value }]
   const rest = segments.slice(1)
 
   if (segment.type === 'wildcard') {
     return childEntries(value).flatMap(({ key, value: child }) =>
-      resolve(child, rest, extendPath(pathSoFar, key, Array.isArray(value))),
+      resolve(child, rest, extendPath(pathSoFar, key, Array.isArray(value)), depth + 1),
     )
   }
 
@@ -116,14 +133,14 @@ function resolve(value: JsonValue, segments: PathSegment[], pathSoFar: string): 
     if (!Array.isArray(value) || segment.index < 0 || segment.index >= value.length) return []
     const item = value[segment.index]
     if (item === undefined) return []
-    return resolve(item, rest, `${pathSoFar}[${segment.index}]`)
+    return resolve(item, rest, `${pathSoFar}[${segment.index}]`, depth + 1)
   }
 
   // key
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return []
   const child = value[segment.key]
   if (child === undefined) return []
-  return resolve(child, rest, extendPath(pathSoFar, segment.key, false))
+  return resolve(child, rest, extendPath(pathSoFar, segment.key, false), depth + 1)
 }
 
 export function extendPath(base: string, key: string, isIndex: boolean): string {
@@ -139,15 +156,20 @@ export function extendPath(base: string, key: string, isIndex: boolean): string 
  */
 export function containerPaths(value: JsonValue, maxDepth = Infinity): Set<string> {
   const paths = new Set<string>()
+  // Explicit stack rather than recursion: "expand all" is offered on any
+  // document the user managed to paste, so it must not be able to fail.
+  const stack: Array<{ node: JsonValue; path: string; depth: number }> = [
+    { node: value, path: '$', depth: 1 },
+  ]
 
-  const walk = (node: JsonValue, path: string, depth: number): void => {
-    if (!isContainer(node) || depth > maxDepth) return
+  while (stack.length > 0) {
+    const { node, path, depth } = stack.pop()!
+    if (!isContainer(node) || depth > maxDepth || depth > MAX_TREE_DEPTH) continue
     paths.add(path)
     for (const { key, value: child } of childEntries(node)) {
-      walk(child, extendPath(path, key, Array.isArray(node)), depth + 1)
+      stack.push({ node: child, path: extendPath(path, key, Array.isArray(node)), depth: depth + 1 })
     }
   }
-  walk(value, '$', 1)
 
   return paths
 }
@@ -185,7 +207,16 @@ export function searchTree(value: JsonValue, term: string): SearchOutcome {
   const matches: SearchMatch[] = []
   let truncated = false
 
-  const visit = (node: JsonValue, path: string, keyLabel: string | undefined): void => {
+  const visit = (
+    node: JsonValue,
+    path: string,
+    keyLabel: string | undefined,
+    depth: number,
+  ): void => {
+    if (depth >= MAX_TREE_DEPTH) {
+      truncated = true
+      return
+    }
     if (matches.length >= MAX_SEARCH_RESULTS) {
       truncated = true
       return
@@ -203,7 +234,7 @@ export function searchTree(value: JsonValue, term: string): SearchOutcome {
           break
         }
         const item = node[i]
-        if (item !== undefined) visit(item, `${path}[${i}]`, undefined)
+        if (item !== undefined) visit(item, `${path}[${i}]`, undefined, depth + 1)
       }
     } else if (node !== null && typeof node === 'object') {
       for (const [key, child] of Object.entries(node)) {
@@ -211,12 +242,12 @@ export function searchTree(value: JsonValue, term: string): SearchOutcome {
           truncated = true
           break
         }
-        visit(child, extendPath(path, key, false), key)
+        visit(child, extendPath(path, key, false), key, depth + 1)
       }
     }
   }
 
-  visit(value, '$', undefined)
+  visit(value, '$', undefined, 0)
   return { matches, truncated }
 }
 

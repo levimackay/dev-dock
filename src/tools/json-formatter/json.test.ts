@@ -206,3 +206,54 @@ function fail(input: string): string {
     return describeJsonError(input, error)
   }
 }
+
+describe('deeply nested documents', () => {
+  const deep = (levels: number) => '['.repeat(levels) + '1' + ']'.repeat(levels)
+
+  it('refuses to re-serialise a document deeper than the stack allows', () => {
+    const result = processJson(deep(10000), 'pretty', {
+      indent: '2',
+      sortKeys: false,
+      escapeNonAscii: false,
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/10,000 levels deep|nests 10,000/)
+  })
+
+  it('formats a document just inside the cap', () => {
+    const result = processJson(deep(900), 'minify', {
+      indent: '2',
+      sortKeys: false,
+      escapeNonAscii: false,
+    })
+    expect(result.ok).toBe(true)
+  })
+
+  it('reports the true depth of such a document', () => {
+    const result = processJson(deep(10000), 'validate', {
+      indent: '2',
+      sortKeys: false,
+      escapeNonAscii: false,
+    })
+    expect(result.ok && result.stats.maxDepth).toBe(10000)
+  })
+
+  it('points the user at Validate when it refuses', () => {
+    const result = processJson(deep(2000), 'pretty', {
+      indent: '2',
+      sortKeys: true,
+      escapeNonAscii: false,
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/Validate/)
+  })
+
+  it('still sorts keys at ordinary depths', () => {
+    const result = processJson('{"b":1,"a":{"d":2,"c":3}}', 'minify', {
+      indent: '2',
+      sortKeys: true,
+      escapeNonAscii: false,
+    })
+    expect(result.ok && result.output).toBe('{"a":{"c":3,"d":2},"b":1}')
+  })
+})

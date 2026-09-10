@@ -83,6 +83,11 @@
   color: var(--err);
 }
 
+.cellErrorIcon {
+  vertical-align: -1px;
+  margin-right: 2px;
+}
+
 .hint {
   color: var(--fg-subtle);
   font-size: var(--text-xs);

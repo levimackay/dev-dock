@@ -12,6 +12,7 @@ import {
 } from 'react'
 import styles from './CodeArea.module.css'
 import { cx } from '@/lib/cx'
+import { formatBytes } from '@/lib/format'
 
 export interface CodeAreaProps extends Omit<
   TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -66,6 +67,8 @@ export const CodeArea = forwardRef<HTMLTextAreaElement, CodeAreaProps>(function 
   const innerRef = useRef<HTMLTextAreaElement | null>(null)
   const gutterRef = useRef<HTMLDivElement | null>(null)
   const [dropping, setDropping] = useState(false)
+  const [dropError, setDropError] = useState<string | null>(null)
+  const dropErrorTimer = useRef<number | undefined>(undefined)
   const id = useId()
 
   const setRefs = useCallback(
@@ -78,6 +81,8 @@ export const CodeArea = forwardRef<HTMLTextAreaElement, CodeAreaProps>(function 
   )
 
   const lineCount = lineNumbers ? countLines(value) : 0
+
+  useEffect(() => () => window.clearTimeout(dropErrorTimer.current), [])
 
   useEffect(() => {
     const textarea = innerRef.current
@@ -125,7 +130,20 @@ export const CodeArea = forwardRef<HTMLTextAreaElement, CodeAreaProps>(function 
     setDropping(false)
     const file = event.dataTransfer.files[0]
     if (!file) return
-    if (file.size > maxDropBytes) return
+
+    // A cap that refuses in silence looks exactly like a broken drop target.
+    // The message is rendered in the editor itself rather than raised to the
+    // caller, so every tool that accepts a drop gets it without wiring.
+    if (file.size > maxDropBytes) {
+      setDropError(
+        `${file.name} is ${formatBytes(file.size)}. Files above ${formatBytes(maxDropBytes)} are refused so the tab stays responsive.`,
+      )
+      window.clearTimeout(dropErrorTimer.current)
+      dropErrorTimer.current = window.setTimeout(() => setDropError(null), 6000)
+      return
+    }
+
+    setDropError(null)
     onValueChange?.(await file.text())
   }
 
@@ -147,6 +165,11 @@ export const CodeArea = forwardRef<HTMLTextAreaElement, CodeAreaProps>(function 
         <div className={styles.gutter} ref={gutterRef} aria-hidden="true">
           {buildGutter(lineCount)}
         </div>
+      )}
+      {dropError && (
+        <p className={styles.dropError} role="status">
+          {dropError}
+        </p>
       )}
       <textarea
         id={id}

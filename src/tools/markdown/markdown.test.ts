@@ -95,11 +95,19 @@ describe('renderMarkdown — XSS resistance', () => {
     expect(parse(html).querySelector('iframe')).toBeNull()
   })
 
-  it('strips onload from an <svg> element', () => {
+  it('drops <svg> entirely, along with its event handlers', () => {
+    // The sanitizer runs with the HTML profile only, so SVG never survives at
+    // all rather than surviving with its attributes filtered. Markdown has no
+    // use for it, and the HTML/SVG/MathML namespace boundary is where mutation
+    // XSS bypasses have historically lived.
     const html = renderMarkdown('<svg onload="alert(1)"><circle r="1"/></svg>')
-    const svg = parse(html).querySelector('svg')
-    expect(svg?.hasAttribute('onload')).toBe(false)
+    expect(parse(html).querySelector('svg')).toBeNull()
     expect(html).not.toContain('onload')
+  })
+
+  it('drops MathML too', () => {
+    const html = renderMarkdown('<math><mtext><option><FAKE><mglyph>x</mglyph></FAKE></option></mtext></math>')
+    expect(parse(html).querySelector('math')).toBeNull()
   })
 
   it('strips a bare onmouseover attribute', () => {
@@ -192,5 +200,27 @@ describe('estimateReadingMinutes', () => {
 
   it('scales with word count at the given reading speed', () => {
     expect(estimateReadingMinutes(1000, 200)).toBe(5)
+  })
+})
+
+describe('CSS-driven exfiltration', () => {
+  it('strips inline style attributes entirely', () => {
+    const html = renderMarkdown(
+      '<div style="background:url(https://tracker.example/beacon.png)">hi</div>',
+    )
+    expect(html).not.toContain('tracker.example')
+    expect(html).not.toContain('style=')
+  })
+
+  it('strips a style attribute used to build a full-viewport overlay', () => {
+    const html = renderMarkdown(
+      '<a href="https://example.com" style="position:fixed;inset:0;z-index:9999">x</a>',
+    )
+    expect(html).not.toContain('position:fixed')
+  })
+
+  it('strips style from a table cell, where markdown itself emits alignment', () => {
+    const html = renderMarkdown('<td style="background-image:url(https://tracker.example/p)">c</td>')
+    expect(html).not.toContain('tracker.example')
   })
 })

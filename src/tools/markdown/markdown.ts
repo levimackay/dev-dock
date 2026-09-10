@@ -109,11 +109,28 @@ DOMPurify.addHook('afterSanitizeAttributes', (node) => {
 
 const SANITIZE_CONFIG: Parameters<typeof DOMPurify.sanitize>[1] = {
   ALLOW_DATA_ATTR: false,
+
+  // Markdown produces HTML. It never produces SVG or MathML, so both are
+  // switched off rather than left in DOMPurify's default profile. Neither is
+  // exploitable against the current version, but namespace confusion between
+  // the HTML, SVG, and MathML parsers is where mutation-XSS bypasses have
+  // historically been found, and a preview pane has no use for the surface.
+  USE_PROFILES: { html: true },
   // DOMPurify already strips `<script>`, event-handler attributes, and
   // script-capable embedding tags by default — this list is redundant with
   // that default and kept anyway, as explicit, self-documenting intent
   // rather than a silent reliance on upstream defaults that could change.
   FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'base', 'form'],
+
+  // `style` is the one attribute DOMPurify passes through by default that this
+  // app cannot afford. DOMPurify sanitises *markup*, not CSS values, so
+  // `<div style="background:url(https://tracker.example/x.png)">` survives
+  // intact and fetches that URL the moment the preview renders. That is an
+  // outbound request the user never composed, from a tool whose entire promise
+  // is that nothing is transmitted; `position:fixed` overlays for phishing are
+  // the same hole worn differently. Markdown has no legitimate need for inline
+  // styles, so the attribute is simply removed.
+  FORBID_ATTR: ['style'],
 }
 
 export interface RenderOptions {

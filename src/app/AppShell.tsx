@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
-import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import styles from './AppShell.module.css'
 import { Rail } from './Rail'
 import { Logo } from './Logo'
@@ -24,10 +24,34 @@ const THEME_ORDER = ['light', 'dark', 'system'] as const
 
 export function AppShell() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { theme, setTheme, clearRecents, resetEverything } = usePreferences()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [railOpen, setRailOpen] = useState(false)
+  const mainRef = useRef<HTMLElement | null>(null)
+  const [routeAnnouncement, setRouteAnnouncement] = useState('')
+
+  // A tool switch replaces the whole Outlet in place, so nothing else moves
+  // keyboard focus or tells a screen reader the page changed — the same
+  // React-Router SPA gap `docs/ARCHITECTURE.md` §4 calls out for share-link
+  // hydration exists here for navigation. Moving focus to <main> resets tab
+  // order to the top of the new tool instead of leaving it on a rail link
+  // that may have scrolled away, and the live region announces the new title
+  // for anyone not watching focus land. Skipped on the very first render —
+  // stealing focus from the page a user arrived on would be its own bug.
+  const firstRender = useRef(true)
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    mainRef.current?.focus({ preventScroll: true })
+    // Runs after ToolPage's/HomePage's own title effect (children commit
+    // before this parent), so `document.title` already reflects the route
+    // that just mounted.
+    setRouteAnnouncement(document.title)
+  }, [location.pathname])
 
   const cycleTheme = useCallback(() => {
     const index = THEME_ORDER.indexOf(theme)
@@ -198,9 +222,12 @@ export function AppShell() {
         />
       )}
 
-      <main className={cx(styles.main)} id="main">
+      <main className={cx(styles.main)} id="main" ref={mainRef} tabIndex={-1}>
         <Outlet />
       </main>
+      <span role="status" aria-live="polite" className="visually-hidden">
+        {routeAnnouncement}
+      </span>
 
       {/* Mounted only while open, so its query and highlight reset for free
           instead of needing an effect to clear them. */}

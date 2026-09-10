@@ -63,10 +63,32 @@ through `marked` and then **DOMPurify**, with:
 - `dangerouslySetInnerHTML` used exactly once, immediately downstream of
   `DOMPurify.sanitize`
 - a hook that forces `rel="noopener noreferrer"` and `target="_blank"` on links
-- a URL scheme allowlist that drops `javascript:`, `data:` (except images), and
-  `vbscript:` hrefs
+- a URL scheme allowlist that drops `javascript:`, `data:` (except raster
+  images), and `vbscript:` hrefs, after percent-decoding and stripping control
+  characters, so `%6a%61vascript:` and `java\tscript:` are caught too
+- `data:image/svg+xml` deliberately **not** allowed. SVG is a document format
+  that can carry script; "it cannot execute inside `<img>`" is a rendering
+  detail, not a security boundary
 - `ALLOW_DATA_ATTR: false` so `data-*` cannot be used to smuggle payloads into
   code that later reads them
+- `FORBID_ATTR: ['style']`. This one is easy to miss: DOMPurify sanitises
+  _markup_, not CSS values, so `<div style="background:url(https://…)">`
+  survives its default configuration intact and fetches that URL the moment the
+  preview renders. That is an outbound request the user never composed, in the
+  one tool most likely to be pointed at someone else's document, and it would
+  falsify the claim at the top of this file. The same attribute allows a
+  `position:fixed` full-viewport overlay for phishing. Markdown has no need for
+  inline styles, so the attribute is removed outright.
+- `USE_PROFILES: { html: true }`, which drops SVG and MathML entirely rather
+  than filtering them. Markdown never produces either, and the boundary between
+  the HTML, SVG, and MathML parsers is historically where mutation-XSS bypasses
+  are found.
+
+**Images in a previewed document still make requests.** An `<img src="https://…">`
+that survives sanitisation is fetched by the browser when the preview renders,
+which is what an image is for. Nothing about the document is transmitted, but
+the fact that it was viewed is visible to whoever hosts the image. That is
+inherent to rendering markdown at all, and is noted here rather than hidden.
 
 The HTML Entities tool decodes with an explicit table and numeric-reference
 parsing. It deliberately does **not** use the common
@@ -99,6 +121,18 @@ error boundary so a bug in one tool cannot take down the app.
 
 Unbounded input is a denial-of-service against the user's own tab. Caps are
 applied and **stated in the UI** wherever they bite:
+
+The nesting cap is worth explaining, because the obvious reasoning is wrong.
+`JSON.parse` will build a 200,000-level structure without complaint, and it is
+tempting to assume the standard library can also serialise it. It cannot: V8
+implements `JSON.stringify` recursively, so twenty kilobytes of valid JSON
+(`"[".repeat(10000) + "1" + "]".repeat(10000)`) throws `RangeError` and takes
+the tool down. Both JSON tools hydrate from a share link _before_ their first
+render, so a link alone would have crashed them with no interaction, which is
+precisely the "whoever sends the user a link" attacker in the model above.
+Depth measurement was rewritten with an explicit stack so the depth can always
+be reported, and everything that must recurse refuses past the cap with a
+message.
 
 | Limit                                                | Where                                   |
 | ---------------------------------------------------- | --------------------------------------- |
