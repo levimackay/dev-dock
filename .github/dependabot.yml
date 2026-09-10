@@ -29,3 +29,10 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      # One PR for all of them. Ungrouped, a month of action releases arrives as
+      # eight separate pull requests that each rerun the whole matrix, and the
+      # habit that forms is closing them unread.
+      actions:
+        patterns: ['*']
