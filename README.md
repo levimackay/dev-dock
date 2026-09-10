@@ -24,7 +24,7 @@ Dev Dock is the version where that is not true. Every transformation happens in
 the page. The shell is about 97 KB gzipped and CI fails the build if it passes
 130; each tool is a separate chunk that only downloads when you open it, and
 most are under 7 KB. The SQL formatter is the one heavy exception, at 74 KB,
-because formatting eleven SQL dialects is a real parser. There is nothing to
+because formatting twenty SQL dialects is a real parser. There is nothing to
 sign into and nothing to send.
 
 ## The tools
@@ -152,6 +152,26 @@ The build output is a folder of static files. Any host will serve it.
 docker build -f deploy/Dockerfile -t dev-dock .
 docker run -p 8080:80 dev-dock
 ```
+
+## How it is tested
+
+| Layer      | Count          | What it covers                                                                                                                                                                       |
+| ---------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unit       | 860            | Every pure logic module. Error _messages_ are asserted, because a message is the contract between a tool and a confused user.                                                        |
+| Component  | included above | The shell behaviour that lives in wiring rather than in a function: the focus trap, the command palette's combobox semantics, the share round trip.                                  |
+| End-to-end | 90             | Run against the production build. Palette navigation, deep links, theme persistence, pinning, the mobile drawer, and an axe accessibility scan of every tool in both light and dark. |
+
+Two things worth knowing about that table.
+
+The unified-diff output is checked by handing the patch to `git apply` in a
+throwaway repository and reading the file back, not by asserting on the shape of
+the string. The earlier tests did the latter, passed the whole time, and the
+patch did not apply.
+
+Line coverage is about 56%, which is a misleading number in both directions. The
+logic modules run 83% to 100%; the React files pull the average down because
+they are covered end-to-end instead, where the coverage tool cannot see them.
+`docs/ARCHITECTURE.md` explains why that split is deliberate.
 
 ## Contributing
 
