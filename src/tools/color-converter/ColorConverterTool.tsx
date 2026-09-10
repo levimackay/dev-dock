@@ -303,6 +303,13 @@ export default function ColorConverterTool() {
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-3)' }}>
             <span className={styles.ratioValue}>{verdict.ratio.toFixed(2)}:1</span>
+            <CopyButton
+              value={`${verdict.ratio.toFixed(2)}:1`}
+              size="sm"
+              variant="ghost"
+              iconOnly
+              label="Copy contrast ratio"
+            />
             <span style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-xs)' }}>
               "Large" text means 18.66px bold or 24px regular, everything else is "normal".
             </span>

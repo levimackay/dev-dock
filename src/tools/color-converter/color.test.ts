@@ -246,3 +246,31 @@ describe('buildRamp', () => {
     ])
   })
 })
+
+describe('modern CSS channel keywords', () => {
+  it('reads `none` as zero in any channel', () => {
+    expect(parseColor('rgb(none 0 0)')?.rgb).toEqual(rgb(0, 0, 0))
+    expect(parseColor('rgb(255 none none)')?.rgb).toEqual(rgb(255, 0, 0))
+  })
+
+  it('reads `none` as fully opaque in the alpha slot', () => {
+    expect(parseColor('rgb(0 0 0 / none)')?.rgb.a).toBe(1)
+  })
+})
+
+describe('hex without a leading hash', () => {
+  it('accepts bare hex, which is how people paste it', () => {
+    expect(parseColor('ff8800')?.rgb).toEqual(rgb(255, 136, 0))
+  })
+
+  it('reads an English word made only of hex digits as a colour', () => {
+    // Documented ambiguity, resolved toward the colour: this is a colour tool.
+    const parsed = parseColor('cafe')!
+    expect({ r: parsed.rgb.r, g: parsed.rgb.g, b: parsed.rgb.b }).toEqual({
+      r: 204,
+      g: 170,
+      b: 255,
+    })
+    expect(parsed.rgb.a).toBeCloseTo(238 / 255, 3)
+  })
+})

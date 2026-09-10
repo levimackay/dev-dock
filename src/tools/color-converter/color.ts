@@ -227,6 +227,9 @@ function parseAlpha(token: string | undefined): number {
 function parseChannel(token: string, scale: number): number | null {
   const text = token.trim()
   if (text === '') return null
+  // `none` is valid modern CSS in any channel and means "no value", which for
+  // a converter is zero: `rgb(none 0 0)` is black.
+  if (text === 'none') return 0
   const value = text.endsWith('%') ? (Number(text.slice(0, -1)) / 100) * scale : Number(text)
   return Number.isFinite(value) ? value : null
 }
@@ -254,6 +257,11 @@ export function parseColor(input: string): ParsedColor | null {
   }
 
   // ---- hex ----
+  // The `#` is optional on purpose: people paste hex out of design tools and
+  // config files without it constantly. The cost is that a few English words
+  // made only of hex digits parse as colours, `cafe` as #ccaaffee and `decade`
+  // as #decade. That is a real ambiguity and it resolves toward the colour,
+  // because this is a colour tool and nothing else here wants the word.
   const hex = /^#?([0-9a-f]{3,8})$/.exec(text)
   if (hex) {
     const digits = hex[1]!
@@ -493,7 +501,15 @@ export function isOutOfSrgbGamut({ l, c, h }: Oklch): boolean {
 
 // --------------------------------------------------------------- contrast
 
-/** WCAG 2.1 relative luminance. */
+/**
+ * WCAG 2.1 relative luminance.
+ *
+ * Alpha is deliberately ignored, and the UI says so beside the contrast panel.
+ * Contrast against a translucent colour depends on whatever is behind it, which
+ * this tool does not know; treating the colour as opaque gives the answer for
+ * the case the user can actually check, rather than a plausible number for a
+ * composite that may not exist.
+ */
 export function relativeLuminance({ r, g, b }: Rgb): number {
   return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b)
 }

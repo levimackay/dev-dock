@@ -94,6 +94,11 @@ function myers<T>(a: readonly T[], b: readonly T[], maxD: number): DiffChunk<T>[
   for (let d = 0; d <= max; d++) {
     trace.push(v.slice())
 
+    // `v` is read and written in the same pass, which is safe for a reason
+    // worth stating: `k` steps by 2, so every entry written this round has the
+    // same parity as `d`, while `k±1` always has the opposite parity and can
+    // therefore only hold a value from the previous round. There is no
+    // read-after-write hazard, and no need to work on a copy.
     for (let k = -d; k <= d; k += 2) {
       const left = v[k - 1 + offset]!
       const right = v[k + 1 + offset]!
@@ -112,7 +117,6 @@ function myers<T>(a: readonly T[], b: readonly T[], maxD: number): DiffChunk<T>[
       if (x >= n && y >= m) return backtrack(a, b, trace, offset, d, k)
     }
 
-    v = v.slice()
   }
 
   // Edit distance exceeded the ceiling.
@@ -284,6 +288,13 @@ export interface WordSpan {
  * Splits into words *and* the whitespace between them, both as tokens. Keeping
  * whitespace in the sequence means a diff that changes only spacing is visible
  * rather than silently dropped, and reassembling the output is a plain join.
+ *
+ * The word class is ASCII-only. For source code, which is what the code diff
+ * exists for, that is exactly right: `foo_bar` is one token and `foo-bar` is
+ * three. For non-Latin prose it degrades to a character-level diff, which is
+ * noisier but never wrong, and widening the class to `\p{L}` would make
+ * identifiers containing accented characters behave differently from the ones
+ * beside them. The noisy-but-correct failure is the better one.
  */
 export function tokenizeWords(text: string): string[] {
   return text.match(/\s+|[A-Za-z0-9_]+|[^\sA-Za-z0-9_]/g) ?? []

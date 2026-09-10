@@ -40,6 +40,11 @@ const isBoundary = (text: string, index: number): boolean => {
   const curr = text[index]!
   if (/[\s\-_/.:]/.test(prev)) return true
   // camelCase boundary: lower-then-upper in the *original* casing.
+  //
+  // The final clause is not redundant, though it looks it. Digits and
+  // punctuation are equal to their own lowercase, so without it "2F" in
+  // "user2FA" and "-C" in "a-Cat" both register as camelCase humps, and a query
+  // scores against boundaries that a reader would never call boundaries.
   return prev === prev.toLowerCase() && curr !== curr.toLowerCase() && /[a-z]/i.test(prev)
 }
 
