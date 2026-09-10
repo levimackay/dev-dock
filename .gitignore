@@ -38,3 +38,7 @@ pnpm-debug.log*
 # typescript incremental build info
 *.tsbuildinfo
 .impeccable/
+
+# local editor and tool config
+.claude/
+.impeccable/
