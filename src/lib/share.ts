@@ -28,6 +28,21 @@ const V_PLAIN = 'p'
 /** Browsers cap URLs well above this, but ~8k is where proxies start to fail. */
 export const MAX_SHARE_CHARS = 8000
 
+/**
+ * Ceiling on what a share fragment may inflate to.
+ *
+ * The outbound cap above is a courtesy to proxies. This one is a defence. A
+ * link is attacker-supplied by definition, deflate reaches roughly 1000:1 on
+ * repetitive input, and a 200 KB fragment (well within what a browser or a chat
+ * app will carry) inflates to about 200 MB before `JSON.parse` is even reached.
+ * On a phone that is an out-of-memory tab kill from a link the user only
+ * clicked. Four megabytes is far beyond any real tool state and cheap to hold.
+ */
+const MAX_INFLATED_BYTES = 4 * 1024 * 1024
+
+/** No legitimate link is close to this; anything longer is not worth decoding. */
+const MAX_ENCODED_CHARS = 256 * 1024
+
 function toBase64Url(bytes: Uint8Array): string {
   let binary = ''
   // Chunked to stay under the argument-count limit on large payloads.
@@ -63,8 +78,14 @@ async function pipe(
 ): Promise<Uint8Array<ArrayBuffer>> {
   const writer = stream.writable.getWriter()
   // Not awaited: the writer only settles once the reader below drains it, so
-  // awaiting here would deadlock.
-  void writer.write(bytes).then(() => writer.close())
+  // awaiting here would deadlock. The rejection is swallowed rather than
+  // ignored, because cancelling the reader (the size ceiling below) rejects
+  // this promise, and an unhandled rejection from a defence that worked is
+  // still an unhandled rejection.
+  void writer
+    .write(bytes)
+    .then(() => writer.close())
+    .catch(() => undefined)
 
   const reader = stream.readable.getReader()
   const chunks: Uint8Array[] = []
@@ -76,6 +97,10 @@ async function pipe(
     const chunk = value as Uint8Array
     chunks.push(chunk)
     total += chunk.length
+    if (total > MAX_INFLATED_BYTES) {
+      await reader.cancel().catch(() => undefined)
+      throw new RangeError('Share payload inflates past the size limit.')
+    }
   }
 
   const out = new Uint8Array(total)
@@ -107,6 +132,9 @@ export async function decodeShareState<T>(
   isValid: (value: unknown) => value is T,
 ): Promise<T | null> {
   if (!encoded) return null
+  // Checked before any decoding work, not after: the point is to refuse the
+  // input, not to find out how big it was.
+  if (encoded.length > MAX_ENCODED_CHARS) return null
   const version = encoded[0]
   const body = encoded.slice(1)
   try {

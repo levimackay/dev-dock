@@ -239,3 +239,45 @@ describe('explainFields', () => {
     expect(rows[0]).toMatchObject({ field: 'Minute', raw: '*/5' })
   })
 })
+
+describe('regressions from the code review', () => {
+  it('suggests a replacement for a backwards range that means what was asked for', () => {
+    // The old message suggested "3-23,0-22", which is every hour of the day.
+    expect(failure('0 22-3 * * *').message).toContain('22-23,0-3')
+  })
+
+  it('rejects a range with more than two endpoints instead of silently truncating', () => {
+    // `split('-', 2)` used to parse 1-2-3 as the range 1-2 and say nothing.
+    expect(failure('0 0 1-2-3 * *').message).toMatch(/not a range/)
+  })
+
+  it('rejects an item with two steps', () => {
+    expect(failure('*/5/2 * * * *').message).toMatch(/more than one step/)
+  })
+
+  it('describes the seconds field of a six-field expression', () => {
+    expect(describeCron(parse('30 0 9 * * *'))).toContain('09:00:30')
+  })
+
+  it('describes several seconds within a minute', () => {
+    expect(describeCron(parse('0,30 0 9 * * *'))).toMatch(/second/)
+  })
+
+  it('treats a starred day field with a step as unrestricted, the way Vixie does', () => {
+    // 0 0 */1 * MON fires on Mondays only: the day-of-month field begins with a
+    // star, so the either/both rule does not apply to it.
+    const expr = parse('0 0 */1 * MON')
+    const monday = new Date(2026, 5, 1)
+    const tuesday = new Date(2026, 5, 2)
+    expect(matchesDay(expr, monday, false)).toBe(true)
+    expect(matchesDay(expr, tuesday, false)).toBe(false)
+  })
+
+  it('still describes a stepped field as a step, not as a wildcard', () => {
+    expect(describeCron(parse('*/15 * * * *'))).toMatch(/every 15th minute/)
+  })
+
+  it('explains @reboot rather than calling it unknown', () => {
+    expect(failure('@reboot').message).toMatch(/once when the daemon starts/)
+  })
+})

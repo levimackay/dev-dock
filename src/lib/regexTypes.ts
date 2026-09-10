@@ -32,7 +32,7 @@ export interface RegexFailure {
   id: number
   ok: false
   error: string
-  kind: 'syntax' | 'timeout' | 'internal'
+  kind: 'syntax' | 'timeout' | 'internal' | 'superseded'
 }
 
 export type RegexResponse = RegexSuccess | RegexFailure

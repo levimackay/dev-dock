@@ -88,3 +88,28 @@ describe('share URLs', () => {
     expect(() => clearShareFragment()).not.toThrow()
   })
 })
+
+describe('inbound payload limits', () => {
+  it('refuses an absurdly long fragment without trying to decode it', async () => {
+    const isRecordCheck = (v: unknown): v is Record<string, unknown> =>
+      typeof v === 'object' && v !== null
+    expect(await decodeShareState('d' + 'A'.repeat(300_000), isRecordCheck)).toBeNull()
+  })
+
+  it('refuses a payload that inflates past the ceiling', async () => {
+    // A megabyte of one repeated character deflates to a few hundred bytes and
+    // inflates back to a megabyte: the shape of a decompression bomb, at a size
+    // that is safe to run in a test.
+    const bomb = await encodeShareState({ input: 'A'.repeat(8 * 1024 * 1024) })
+    const isRecordCheck = (v: unknown): v is Record<string, unknown> =>
+      typeof v === 'object' && v !== null
+    expect(await decodeShareState(bomb, isRecordCheck)).toBeNull()
+  })
+
+  it('still accepts a payload comfortably under the ceiling', async () => {
+    const isRecordCheck = (v: unknown): v is Record<string, unknown> =>
+      typeof v === 'object' && v !== null
+    const encoded = await encodeShareState({ input: 'x'.repeat(100_000) })
+    expect(await decodeShareState(encoded, isRecordCheck)).not.toBeNull()
+  })
+})

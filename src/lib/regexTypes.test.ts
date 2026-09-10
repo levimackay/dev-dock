@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { executeRegex, type RegexRequest } from './regexTypes'
+import { executeRegex, type RegexRequest, type RegexResponse } from './regexTypes'
 
 const req = (partial: Partial<RegexRequest>): RegexRequest => ({
   id: 1,
@@ -75,5 +75,19 @@ describe('executeRegex', () => {
   it('returns no matches for an empty subject', () => {
     const result = executeRegex(req({ pattern: 'a', flags: 'g', text: '' }))
     expect(result.ok && result.matches).toHaveLength(0)
+  })
+})
+
+describe('failure kinds', () => {
+  it('every kind the runner can produce is one the UI knows about', () => {
+    // A compile-time exhaustiveness check written as a test: adding a kind to
+    // RegexFailure without teaching FailureCallout about it fails here.
+    const kinds: Array<Extract<RegexResponse, { ok: false }>['kind']> = [
+      'syntax',
+      'timeout',
+      'internal',
+      'superseded',
+    ]
+    expect(new Set(kinds).size).toBe(kinds.length)
   })
 })

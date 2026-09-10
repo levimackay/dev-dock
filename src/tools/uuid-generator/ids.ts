@@ -110,12 +110,30 @@ export const DEFAULT_NANOID_LENGTH = 21
  * evenly and this branch never has to trigger; it only matters once a
  * caller supplies a custom alphabet.
  */
+/** Above this the rejection-sampling limit degenerates to zero. */
+export const MAX_NANOID_ALPHABET = 256
+
+/** Well past any real identifier, and short of anything that would block the tab. */
+export const MAX_NANOID_LENGTH = 512
+
 export function generateNanoId(
   length: number = DEFAULT_NANOID_LENGTH,
   alphabet: string = DEFAULT_NANOID_ALPHABET,
 ): string {
   if (alphabet.length === 0) throw new Error('NanoID alphabet must not be empty.')
+  // Above 256 the rejection limit computes to 0 and every byte is rejected, so
+  // the loop below never terminates. Widening to two bytes per character would
+  // fix that, but a 256-symbol alphabet is already far past anything anyone
+  // uses, so the honest answer is to refuse rather than to invent a mode.
+  if (alphabet.length > MAX_NANOID_ALPHABET) {
+    throw new Error(
+      `NanoID alphabet must be ${MAX_NANOID_ALPHABET} characters or fewer; this one has ${alphabet.length}.`,
+    )
+  }
   if (length <= 0) return ''
+  if (length > MAX_NANOID_LENGTH) {
+    throw new Error(`NanoID length must be ${MAX_NANOID_LENGTH} or fewer characters.`)
+  }
 
   const limit = 256 - (256 % alphabet.length)
   let result = ''

@@ -55,7 +55,9 @@ export function SplitPane({
 }: SplitPaneProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [ratio, setRatio] = useState(() =>
-    storageKey ? clamp(read(`split:${storageKey}`, defaultRatio), min, max) : defaultRatio,
+    storageKey
+      ? clamp(read(`split:${storageKey}`, defaultRatio, isFiniteNumber), min, max)
+      : defaultRatio,
   )
   const [dragging, setDragging] = useState(false)
   const id = useId()
@@ -146,6 +148,10 @@ export function SplitPane({
     </div>
   )
 }
+
+/** Storage holds whatever an older version, or devtools, put there. */
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
 
 function clamp(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return min

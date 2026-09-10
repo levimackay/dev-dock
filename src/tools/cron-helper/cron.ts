@@ -37,8 +37,10 @@
 export interface CronField {
   /** Every value this field permits, sorted ascending. */
   values: number[]
-  /** True when the field was `*` (or `?`), which changes day-matching. */
+  /** True when the field matches every value in its range. Drives the wording. */
   wildcard: boolean
+  /** True when the field *begins* with `*` or `?`. Drives the either/both day rule. */
+  starred: boolean
   raw: string
 }
 
@@ -141,6 +143,17 @@ function parseField(raw: string, spec: FieldSpec, index: number): CronField | Cr
   }
 
   const wildcard = text === '*' || text === '?'
+  // A separate flag, because the two questions are genuinely different and
+  // conflating them broke one or the other.
+  //
+  // `wildcard` means "matches every value", and the English description needs
+  // that: `*/15` is not "every minute".
+  //
+  // `starred` means "the field begins with a star", which is the flag Vixie
+  // cron actually consults for the either/both day rule. `0 0 */1 * MON` fires
+  // only on Mondays there, because the day-of-month field counts as a star even
+  // with a step on it.
+  const starred = text.startsWith('*') || text.startsWith('?')
   const values = new Set<number>()
 
   for (const part of text.split(',')) {
@@ -160,7 +173,7 @@ function parseField(raw: string, spec: FieldSpec, index: number): CronField | Cr
     values.add(0)
   }
 
-  return { values: [...values].sort((a, b) => a - b), wildcard, raw: text }
+  return { values: [...values].sort((a, b) => a - b), wildcard, starred, raw: text }
 }
 
 function parsePart(part: string, spec: FieldSpec, index: number): number[] | CronParseError {
@@ -174,6 +187,9 @@ function parsePart(part: string, spec: FieldSpec, index: number): number[] | Cro
 
   const slash = text.indexOf('/')
   if (slash !== -1) {
+    if (text.indexOf('/', slash + 1) !== -1) {
+      return bad(`"${text}" has more than one step. A cron item takes at most one "/".`)
+    }
     range = text.slice(0, slash)
     const stepText = text.slice(slash + 1)
     if (!/^\d+$/.test(stepText)) {
@@ -190,14 +206,23 @@ function parsePart(part: string, spec: FieldSpec, index: number): number[] | Cro
     start = spec.min
     end = spec.max
   } else if (range.includes('-')) {
-    const [fromText = '', toText = ''] = range.split('-', 2)
+    // Not `split('-', 2)`: the limit silently discards the rest, so `1-2-3`
+    // parsed as the range 1-2 and the tool scheduled something the user never
+    // typed. Naming the malformed input is the whole point of this parser.
+    const pieces = range.split('-')
+    if (pieces.length !== 2) {
+      return bad(
+        `"${range}" is not a range. A cron range is exactly two values joined by one hyphen, as in 1-5.`,
+      )
+    }
+    const [fromText = '', toText = ''] = pieces
     const from = toNumber(fromText, spec)
     const to = toNumber(toText, spec)
     if (from === null) return bad(describeBadValue(fromText, spec))
     if (to === null) return bad(describeBadValue(toText, spec))
     if (from > to) {
       return bad(
-        `The range ${range} runs backwards. Cron ranges do not wrap; write two items instead, as in ${to}-${spec.max},${spec.min}-${from}.`,
+        `The range ${range} runs backwards. Cron ranges do not wrap; write two items instead, as in ${from}-${spec.max},${spec.min}-${to}.`,
       )
     }
     start = from
@@ -257,7 +282,10 @@ export function parseCron(input: string): CronParseResult {
       return {
         ok: false,
         error: {
-          message: `Unknown macro “${text}”. Standard cron defines ${Object.keys(MACROS).join(', ')}.`,
+          message:
+            text.toLowerCase() === '@reboot'
+              ? '@reboot is a real crontab macro, but it means "once when the daemon starts" rather than a time, so there is no schedule to describe or project.'
+              : `Unknown macro “${text}”. Standard cron defines ${Object.keys(MACROS).join(', ')}, and @reboot.`,
         },
       }
     }
@@ -294,7 +322,7 @@ export function parseCron(input: string): CronParseResult {
     fields.push(parsed)
   }
 
-  const everySecond: CronField = { values: [0], wildcard: false, raw: '0' }
+  const everySecond: CronField = { values: [0], wildcard: false, starred: false, raw: '0' }
   const [a, b, c, d, e, f] = fields
 
   return {
@@ -326,9 +354,11 @@ export function matchesDay(expr: CronExpression, date: Date, utc: boolean): bool
   const domMatch = expr.daysOfMonth.values.includes(dom)
   const dowMatch = expr.daysOfWeek.values.includes(dow)
 
-  if (expr.daysOfMonth.wildcard && expr.daysOfWeek.wildcard) return true
-  if (expr.daysOfMonth.wildcard) return dowMatch
-  if (expr.daysOfWeek.wildcard) return domMatch
+  // `starred`, not `wildcard`: a field beginning with a star counts as
+  // unrestricted here even when a step narrows it, which is what Vixie does.
+  if (expr.daysOfMonth.starred && expr.daysOfWeek.starred) return true
+  if (expr.daysOfMonth.starred) return dowMatch
+  if (expr.daysOfWeek.starred) return domMatch
   return domMatch || dowMatch
 }
 
@@ -491,17 +521,39 @@ export function describeCron(expr: CronExpression): string {
   ) {
     // Small enough to spell out as clock times, which reads far better than
     // "minute 30 past hour 9 and 17".
+    //
+    // The seconds column has to appear here too. It used to be consulted only
+    // for the all-wildcard cases above, so `30 0 9 * * *` was described as
+    // "At 09:00" when it fires at 09:00:30, and the field table beside it said
+    // something different.
+    const singleSecond =
+      expr.hasSeconds && expr.seconds.values.length === 1 ? expr.seconds.values[0] : undefined
+    const secondsSuffix = singleSecond ? `:${pad(singleSecond)}` : ''
+
     const times: string[] = []
     for (const hour of expr.hours.values) {
-      for (const minute of expr.minutes.values) times.push(`${pad(hour)}:${pad(minute)}`)
+      for (const minute of expr.minutes.values) {
+        times.push(`${pad(hour)}:${pad(minute)}${secondsSuffix}`)
+      }
     }
     parts.push(`At ${joinList(times.sort())}`)
+
+    // Several seconds within a minute cannot fold into a clock time.
+    if (expr.hasSeconds && expr.seconds.values.length > 1) {
+      parts.push(
+        `at ${describeField(expr.seconds, { name: 'second', min: 0, max: 59 }, String)} of each`,
+      )
+    }
   } else {
     const minuteText = describeField(expr.minutes, { name: 'minute', min: 0, max: 59 }, String)
     const hourText = everyHour
       ? 'every hour'
       : describeField(expr.hours, { name: 'hour', min: 0, max: 23 }, String)
-    parts.push(`At ${minuteText}, ${hourText}`)
+    const secondText =
+      expr.hasSeconds && !expr.seconds.wildcard
+        ? `${describeField(expr.seconds, { name: 'second', min: 0, max: 59 }, String)}, `
+        : ''
+    parts.push(`At ${secondText}${minuteText}, ${hourText}`)
   }
 
   // Then the calendar restrictions.

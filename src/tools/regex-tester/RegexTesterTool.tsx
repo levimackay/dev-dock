@@ -411,6 +411,10 @@ function FailureCallout({ response }: { response: Extract<RegexResponse, { ok: f
       </Callout>
     )
   }
+  // A superseded request is not a failure the user needs to read about: it
+  // means they kept typing, which is the normal case. Showing nothing is
+  // correct, and the newer request's result is already on its way.
+  if (response.kind === 'superseded') return null
   return (
     <Callout tone="err" title="The pattern failed while running" live>
       {response.error}

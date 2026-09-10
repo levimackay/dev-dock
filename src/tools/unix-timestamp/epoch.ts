@@ -131,9 +131,17 @@ export interface EpochValues {
   nanoseconds: string
 }
 
-/** The inverse of `toInstant`: a `Date` rendered in all four units. */
-export function fromDate(date: Date): EpochValues {
-  const ms = BigInt(date.getTime())
+/**
+ * The inverse of `toInstant`: a `Date` rendered in all four units.
+ *
+ * Returns `null` for an Invalid Date rather than throwing. `BigInt(NaN)` is a
+ * `RangeError`, and this is exported, so an arbitrary `Date` from a caller that
+ * did not range-check first would take the tool down.
+ */
+export function fromDate(date: Date): EpochValues | null {
+  const time = date.getTime()
+  if (!Number.isFinite(time)) return null
+  const ms = BigInt(time)
   return {
     seconds: (ms / 1000n).toString(),
     milliseconds: ms.toString(),
@@ -159,15 +167,25 @@ export function formatRelative(from: Date, to: Date): string {
 
   if (abs < 5000) return 'just now'
 
-  // Walk the unit ladder from the top down, picking the largest unit that
-  // still rounds to at least 1, the same approach `Intl.RelativeTimeFormat`
-  // implementations use internally.
-  let chosen = RELATIVE_UNITS[0]!
-  for (const unit of RELATIVE_UNITS) {
-    if (abs >= unit.ms) chosen = unit
+  // Walk the unit ladder from the top down, picking the largest unit the span
+  // reaches.
+  let index = 0
+  for (const [i, unit] of RELATIVE_UNITS.entries()) {
+    if (abs >= unit.ms) index = i
     else break
   }
-  const count = Math.round(abs / chosen.ms)
+  let chosen = RELATIVE_UNITS[index]!
+  let count = Math.round(abs / chosen.ms)
+
+  // Then check the rounding did not push the count into the next unit. 59.6
+  // seconds selects "second" because it is under a minute, and rounds to 60,
+  // so the ladder has to be walked once more after rounding or the tool says
+  // "60 seconds ago", "60 minutes ago", "24 hours ago".
+  const next = RELATIVE_UNITS[index + 1]
+  if (next && count * chosen.ms >= next.ms) {
+    chosen = next
+    count = Math.round(abs / chosen.ms)
+  }
   const noun = `${count} ${chosen.singular}${count === 1 ? '' : 's'}`
   return future ? `in ${noun}` : `${noun} ago`
 }

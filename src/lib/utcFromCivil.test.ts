@@ -17,6 +17,18 @@ describe('utcFromCivil', () => {
     expect(iso(utcFromCivil(0, 0, 1))).toBe('0000-01-01T00:00:00.000Z')
   })
 
+  it('keeps 29 February in year 0, which is a leap year even though 1900 is not', () => {
+    // The single input that separates "repair the year afterwards" from "set
+    // the year first". Date.UTC(0, 1, 29) resolves 1900-02-29, which does not
+    // exist, into 1900-03-01, and no later correction can walk that back.
+    expect(iso(utcFromCivil(0, 1, 29))).toBe('0000-02-29T00:00:00.000Z')
+  })
+
+  it('keeps 29 February in other early leap years', () => {
+    expect(iso(utcFromCivil(4, 1, 29))).toBe('0004-02-29T00:00:00.000Z')
+    expect(iso(utcFromCivil(96, 1, 29))).toBe('0096-02-29T00:00:00.000Z')
+  })
+
   it('handles year 99, the last remapped year', () => {
     expect(iso(utcFromCivil(99, 11, 31))).toBe('0099-12-31T00:00:00.000Z')
   })

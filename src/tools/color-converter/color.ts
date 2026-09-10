@@ -333,10 +333,14 @@ export function parseColor(input: string): ParsedColor | null {
 function parseHue(token: string): number | null {
   const text = token.trim()
   let value: number
+  // Order matters, and not obviously: "grad" ends with "rad", so testing `rad`
+  // first swallows every gradian value, slices off three characters instead of
+  // four, and hands `Number` a trailing "g". The longer suffix has to be
+  // checked first or its branch is unreachable.
   if (text.endsWith('deg')) value = Number(text.slice(0, -3))
   else if (text.endsWith('turn')) value = Number(text.slice(0, -4)) * 360
-  else if (text.endsWith('rad')) value = (Number(text.slice(0, -3)) * 180) / Math.PI
   else if (text.endsWith('grad')) value = (Number(text.slice(0, -4)) * 360) / 400
+  else if (text.endsWith('rad')) value = (Number(text.slice(0, -3)) * 180) / Math.PI
   else value = Number(text)
   if (!Number.isFinite(value)) return null
   return ((value % 360) + 360) % 360
@@ -507,7 +511,13 @@ export interface ContrastVerdict {
 }
 
 export function gradeContrast(foreground: Rgb, background: Rgb): ContrastVerdict {
-  const ratio = contrastRatio(foreground, background)
+  // Floored to two decimals, not rounded, and the verdicts below are graded
+  // against the floored value so the badge can never contradict the number
+  // printed beside it. Rounding produced pairs that displayed "4.50:1" and were
+  // marked AA fail, because the real ratio was 4.4990. Flooring is the honest
+  // direction for a pass/fail tool: the figure shown never claims more contrast
+  // than was measured.
+  const ratio = Math.floor(contrastRatio(foreground, background) * 100) / 100
   return {
     ratio,
     aaNormal: ratio >= 4.5,
@@ -573,8 +583,10 @@ export function nearestNamed(rgb: Rgb): { name: string; exact: boolean; distance
 export function buildRamp(rgb: Rgb, steps = 9): Array<{ stop: number; hex: string }> {
   const base = rgbToOklch(rgb)
   const out: Array<{ stop: number; hex: string }> = []
+  // A single-step ramp would divide by zero and emit "#NaNNaNNaN".
+  const span = Math.max(1, steps - 1)
   for (let i = 0; i < steps; i++) {
-    const l = 0.96 - (i / (steps - 1)) * 0.86
+    const l = 0.96 - (i / span) * 0.86
     // Chroma is reduced at the extremes, where high chroma leaves the gamut and
     // clips to a flat, muddy colour.
     const falloff = 1 - Math.abs(l - 0.55) / 0.75

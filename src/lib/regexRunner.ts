@@ -66,6 +66,42 @@ export function runRegex(
 
   if (!active) return Promise.resolve(executeRegex(full))
 
+  // Supersede rather than queue.
+  //
+  // One worker handles messages serially, and the timer used to start when a
+  // request was posted rather than when the worker picked it up. So a slow
+  // pattern already running would burn most of the next request's budget
+  // before it began, and a perfectly ordinary pattern would be reported as
+  // catastrophic backtracking: the message named a cause that was not there.
+  //
+  // Superseding fixes the accounting and is what a type-as-you-go tool wants
+  // anyway. The moment request N+1 exists, N's answer is for text nobody is
+  // looking at. Everything outstanding is resolved as superseded, the worker is
+  // replaced so the old pattern actually stops, and the new request is alone in
+  // the queue with a clock that starts when it does.
+  if (pending.size > 0) {
+    for (const [pendingId, entry] of pending) {
+      clearTimeout(entry.timer)
+      entry.resolve({
+        id: pendingId,
+        ok: false,
+        kind: 'superseded',
+        error: 'A newer pattern replaced this one before it finished.',
+      })
+    }
+    pending.clear()
+    killWorker()
+    const replacement = ensureWorker()
+    if (!replacement) return Promise.resolve(executeRegex(full))
+    return post(replacement, full, timeoutMs)
+  }
+
+  return post(active, full, timeoutMs)
+}
+
+function post(worker: Worker, full: RegexRequest, timeoutMs: number): Promise<RegexResponse> {
+  const { id } = full
+
   return new Promise<RegexResponse>((resolve) => {
     const timer = setTimeout(() => {
       pending.delete(id)
@@ -79,6 +115,6 @@ export function runRegex(
     }, timeoutMs)
 
     pending.set(id, { resolve, timer })
-    active.postMessage(full)
+    worker.postMessage(full)
   })
 }

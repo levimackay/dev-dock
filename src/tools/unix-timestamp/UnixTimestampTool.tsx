@@ -178,7 +178,15 @@ export default function UnixTimestampTool() {
 
   const parsedFields = parseDatetimeLocalValue(state.dtLocal)
   const fromPicker = parsedFields ? zonedTimeToUtc(parsedFields, state.zone) : undefined
-  const pickerEpochs = fromPicker ? fromDate(fromPicker) : undefined
+  // `now` comes from the tick, so it is always valid; the fallback exists only
+  // to keep the type honest without an assertion.
+  const nowEpochs = fromDate(now) ?? {
+    seconds: '0',
+    milliseconds: '0',
+    microseconds: '0',
+    nanoseconds: '0',
+  }
+  const pickerEpochs = fromPicker ? (fromDate(fromPicker) ?? undefined) : undefined
 
   return (
     <ToolShell
@@ -232,7 +240,7 @@ export default function UnixTimestampTool() {
               color: 'var(--fg-subtle)',
             }}
           >
-            {fromDate(now).seconds}s · {fromDate(now).milliseconds}ms
+            {nowEpochs.seconds}s · {nowEpochs.milliseconds}ms
           </code>
           <OptionSpacer />
           <Button size="sm" variant="ghost" pressed={paused} onClick={() => setPaused((v) => !v)}>
@@ -241,7 +249,7 @@ export default function UnixTimestampTool() {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => patch({ input: fromDate(now).seconds, unitOverride: 'seconds' })}
+            onClick={() => patch({ input: nowEpochs.seconds, unitOverride: 'seconds' })}
           >
             Snap top to now
           </Button>

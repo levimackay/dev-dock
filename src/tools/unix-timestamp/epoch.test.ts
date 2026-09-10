@@ -103,16 +103,20 @@ describe('fromDate', () => {
   })
 
   it('renders a real instant in all four units', () => {
-    const values = fromDate(new Date(1700000000123))
+    const values = fromDate(new Date(1700000000123))!
     expect(values.milliseconds).toBe('1700000000123')
     expect(values.seconds).toBe('1700000000')
     expect(values.microseconds).toBe('1700000000123000')
     expect(values.nanoseconds).toBe('1700000000123000000')
   })
 
+  it('returns null for an Invalid Date rather than throwing on BigInt(NaN)', () => {
+    expect(fromDate(new Date('not a date'))).toBeNull()
+  })
+
   it('round-trips through toInstant for a nanosecond-precision value', () => {
     const original = new Date(1700000000123)
-    const values = fromDate(original)
+    const values = fromDate(original)!
     const back = toInstant(values.nanoseconds, 'nanoseconds')
     expect(back.date?.getTime()).toBe(original.getTime())
   })

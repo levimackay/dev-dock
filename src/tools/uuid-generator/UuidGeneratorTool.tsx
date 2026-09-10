@@ -14,6 +14,7 @@ import {
   DEFAULT_BULK_FORMAT,
   DEFAULT_NANOID_ALPHABET,
   DEFAULT_NANOID_LENGTH,
+  MAX_NANOID_LENGTH,
   decodeUuid,
   formatBulk,
   generateNanoId,
@@ -93,13 +94,33 @@ export default function UuidGeneratorTool() {
   // on `State` above.
   const [ids, setIds] = useState<string[]>([])
 
+  const [rollError, setRollError] = useState<string | undefined>(undefined)
+
   const roll = () => {
+    // Everything the generators are handed is clamped here, not at the input.
+    // The `max` attribute on a number field is a validity hint the browser does
+    // not enforce, and share state never passes through the field at all: a
+    // link carrying `nanoidLength: 100000` reached `crypto.getRandomValues`
+    // directly, which throws QuotaExceededError past 65,536 bytes. That throw
+    // came from a click handler, where an error boundary cannot catch it, so
+    // the button simply did nothing.
     const count = Math.min(MAX_COUNT, Math.max(1, Math.floor(state.count) || 1))
-    setIds(
-      Array.from({ length: count }, () =>
-        generateOne(state.kind, state.nanoidLength, state.nanoidAlphabet),
-      ),
+    const nanoidLength = Math.min(
+      MAX_NANOID_LENGTH,
+      Math.max(1, Math.floor(state.nanoidLength) || DEFAULT_NANOID_LENGTH),
     )
+
+    try {
+      setIds(
+        Array.from({ length: count }, () =>
+          generateOne(state.kind, nanoidLength, state.nanoidAlphabet),
+        ),
+      )
+      setRollError(undefined)
+    } catch (error) {
+      setIds([])
+      setRollError(error instanceof Error ? error.message : 'Could not generate those ids.')
+    }
   }
 
   const output = useMemo(() => formatBulk(ids, state), [ids, state])
@@ -254,7 +275,13 @@ export default function UuidGeneratorTool() {
           status={ids.length ? pluralize(ids.length, 'id') : undefined}
           actions={<CopyButton value={output} disabled={!output} />}
         >
-          {ids.length === 0 ? (
+          {rollError ? (
+            <div style={{ padding: 'var(--sp-3)' }}>
+              <Callout tone="err" title="Could not generate those ids" live>
+                {rollError}
+              </Callout>
+            </div>
+          ) : ids.length === 0 ? (
             <div style={{ padding: 'var(--sp-3)' }}>
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)', margin: 0 }}>
                 Pick a kind and a count above, then Generate. Nothing here is shareable by link,

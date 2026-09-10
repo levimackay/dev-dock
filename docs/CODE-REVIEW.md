@@ -1280,7 +1280,15 @@ Six lines vanish for free.
 `base64ToBytes(text)`. Four consumers, fiddly logic, and `ARCHITECTURE.md §2`
 already mandates it.
 
-### D2. `tzOffsetMs` + `zonedTimeToUtc`, and the comment that justifies the copy
+### D2. `tzOffsetMs` + `zonedTimeToUtc`, and the comment that justifies the copy — **partially addressed**
+
+> The A5 fix hoisted the shared `utcFromCivil` into `src/lib`, which is exactly
+> the right move and proves the point below. But `tzOffsetMs` and
+> `zonedTimeToUtc` themselves are **still duplicated** in both tool folders
+> (`datetime.ts:94-142`, `epoch.ts:210-266`), and the self-justifying comment at
+> `datetime.ts:127` is still there — now doubly odd, since the file two lines
+> above it imports a shared helper from `src/lib`. Finish the move.
+
 
 `src/tools/unix-timestamp/epoch.ts:208-264` and
 `src/tools/datetime-converter/datetime.ts:91-139` are the same two functions.
@@ -1617,7 +1625,8 @@ working tree on top of `e74ec83`:
 | §C1 Sample buttons | **Fixed** (`0bcd46a`) |
 | §E1 dead exports | **Fixed** (`e74ec83`) |
 | §A2 JWT `null` header crash | Open |
-| §A5 `Date.UTC` year 0-99 | Open, re-confirmed (`0050-03-15` → `1950-03-15`) |
+| §A5 `Date.UTC` year 0-99 | **Fixed** via new `src/lib/utcFromCivil.ts` (also closes §D2's hoist) |
+| §A5b `0000-02-29` off by one day | **Open, new**, introduced by the A5 fix |
 | §A6 cron backwards-range advice | Open, re-confirmed |
 | §A7 cron drops seconds | Open, re-confirmed |
 | §A8 cron accepts `1-2-3` | Open, re-confirmed |
