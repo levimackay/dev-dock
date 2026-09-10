@@ -14,7 +14,10 @@ if (!container) throw new Error('Missing #root element')
 
 createRoot(container).render(
   <StrictMode>
-    <BrowserRouter>
+    {/* BASE_URL is '/' normally and '/<repo>/' for a GitHub Pages project site.
+        Without the basename the router would treat the repo segment as part of
+        the route and every deep link would 404. */}
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <PreferencesProvider>
         <ToastProvider>
           <App />
