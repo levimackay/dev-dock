@@ -126,3 +126,66 @@ downgrade the rules and lose the signal, each false positive carries a
 `eslint-disable-next-line` with the reason written out. Same for the three
 `jsx-a11y` rules that do not model the APG patterns this app implements
 (focusable `separator`, roving-tabindex `radiogroup`).
+
+## Phase 5 — Tools complete
+
+All 22 implemented. 743 unit and integration tests, 68 end-to-end tests
+(Playwright, against the production build, including axe scans of every tool in
+both themes).
+
+Two more tools were promoted out of the "just build the UI" pile because their
+logic turned out to be the interesting part, and both were written before their
+UI: the cron parser and the colour library. That ordering paid for itself twice,
+in bugs the tests caught before any pixel existed.
+
+## Phase 6 — Audits
+
+### Security
+
+The audit found two exploitable issues, both reproduced against the real
+dependencies before being fixed:
+
+1. **Inline `style` survived sanitisation.** DOMPurify filters markup, not CSS
+   values, so `<div style="background:url(https://…)">` in a previewed markdown
+   document fetched that URL on render. An outbound request the user never
+   composed, in the app whose headline claim is that nothing is transmitted.
+   `FORBID_ATTR: ['style']`, plus `USE_PROFILES: { html: true }` to drop SVG and
+   MathML entirely.
+2. **Deep JSON overflowed the stack.** `JSON.parse` accepts 200,000 levels;
+   V8's `JSON.stringify` is recursive and does not. Twenty kilobytes of valid
+   input crashed both JSON tools, and because they hydrate from a share link
+   before first render, a link alone did it with no interaction. Depth
+   measurement is now iterative so the depth can always be reported; everything
+   that must recurse refuses past 1,000 levels with a message.
+
+Also: GitHub Actions pinned to commit SHAs, and the file-drop cap made visible
+instead of failing in silence.
+
+### Accessibility
+
+Measured contrast across every surface pairing, in both themes, using the app's
+own `contrastRatio()`. `--fg-subtle` failed on the interactive surfaces (hover,
+active, selected) as well as the static ones. A new `--line-control` token gives
+interactive borders the 3:1 that WCAG 1.4.11 asks for without turning the
+decorative hairlines into a wireframe.
+
+Three real behavioural bugs came out of it:
+
+- **The focus trap's selector was an OR chain** ending in
+  `[tabindex]:not([tabindex="-1"])`, which reads as "exclude untabbable" and is
+  not: the earlier `button` clause still matched buttons carrying
+  `tabindex="-1"`. The command palette's option rows are exactly that, so the
+  trap never found the end of its list and Tab walked out of the dialog. Found
+  by the end-to-end suite, not by the unit tests, whose fixtures had no
+  roving-tabindex elements.
+- **The palette listbox wrapped options in `<li>`**, putting a non-option
+  element between a listbox and its options. Invalid ARIA, reported critical.
+- **The mobile rail drawer had no focus trap**, so Tab walked from a modal-
+  looking drawer into the page behind it.
+
+### Copy
+
+Every em dash in the repository was rewritten as ordinary punctuation. The
+transform is in `scripts/dedash.mjs` and is re-runnable. The em dash is a
+reliable tell for machine-written prose and this is meant to read as a person's
+work; the placeholder glyph and the HTML entity table keep theirs.
