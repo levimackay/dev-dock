@@ -1,2 +1,4 @@
+# esbuild's postinstall only unpacks the platform binary vite needs to run, so
+# it is allowlisted here rather than approved by hand on every fresh clone.
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true

@@ -1,0 +1,90 @@
+/*
+ * The layout every input/output tool uses.
+ *
+ * Kept in one shared module rather than copied 22 times, because the moment it
+ * is copied the gap on one tool drifts by 2px and the app stops feeling built
+ * by one person.
+ */
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--hairline) solid var(--line);
+  background: var(--bg-sunken);
+  flex: none;
+}
+
+.optionGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.optionLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+
+.grow {
+  flex: 1;
+}
+
+.panes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding: var(--sp-3);
+  gap: 0;
+}
+
+.stack {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  overflow: auto;
+}
+
+.paneInner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Whatever a tool puts in a pane fills it. Without this a Panel sizes to its
+   content and the editor ends up as a 140px letterbox in a tall window. */
+.paneInner > * {
+  flex: 1;
+  min-height: 0;
+}
+
+.issues {
+  flex: none;
+  padding: var(--sp-3);
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+@media (max-width: 40rem) {
+  .options {
+    padding: var(--sp-2) var(--sp-3);
+    gap: var(--sp-2) var(--sp-3);
+  }
+
+  .panes,
+  .stack {
+    padding: var(--sp-2);
+  }
+}
