@@ -189,3 +189,69 @@ Every em dash in the repository was rewritten as ordinary punctuation. The
 transform is in `scripts/dedash.mjs` and is re-runnable. The em dash is a
 reliable tell for machine-written prose and this is meant to read as a person's
 work; the placeholder glyph and the HTML entity table keep theirs.
+
+## Phase 7 — Code review, and what it found
+
+A full review of the finished repository, kept verbatim in `docs/CODE-REVIEW.md`
+with a status header. The interesting part is not the count, it is the shape of
+what it caught.
+
+### The one that mattered
+
+**The code diff tool's patch export did not apply.** `toUnifiedDiff` produced a
+`.patch` file that `git apply` refused, for three independent reasons:
+
+1. `splitLines("a\nb\nc\n")` yields four lines, because the text really does
+   have an empty string after the final newline. That is the right model for an
+   editor and the wrong one for a patch, so every hunk header was off by one.
+2. The output had no trailing newline, which is `corrupt patch at line 8` before
+   git reads any content.
+3. There was no `\ No newline at end of file` marker, so context failed to match
+   for any file not ending in a newline.
+
+The existing tests passed throughout. They asserted the output contained `@@`, a
+`-b`, and a `+x` — the _shape_ of the format, which is to say my own idea of the
+format. The replacement hands the patch to `git apply` inside a throwaway
+repository and checks the file afterwards, across nine before/after shapes. That
+is the lesson worth keeping from this project: **for an interoperability format,
+test against the consumer, not against your understanding of the spec.**
+
+### The category that mattered more
+
+Nineteen findings under "places the code lies": a comment describing something
+the code does not do. These are worse than bugs in a repository whose comments
+are meant to be read. The three that stung:
+
+- **A lint rule that could never fire.** The `no-restricted-syntax` selector
+  guarding `dangerouslySetInnerHTML` ended in a `:not()` that is universally
+  false. `SECURITY.md` listed it as a control. It is unconditional now, and
+  verified against a probe file rather than assumed.
+- **The accessibility suite's docstring** promised a scan of every tool in both
+  themes. The loop set no theme. Making it true added twenty-two tests and
+  immediately found a dark-mode-only contrast failure, which is exactly the
+  failure mode the docstring had described.
+- **The modulo-bias comment in the NanoID generator** had the bias backwards and
+  both bounds wrong, in a comment whose only purpose was to teach modulo bias.
+
+### The rest
+
+Nineteen correctness bugs, including a `TypeError` into render from
+`bnVsbA.e30.x`, an unbounded share fragment that was a decompression bomb, a
+`Date.UTC` two-digit-year trap across six call sites, and a focus trap whose
+selector matched elements it was meant to exclude. Four genuine duplications
+extracted to `src/lib`, one of which had produced three implementations giving
+three different answers for the same instant.
+
+Two findings were deliberately not taken, and the reasons are recorded at the
+end of the review.
+
+### Final state
+
+|                          |                                                      |
+| ------------------------ | ---------------------------------------------------- |
+| Tools                    | 22                                                   |
+| Unit and component tests | 860                                                  |
+| End-to-end tests         | 90, including axe scans of every tool in both themes |
+| Initial download         | 97 KB gzipped, budget 130 KB, enforced in CI         |
+| Runtime dependencies     | 8                                                    |
+| Typecheck, lint, format  | clean                                                |

@@ -1,3 +1,10 @@
+> **Status: acted on.** This is the review as it was written, kept as a record
+> of what was found rather than rewritten after the fact. Everything in
+> sections A and B has been fixed, along with C3 through C7, D1 through D4,
+> E1 through E4, and the F4/F5 documentation gaps. `PROGRESS.md` summarises
+> what changed. Two items were deliberately not taken: see the note at the
+> end of this file.
+
 # Code review
 
 Senior-engineer review of the repository as it stands, not a diff review.
@@ -1679,3 +1686,24 @@ test run does not imply a green build, and it is why `verify` runs both.
 11. **§D1, §D3, §D5, §D6** — the four extractions worth doing.
 12. **§C1, §C2, §C4, §C5** — the consistency pass across the 22 tools. §D5 does
     a chunk of §C4 for free.
+
+---
+
+## What was deliberately not taken
+
+**C1's "every tool needs a Sample button", applied to Color Converter.** It
+always has a colour, so there is no empty state to demonstrate out of. A Sample
+there would load a different colour over the one the user picked, which is worse
+than no button.
+
+**E2's full list of unused optional props.** `SplitPane.direction`,
+`Button.fullWidth`, and `Dialog.labelledBy` were removed: each carried real dead
+branches. `Panel.padded`, `Panel.flush`, `ToolShell.padded`,
+`SegmentedControl.fullWidth`, and `Stat.wide` are all in use by at least one
+caller, so the finding's premise had already stopped being true by the time it
+was read.
+
+**B22's broader "test names promise more than they check".** The two named cases
+were the unified-diff shape assertions, now replaced by tests that hand the
+patch to `git apply`, and the a11y suite's theme claim, now true. The general
+category is a standing concern rather than a fix.

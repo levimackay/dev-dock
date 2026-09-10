@@ -201,6 +201,22 @@ is 150-300 readable lines. That trade only works because they are all
 well-specified problems with test vectors; it would be a bad trade for, say, a
 Markdown parser, which is why `marked` is a dependency.
 
+The rest of `src/lib` is smaller and exists because more than one tool needed
+it. Four of those modules were extracted after a review found the same code in
+two or three places at once, which is worth recording because the copies had
+already started to disagree:
+
+| File                      | Why it is shared                                                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/base64.ts`       | Existed four times. The chunk loop that dodges the spread-argument limit, and the padding restoration, are both easy to get subtly wrong.                           |
+| `src/lib/zonedTime.ts`    | Existed twice, with a comment citing this document to justify the copy. A `Date.UTC` bug in it had to be found and fixed in both.                                   |
+| `src/lib/relativeTime.ts` | Existed three times and gave three different answers. Two took two `Date`s in opposite orders, and one named its parameters the reverse of what its arithmetic did. |
+| `src/lib/utcFromCivil.ts` | `Date.UTC` silently maps years 0-99 into the 1900s, and both time tools accept a four-digit year from the user.                                                     |
+
+The rule that produced them: a tool folder never imports another tool folder,
+and anything two tools need moves here. The second half of that rule is the one
+that gets forgotten.
+
 ## 8. Known constraints
 
 - **CORS bounds the HTTP Request Builder.** It is a browser, so it can only
@@ -230,8 +246,22 @@ in the wiring rather than in a function: the focus trap, the palette's roving
 **End-to-end (Playwright).** Run against the **production build**, not the dev
 server, because the failures worth catching, a lazy chunk that does not load, a
 minified worker, a base-path mistake, are invisible to the dev middleware.
-Coverage is the critical paths: palette navigation, deep links, theme
-persistence, pinning, and the mobile drawer.
+Ninety tests: palette navigation, deep links, theme persistence, pinning, the
+mobile drawer, and an axe accessibility scan of every tool in both themes.
+
+### On the coverage number
+
+Line coverage over `src/` is about 56%, and quoting that figure alone would be
+misleading in both directions. The logic modules, which is where the bugs are,
+run 83% to 100%. The `.tsx` files pull the average down because they are covered
+by the end-to-end suite instead, which the coverage tool does not see.
+
+That split is deliberate rather than an accident of effort. A component test
+that renders a tool and asserts on its markup mostly tests the markup; the same
+path exercised against a real build in a real browser catches the lazy chunk
+that failed to load and the focus that went nowhere. Two of the three worst bugs
+in this repository were found by the end-to-end suite after the unit tests had
+been green for hours.
 
 ## 10. What is deliberately not here
 
