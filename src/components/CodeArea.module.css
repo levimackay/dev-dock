@@ -2,8 +2,12 @@
   position: relative;
   display: flex;
   flex: 1;
-  min-height: 0;
   min-width: 0;
+  /* In a split pane the editor fills its half, so `min-height: 0` is what it
+     wants. In a vertical stack there is nothing telling it how tall to be, and
+     it collapses to three visible lines. A floor of 9rem is the smallest
+     editor anyone would call usable, and the flex rule still lets it grow. */
+  min-height: 9rem;
   background: var(--bg-raised);
 }
 

@@ -1,6 +1,9 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  /* auto-fit, not auto-fill: with auto-fill a four-item grid in a wide panel
+     reserves a fifth empty column and leaves a visible gap at the end of the
+     row. auto-fit collapses the empty tracks and stretches what is there. */
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: var(--hairline);
   background: var(--line-faint);
   border: var(--hairline) solid var(--line);
