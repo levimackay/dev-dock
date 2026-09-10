@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import styles from './AppShell.module.css'
 import { Rail } from './Rail'
+import { useDrawerFocus } from './useDrawerFocus'
 import { Logo } from './Logo'
 import { CommandPalette } from './CommandPalette'
 import { ShortcutsDialog } from './ShortcutsDialog'
@@ -29,6 +30,11 @@ export function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [railOpen, setRailOpen] = useState(false)
+  const railRef = useRef<HTMLElement | null>(null)
+
+  const closeRail = useCallback(() => setRailOpen(false), [])
+  // Below 60rem the rail is a modal drawer, and has to behave like one.
+  useDrawerFocus(railOpen, railRef, closeRail)
   const mainRef = useRef<HTMLElement | null>(null)
   const [routeAnnouncement, setRouteAnnouncement] = useState('')
 
@@ -212,14 +218,9 @@ export function AppShell() {
         </div>
       </header>
 
-      <Rail id="tool-rail" open={railOpen} onNavigate={() => setRailOpen(false)} />
+      <Rail ref={railRef} id="tool-rail" open={railOpen} onNavigate={closeRail} />
       {railOpen && (
-        <div
-          className={styles.scrim}
-          onClick={() => setRailOpen(false)}
-          role="presentation"
-          aria-hidden="true"
-        />
+        <div className={styles.scrim} onClick={closeRail} role="presentation" aria-hidden="true" />
       )}
 
       <main className={cx(styles.main)} id="main" ref={mainRef} tabIndex={-1}>

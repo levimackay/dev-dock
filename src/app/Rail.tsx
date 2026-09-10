@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import styles from './AppShell.module.css'
 import { CATEGORIES, TOOL_BY_ID, toolsInCategory } from '@/tools/registry'
@@ -19,7 +20,10 @@ interface RailProps {
  * category. A tool the user has chosen outranks one the app guessed at, and
  * both outrank the alphabet.
  */
-export function Rail({ open, onNavigate, id }: RailProps) {
+export const Rail = forwardRef<HTMLElement, RailProps>(function Rail(
+  { open, onNavigate, id },
+  ref,
+) {
   const { pinned, recents } = usePreferences()
 
   const pinnedTools = pinned.map((toolId) => TOOL_BY_ID.get(toolId)).filter(isTool)
@@ -30,12 +34,7 @@ export function Rail({ open, onNavigate, id }: RailProps) {
     .slice(0, 5)
 
   return (
-    <nav
-      id={id}
-      className={cx(styles.rail, open && styles.railOpen)}
-      aria-label="Tools"
-      aria-hidden={!open ? undefined : undefined}
-    >
+    <nav id={id} ref={ref} className={cx(styles.rail, open && styles.railOpen)} aria-label="Tools">
       {pinnedTools.length > 0 && (
         <Group title="Pinned" icon={<IconStar size={11} filled />} count={pinnedTools.length}>
           {pinnedTools.map((tool) => (
@@ -64,7 +63,7 @@ export function Rail({ open, onNavigate, id }: RailProps) {
       })}
     </nav>
   )
-}
+})
 
 function isTool(tool: ToolDefinition | undefined): tool is ToolDefinition {
   return Boolean(tool)

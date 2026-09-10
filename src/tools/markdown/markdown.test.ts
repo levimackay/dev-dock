@@ -106,7 +106,9 @@ describe('renderMarkdown — XSS resistance', () => {
   })
 
   it('drops MathML too', () => {
-    const html = renderMarkdown('<math><mtext><option><FAKE><mglyph>x</mglyph></FAKE></option></mtext></math>')
+    const html = renderMarkdown(
+      '<math><mtext><option><FAKE><mglyph>x</mglyph></FAKE></option></mtext></math>',
+    )
     expect(parse(html).querySelector('math')).toBeNull()
   })
 
@@ -220,7 +222,9 @@ describe('CSS-driven exfiltration', () => {
   })
 
   it('strips style from a table cell, where markdown itself emits alignment', () => {
-    const html = renderMarkdown('<td style="background-image:url(https://tracker.example/p)">c</td>')
+    const html = renderMarkdown(
+      '<td style="background-image:url(https://tracker.example/p)">c</td>',
+    )
     expect(html).not.toContain('tracker.example')
   })
 })

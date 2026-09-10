@@ -167,7 +167,11 @@ export function containerPaths(value: JsonValue, maxDepth = Infinity): Set<strin
     if (!isContainer(node) || depth > maxDepth || depth > MAX_TREE_DEPTH) continue
     paths.add(path)
     for (const { key, value: child } of childEntries(node)) {
-      stack.push({ node: child, path: extendPath(path, key, Array.isArray(node)), depth: depth + 1 })
+      stack.push({
+        node: child,
+        path: extendPath(path, key, Array.isArray(node)),
+        depth: depth + 1,
+      })
     }
   }
 

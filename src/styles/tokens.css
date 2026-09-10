@@ -101,6 +101,14 @@
   --line: oklch(0.885 0.006 75);
   --line-strong: oklch(0.81 0.008 75);
   --line-faint: oklch(0.928 0.005 75);
+  /* WCAG 1.4.11 asks for 3:1 between a control's boundary and its background.
+     The hairline tokens above are deliberately much quieter than that, because
+     they separate regions rather than mark anything interactive, and darkening
+     them would turn the whole app into a wireframe. Controls get their own
+     token instead, and it is used only on inputs, selects, and checkboxes.
+     Measured against all four surface tokens: 3.26:1 on --bg, 3.49 on
+     --bg-raised, 3.13 on --bg-inset, 3.01 on --bg-sunken. */
+  --line-control: oklch(0.628 0.008 75);
 
   --accent: oklch(0.555 0.184 32);
   --accent-hover: oklch(0.495 0.185 32);
@@ -146,6 +154,9 @@
   --line: oklch(0.303 0.007 65);
   --line-strong: oklch(0.395 0.009 65);
   --line-faint: oklch(0.253 0.006 65);
+  /* Dark: 3.67 on --bg, 3.39 on --bg-raised, 3.82 on --bg-inset, 3.90 on
+     --bg-sunken. */
+  --line-control: oklch(0.545 0.009 65);
 
   --accent: oklch(0.735 0.155 38);
   --accent-hover: oklch(0.795 0.14 40);
@@ -165,46 +176,16 @@
   --shadow-overlay: 0 20px 60px -12px oklch(0 0 0 / 0.65);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']):not([data-theme='dark']) {
-    color-scheme: dark;
-
-    --bg: oklch(0.196 0.0055 65);
-    --bg-sunken: oklch(0.163 0.005 65);
-    --bg-raised: oklch(0.231 0.006 65);
-    --bg-inset: oklch(0.176 0.005 65);
-    --bg-hover: oklch(0.259 0.007 65);
-    --bg-active: oklch(0.293 0.008 65);
-    --bg-selected: oklch(0.288 0.032 32);
-
-    --fg: oklch(0.925 0.005 75);
-    --fg-muted: oklch(0.712 0.007 75);
-    /* Keep in sync with the [data-theme='dark'] block above. */
-    --fg-subtle: oklch(0.62 0.008 75);
-    --fg-onAccent: oklch(0.16 0.02 40);
-
-    --line: oklch(0.303 0.007 65);
-    --line-strong: oklch(0.395 0.009 65);
-    --line-faint: oklch(0.253 0.006 65);
-
-    --accent: oklch(0.735 0.155 38);
-    --accent-hover: oklch(0.795 0.14 40);
-    --accent-quiet: oklch(0.288 0.045 34);
-    --accent-line: oklch(0.44 0.09 34);
-
-    --ok: oklch(0.775 0.15 155);
-    --ok-quiet: oklch(0.27 0.045 155);
-    --warn: oklch(0.83 0.14 82);
-    --warn-quiet: oklch(0.285 0.045 82);
-    --err: oklch(0.715 0.17 25);
-    --err-quiet: oklch(0.285 0.06 25);
-    --info: oklch(0.775 0.12 240);
-    --info-quiet: oklch(0.275 0.045 240);
-
-    --focus: oklch(0.78 0.13 240);
-    --shadow-overlay: 0 20px 60px -12px oklch(0 0 0 / 0.65);
-  }
-}
+/*
+ * There is no `@media (prefers-color-scheme: dark)` copy of the block above.
+ *
+ * There used to be, and it was thirty duplicated declarations that had to be
+ * edited twice for every palette change — a contrast fix landed in one copy and
+ * not the other within a day of the palette existing. The app now resolves the
+ * system preference itself and always writes a concrete `data-theme` attribute,
+ * so this file states each palette exactly once. See `preferences.tsx`, and the
+ * pre-paint script in `index.html` that does the same before React loads.
+ */
 
 /* Syntax roles. One ramp, reused by the JSON tree, the diff viewer and the
    token inspectors, so a "string" is the same colour everywhere in the app. */

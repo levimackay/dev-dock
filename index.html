@@ -22,21 +22,29 @@
     <meta property="og:type" content="website" />
 
     <!--
-      Sets the stored theme before first paint so a dark-mode user never sees a
-      white flash. It is inline because an external script would arrive too
-      late, and it is deliberately tiny and side-effect-free: it reads one key
-      and writes one attribute.
+      Resolves the theme before first paint, so a dark-mode user never sees a
+      white flash. Inline because an external script would arrive too late, and
+      deliberately tiny: read one key, write one attribute.
+
+      It resolves "system" to a concrete value rather than leaving the attribute
+      off, which is what lets tokens.css state each palette exactly once instead
+      of keeping a duplicate under a prefers-color-scheme media query.
     -->
     <script>
       ;(function () {
+        var choice = 'system'
         try {
-          var stored = JSON.parse(localStorage.getItem('devdock:theme') || '""')
-          if (stored === 'light' || stored === 'dark') {
-            document.documentElement.setAttribute('data-theme', stored)
-          }
+          choice = JSON.parse(localStorage.getItem('devdock:theme') || '"system"')
         } catch (e) {
-          /* storage blocked; fall back to the media query */
+          /* storage blocked, or a stored value from another version */
         }
+        if (choice !== 'light' && choice !== 'dark') {
+          choice =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+        }
+        document.documentElement.setAttribute('data-theme', choice)
       })()
     </script>
   </head>
@@ -44,8 +52,8 @@
     <div id="root"></div>
     <noscript>
       <p style="font: 16px/1.5 system-ui; margin: 4rem auto; max-width: 40ch">
-        Dev Dock does all of its work in the browser, so it needs JavaScript enabled. Nothing is sent
-        to a server either way.
+        Dev Dock does all of its work in the browser, so it needs JavaScript enabled. Nothing is
+        sent to a server either way.
       </p>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>

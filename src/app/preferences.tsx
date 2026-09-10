@@ -68,13 +68,16 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const resolvedTheme = theme === 'system' ? system : theme
 
-  // The attribute drives every token in tokens.css; `color-scheme` on top of it
-  // makes native widgets (scrollbars, date pickers, form controls) match.
+  // The attribute drives every token in tokens.css.
+  //
+  // It is always written as a concrete `light` or `dark`, never removed for
+  // `system`. Leaving it off and letting a `prefers-color-scheme` media query
+  // pick up the slack means maintaining two copies of the dark palette, and
+  // they drift. Resolving the preference here keeps tokens.css stating each
+  // palette once; `index.html` does the same before first paint.
   useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'system') root.removeAttribute('data-theme')
-    else root.setAttribute('data-theme', theme)
-  }, [theme])
+    document.documentElement.setAttribute('data-theme', resolvedTheme)
+  }, [resolvedTheme])
 
   const togglePin = useCallback(
     (toolId: string) => {
