@@ -99,7 +99,3 @@
   color: var(--fg);
   border-color: var(--line-strong);
 }
-
-.fullWidth {
-  width: 100%;
-}

@@ -10,7 +10,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize
   /** Renders square. Requires `aria-label`. There is no visible text to read. */
   iconOnly?: boolean
-  fullWidth?: boolean
   /** Toggle state. Sets `aria-pressed` as well as the visual treatment. */
   pressed?: boolean
   children?: ReactNode
@@ -21,7 +20,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant = 'secondary',
     size = 'md',
     iconOnly = false,
-    fullWidth = false,
     pressed,
     className,
     type = 'button',
@@ -39,7 +37,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         styles[variant],
         styles[size],
         iconOnly && styles.iconOnly,
-        fullWidth && styles.fullWidth,
         pressed && styles.pressed,
         className,
       )}

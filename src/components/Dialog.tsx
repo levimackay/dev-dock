@@ -14,7 +14,6 @@ export interface DialogProps {
   width?: string
   /** Hides the header entirely, for the command palette, which is its own UI. */
   bare?: boolean
-  labelledBy?: string
   ariaLabel?: string
   className?: string
   children: ReactNode
@@ -65,7 +64,6 @@ export function Dialog({
   placement = 'center',
   width,
   bare = false,
-  labelledBy,
   ariaLabel,
   className,
   children,
@@ -158,7 +156,7 @@ export function Dialog({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={labelledBy ?? (title ? titleId : undefined)}
+        aria-labelledby={title ? titleId : undefined}
         aria-label={ariaLabel}
         className={cx(styles.panel, className)}
         style={width ? ({ '--dialog-w': width } as React.CSSProperties) : undefined}

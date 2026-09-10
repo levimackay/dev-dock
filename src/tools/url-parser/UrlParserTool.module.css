@@ -145,11 +145,3 @@
   width: 1%;
   text-align: center;
 }
-
-.tableFoot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--sp-2) var(--sp-3);
-  border-top: var(--hairline) solid var(--line-faint);
-}

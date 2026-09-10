@@ -94,12 +94,6 @@
   color: var(--err);
 }
 
-.statusMeta {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--fg-subtle);
-}
-
 .headerList {
   font-family: var(--font-mono);
   font-size: var(--text-sm);

@@ -9,14 +9,6 @@
   overflow-x: auto;
 }
 
-.toolbarDivider {
-  width: var(--hairline);
-  align-self: stretch;
-  background: var(--line);
-  margin: 0 var(--sp-1);
-  flex: none;
-}
-
 .scrollPane {
   height: 100%;
   overflow: auto;

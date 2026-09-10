@@ -12,7 +12,6 @@ import { read, write } from '@/lib/storage'
 export interface SplitPaneProps {
   first: ReactNode
   second: ReactNode
-  direction?: 'horizontal' | 'vertical'
   /** Starting split as a fraction 0-1 given to the first pane. */
   defaultRatio?: number
   min?: number
@@ -43,7 +42,6 @@ export interface SplitPaneProps {
 export function SplitPane({
   first,
   second,
-  direction = 'horizontal',
   defaultRatio = 0.5,
   min = 0.18,
   max = 0.82,
@@ -76,13 +74,9 @@ export function SplitPane({
       const el = containerRef.current
       if (!el) return
       const rect = el.getBoundingClientRect()
-      const next =
-        direction === 'horizontal'
-          ? (event.clientX - rect.left) / rect.width
-          : (event.clientY - rect.top) / rect.height
-      commit(next)
+      commit((event.clientX - rect.left) / rect.width)
     },
-    [commit, direction],
+    [commit],
   )
 
   useEffect(() => {
@@ -106,7 +100,7 @@ export function SplitPane({
   return (
     <div
       ref={containerRef}
-      className={cx(styles.split, styles[direction], responsive && styles.responsive, className)}
+      className={cx(styles.split, responsive && styles.responsive, className)}
       style={{ '--a': `${percent}%`, '--b': `${100 - percent}%` } as React.CSSProperties}
     >
       <div className={styles.pane} id={`${id}-a`}>
@@ -118,7 +112,7 @@ export function SplitPane({
       <div
         role="separator"
         tabIndex={0}
-        aria-orientation={direction === 'horizontal' ? 'vertical' : 'horizontal'}
+        aria-orientation="vertical"
         aria-label={`Resize ${labelFirst} and ${labelSecond}`}
         aria-valuenow={percent}
         aria-valuemin={Math.round(min * 100)}
@@ -131,10 +125,8 @@ export function SplitPane({
         }}
         onDoubleClick={() => commit(defaultRatio)}
         onKeyDown={(e) => {
-          const back = direction === 'horizontal' ? 'ArrowLeft' : 'ArrowUp'
-          const fwd = direction === 'horizontal' ? 'ArrowRight' : 'ArrowDown'
-          if (e.key === back) commit(ratio - 0.02)
-          else if (e.key === fwd) commit(ratio + 0.02)
+          if (e.key === 'ArrowLeft') commit(ratio - 0.02)
+          else if (e.key === 'ArrowRight') commit(ratio + 0.02)
           else if (e.key === 'Home') commit(min)
           else if (e.key === 'End') commit(max)
           else if (e.key === 'Enter') commit(defaultRatio)
