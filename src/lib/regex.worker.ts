@@ -13,6 +13,13 @@ import { executeRegex, type RegexRequest } from './regexTypes'
  * stays responsive, and `worker.terminate()` kills the runaway synchronously
  * from outside. That turns an unbounded hang into a bounded error message.
  */
+// There is deliberately no `event.origin` check here, and a scanner will flag
+// its absence. That check belongs on `window.onmessage`, where any frame on any
+// origin can post to you. This is a *dedicated* worker: the only thing that
+// can post to it is the page that constructed it, and `event.origin` is the
+// empty string for every such message. A guard comparing against the empty
+// string would always pass and prove nothing. The request shape is untrusted
+// input regardless, and `executeRegex` treats it that way.
 self.onmessage = (event: MessageEvent<RegexRequest>) => {
   self.postMessage(executeRegex(event.data))
 }

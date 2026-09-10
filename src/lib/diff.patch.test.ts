@@ -4,7 +4,7 @@
 // globals in scope for browser code that must never use them.
 import { describe, expect, it } from 'vitest'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { toUnifiedDiff } from './diff'
@@ -39,7 +39,7 @@ function applies(before: string, after: string): { ok: boolean; error?: string; 
     writeFileSync(join(dir, 'change.patch'), patch)
 
     git('apply', '--verbose', 'change.patch')
-    const result = execFileSync('cat', [join(dir, 'file.txt')], { encoding: 'utf8' })
+    const result = readFileSync(join(dir, 'file.txt'), 'utf8')
     return { ok: true, result }
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) }

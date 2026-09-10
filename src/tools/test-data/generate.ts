@@ -751,8 +751,15 @@ export function generateRecords(fields: FieldSchema[], count: number, seed: stri
   const n = Math.max(0, Math.min(MAX_ROWS, Math.floor(count)))
   const rows: DataRecord[] = []
   for (let i = 0; i < n; i++) {
-    const row: DataRecord = {}
-    for (const field of resolved) row[field.name] = generateValue(rng, field, i)
+    // Built with `Object.fromEntries`, not `row[name] = value`. Field names are
+    // typed by the user, and a bracket write with the name `__proto__` does not
+    // create a property: it invokes the accessor on Object.prototype and swaps
+    // the row's prototype instead. `fromEntries` defines own data properties
+    // and never consults an accessor, so every name, including that one, ends
+    // up as an ordinary key that JSON.stringify emits like any other.
+    const row: DataRecord = Object.fromEntries(
+      resolved.map((field) => [field.name, generateValue(rng, field, i)]),
+    )
     rows.push(row)
   }
   return rows

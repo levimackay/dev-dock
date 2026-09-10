@@ -214,3 +214,24 @@ describe('exporters', () => {
     expect(ts).toBe('interface Row {\n  id: number\n  active: boolean\n  label: string\n}')
   })
 })
+
+describe('field names that are special to JavaScript objects', () => {
+  it('treats __proto__ as an ordinary column rather than a prototype write', () => {
+    const rows = generateRecords(
+      [
+        { name: '__proto__', type: 'integer', min: 1, max: 9 },
+        { name: 'constructor', type: 'boolean' },
+      ],
+      2,
+      'seed',
+    )
+    for (const row of rows) {
+      // The name must be an own, enumerable key that the exporters will emit.
+      expect(Object.prototype.hasOwnProperty.call(row, '__proto__')).toBe(true)
+      expect(Object.keys(row)).toEqual(['__proto__', 'constructor'])
+      // And the row's actual prototype must be untouched by the write.
+      expect(Object.getPrototypeOf(row)).toBe(Object.prototype)
+      expect(JSON.parse(JSON.stringify(row))).toHaveProperty(['__proto__'])
+    }
+  })
+})
