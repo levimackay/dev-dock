@@ -101,7 +101,15 @@ export default function CodeDiffTool() {
     setChangeIndex(next)
     const group = changeGroups[next]
     if (group) {
-      document.getElementById(group.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      // `base.css` forces CSS `scroll-behavior` back to `auto` under
+      // prefers-reduced-motion, but that override cannot reach a `behavior`
+      // passed straight to `scrollIntoView` — this is the one JS-driven
+      // scroll in the app, so it has to make the same check itself.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      document.getElementById(group.id)?.scrollIntoView({
+        block: 'center',
+        behavior: reduceMotion ? 'auto' : 'smooth',
+      })
     }
   }
 
