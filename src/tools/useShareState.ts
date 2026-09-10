@@ -107,8 +107,11 @@ export function shapeValidator<T extends object>(shape: {
   return (value: unknown): value is T => {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
     const record = value as Record<string, unknown>
-    for (const [key, spec] of Object.entries(shape)) {
+    // Iterating keys rather than entries: `Object.entries` on a mapped type
+    // widens the value to `Function`, which is not callable without a cast.
+    for (const key of Object.keys(shape)) {
       if (!(key in record)) continue
+      const spec: FieldSpec = shape[key as keyof T]
       const actual = record[key]
       if (typeof spec === 'function') {
         if (!spec(actual)) return false
