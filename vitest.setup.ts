@@ -59,6 +59,11 @@ if (!globalThis.matchMedia) {
   })) as unknown as typeof globalThis.matchMedia
 }
 
+// jsdom does not lay elements out, so it implements no scrolling APIs at all.
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = function scrollIntoView() {}
+}
+
 if (!globalThis.ResizeObserver) {
   globalThis.ResizeObserver = class {
     observe() {}

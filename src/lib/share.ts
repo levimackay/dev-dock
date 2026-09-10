@@ -46,10 +46,43 @@ function fromBase64Url(text: string): Uint8Array {
   return bytes
 }
 
-async function pipe(bytes: Uint8Array, stream: CompressionStream | DecompressionStream) {
-  const blob = new Blob([bytes as BlobPart])
-  const out = blob.stream().pipeThrough(stream as unknown as ReadableWritablePair<Uint8Array, Uint8Array>)
-  return new Uint8Array(await new Response(out).arrayBuffer())
+/**
+ * Pushes bytes through a (de)compression stream using the raw writer/reader
+ * API.
+ *
+ * The shorter `new Response(blob.stream().pipeThrough(cs)).arrayBuffer()` form
+ * reads better but couples three separate stream implementations — Blob,
+ * fetch's Response, and the compression stream — which do not reliably share a
+ * realm outside a browser. Driving the streams directly has no such dependency.
+ */
+async function pipe(
+  bytes: Uint8Array,
+  stream: CompressionStream | DecompressionStream,
+): Promise<Uint8Array> {
+  const writer = stream.writable.getWriter()
+  // Not awaited: the writer only settles once the reader below drains it, so
+  // awaiting here would deadlock.
+  void writer.write(bytes).then(() => writer.close())
+
+  const reader = stream.readable.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    const chunk = value as Uint8Array
+    chunks.push(chunk)
+    total += chunk.length
+  }
+
+  const out = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.length
+  }
+  return out
 }
 
 const hasCompression = () =>

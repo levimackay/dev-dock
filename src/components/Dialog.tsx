@@ -20,6 +20,12 @@ export interface DialogProps {
   children: ReactNode
 }
 
+function isVisible(el: HTMLElement): boolean {
+  if (el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return false
+  if (typeof el.checkVisibility === 'function') return el.checkVisibility()
+  return true
+}
+
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
@@ -97,9 +103,13 @@ export function Dialog({
 
       const panel = panelRef.current
       if (!panel) return
-      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
-        (el) => el.offsetParent !== null || el === document.activeElement,
-      )
+      // Visibility is checked with `checkVisibility()` where the browser has it,
+      // and with an attribute check otherwise. An earlier version used
+      // `offsetParent !== null`, which is wrong here: `offsetParent` is null for
+      // every descendant of a `position: fixed` element — which the dialog is —
+      // so it silently reduced the focusable set to one element and broke the
+      // wrap in both directions.
+      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(isVisible)
       if (items.length === 0) {
         event.preventDefault()
         return
