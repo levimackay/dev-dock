@@ -25,7 +25,16 @@
   font-weight: 600;
   letter-spacing: var(--tracking-display);
   line-height: 1.08;
-  max-width: 16ch;
+  /* Wide enough that "Nothing leaves the tab." holds on one line at the display
+     size; the <br> in the markup is the only break that should happen. */
+  max-width: 21ch;
+  text-wrap: nowrap;
+}
+
+@media (max-width: 30rem) {
+  .lede {
+    text-wrap: balance;
+  }
 }
 
 .ledeDim {

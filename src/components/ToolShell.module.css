@@ -10,7 +10,11 @@
 .bar {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  /* Wraps onto a second row rather than letting the title and the action
+     cluster overlap. A toolbar that collides with itself is worse than one
+     that is two rows tall. */
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-3);
   min-height: var(--toolbar-h);
   padding: var(--sp-2) var(--sp-4);
   border-bottom: var(--hairline) solid var(--line);
@@ -23,6 +27,7 @@
   align-items: baseline;
   gap: var(--sp-3);
   min-width: 0;
+  flex: 0 1 auto;
 }
 
 .title {
@@ -58,14 +63,15 @@
 }
 
 .spacer {
-  flex: 1;
+  flex: 1 1 var(--sp-4);
 }
 
 .actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--sp-2);
-  flex: none;
+  flex: 0 0 auto;
 }
 
 .divider {
