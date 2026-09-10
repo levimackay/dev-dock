@@ -456,7 +456,15 @@ export function rgbToOklch({ r, g, b, a }: Rgb): Oklch {
   return { l: okL, c, h, a }
 }
 
-export function oklchToRgb({ l: okL, c, h, a }: Oklch): Rgb {
+/**
+ * OKLCH to *linear* sRGB, before the transfer function and before clamping.
+ *
+ * Split out because two callers need exactly this and the matrices are twelve
+ * hand-transcribed constants. Written twice, a slipped digit in one copy is
+ * invisible: both would still produce plausible colours, and only one of them
+ * would be right.
+ */
+function oklchToLinearRgb({ l: okL, c, h }: Oklch): [number, number, number] {
   const rad = (h * Math.PI) / 180
   const okA = c * Math.cos(rad)
   const okB = c * Math.sin(rad)
@@ -469,12 +477,16 @@ export function oklchToRgb({ l: okL, c, h, a }: Oklch): Rgb {
   const m = m_ * m_ * m_
   const s = s_ * s_ * s_
 
-  return {
-    r: linearToSrgb(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
-    g: linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
-    b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
-    a,
-  }
+  return [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ]
+}
+
+export function oklchToRgb(oklch: Oklch): Rgb {
+  const [r, g, b] = oklchToLinearRgb(oklch)
+  return { r: linearToSrgb(r), g: linearToSrgb(g), b: linearToSrgb(b), a: oklch.a }
 }
 
 /**
@@ -484,19 +496,10 @@ export function oklchToRgb({ l: okL, c, h, a }: Oklch): Rgb {
  * a user nudging chroma upward deserves to know when the preview stopped
  * tracking the number.
  */
-export function isOutOfSrgbGamut({ l, c, h }: Oklch): boolean {
-  const rad = (h * Math.PI) / 180
-  const okA = c * Math.cos(rad)
-  const okB = c * Math.sin(rad)
-  const l_ = l + 0.3963377774 * okA + 0.2158037573 * okB
-  const m_ = l - 0.1055613458 * okA - 0.0638541728 * okB
-  const s_ = l - 0.0894841775 * okA - 1.291485548 * okB
-  const lin = [
-    4.0767416621 * l_ ** 3 - 3.3077115913 * m_ ** 3 + 0.2309699292 * s_ ** 3,
-    -1.2684380046 * l_ ** 3 + 2.6097574011 * m_ ** 3 - 0.3413193965 * s_ ** 3,
-    -0.0041960863 * l_ ** 3 - 0.7034186147 * m_ ** 3 + 1.707614701 * s_ ** 3,
-  ]
-  return lin.some((channel) => channel < -0.0001 || channel > 1.0001)
+export function isOutOfSrgbGamut(oklch: Oklch): boolean {
+  // The tolerance absorbs floating-point drift at the exact boundary, so a
+  // colour that is precisely in gamut is not reported as outside it.
+  return oklchToLinearRgb(oklch).some((channel) => channel < -0.0001 || channel > 1.0001)
 }
 
 // --------------------------------------------------------------- contrast
@@ -572,28 +575,42 @@ export function formatOklch(oklch: Oklch): string {
   return oklch.a >= 1 ? `${base})` : `${base} / ${round(oklch.a * 100, 1)}%)`
 }
 
+/**
+ * The named colours in OKLab, computed once.
+ *
+ * `nearestNamed` runs on every keystroke and compares against all 148 entries.
+ * Their coordinates never change, so converting them each time was 148 wasted
+ * conversions per call. Module scope, computed on first import.
+ */
+const NAMED_OKLAB: Array<{ name: string; l: number; a: number; b: number }> = Object.entries(
+  NAMED,
+).map(([name, packed]) => {
+  const { l, c, h } = rgbToOklch({
+    r: (packed >> 16) & 0xff,
+    g: (packed >> 8) & 0xff,
+    b: packed & 0xff,
+    a: 1,
+  })
+  const rad = (h * Math.PI) / 180
+  return { name, l, a: c * Math.cos(rad), b: c * Math.sin(rad) }
+})
+
 /** Nearest CSS named colour, by squared distance in OKLab. */
 export function nearestNamed(rgb: Rgb): { name: string; exact: boolean; distance: number } {
   const target = rgbToOklch(rgb)
-  const ta = target.c * Math.cos((target.h * Math.PI) / 180)
-  const tb = target.c * Math.sin((target.h * Math.PI) / 180)
+  const rad = (target.h * Math.PI) / 180
+  const ta = target.c * Math.cos(rad)
+  const tb = target.c * Math.sin(rad)
 
   let bestName = 'black'
   let bestDistance = Infinity
 
-  for (const [name, packed] of Object.entries(NAMED)) {
-    const candidate = rgbToOklch({
-      r: (packed >> 16) & 0xff,
-      g: (packed >> 8) & 0xff,
-      b: packed & 0xff,
-      a: 1,
-    })
-    const ca = candidate.c * Math.cos((candidate.h * Math.PI) / 180)
-    const cb = candidate.c * Math.sin((candidate.h * Math.PI) / 180)
-    const distance = (target.l - candidate.l) ** 2 + (ta - ca) ** 2 + (tb - cb) ** 2
+  for (const candidate of NAMED_OKLAB) {
+    const distance =
+      (target.l - candidate.l) ** 2 + (ta - candidate.a) ** 2 + (tb - candidate.b) ** 2
     if (distance < bestDistance) {
       bestDistance = distance
-      bestName = name
+      bestName = candidate.name
     }
   }
 
