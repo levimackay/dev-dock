@@ -241,7 +241,11 @@ export default function RegexTesterTool() {
                   not run the pattern.
                 </EmptyState>
               ) : !state.text ? (
-                <EmptyState compact title="Now add some text to test" mark={<IconSearch size={24} />}>
+                <EmptyState
+                  compact
+                  title="Now add some text to test"
+                  mark={<IconSearch size={24} />}
+                >
                   Paste into the left pane, or load one of the samples above to get a pattern and
                   matching text together.
                 </EmptyState>

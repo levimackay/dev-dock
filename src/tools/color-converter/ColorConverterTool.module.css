@@ -1,0 +1,184 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.swatchInput {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  padding: 0;
+  border: var(--hairline) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+}
+
+.swatchInput::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.swatchInput::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+.preview {
+  height: 6.5rem;
+  border-radius: var(--radius-lg);
+  border: var(--hairline) solid var(--line);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.previewHalf {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.formatGrid {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.formatLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+
+.formatValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  word-break: break-all;
+}
+
+.approxTag {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+
+.sliderRow {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr 3.5rem;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.sliderLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+}
+
+.sliderInput {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.sliderValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg-subtle);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.2rem var(--sp-2);
+  border-radius: var(--radius-pill);
+  border: var(--hairline) solid var(--line-strong);
+  background: var(--bg-inset);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.badgePass {
+  border-color: color-mix(in oklab, var(--ok) 45%, var(--line));
+  background: var(--ok-quiet);
+  color: var(--ok);
+}
+
+.badgeFail {
+  border-color: color-mix(in oklab, var(--err) 40%, var(--line));
+  background: var(--err-quiet);
+  color: var(--err);
+}
+
+.ratioValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.rampGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.rampGroupLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.ramp {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: var(--hairline) solid var(--line);
+}
+
+.rampStop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  height: 3.5rem;
+  padding-bottom: var(--sp-1);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.rampStop:not(:last-child) {
+  border-right: var(--hairline) solid color-mix(in oklab, var(--line) 60%, transparent);
+}

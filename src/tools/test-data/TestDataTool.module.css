@@ -1,0 +1,67 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  font-weight: 400;
+  padding: var(--sp-2);
+  border-bottom: var(--hairline) solid var(--line);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: var(--hairline) solid var(--line-faint);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.nameInput {
+  width: 100%;
+  min-width: 6rem;
+}
+
+.typeSelect {
+  min-width: 8rem;
+}
+
+.optCell {
+  display: flex;
+  gap: var(--sp-1);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.optInput {
+  width: 4.5rem;
+}
+
+.optInputWide {
+  width: 9rem;
+}

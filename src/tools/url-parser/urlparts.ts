@@ -160,6 +160,23 @@ export function buildQueryString(params: QueryParam[]): string {
 }
 
 /**
+ * Swaps the query string of a URL, leaving everything else untouched. Used
+ * to push table edits back into the one url string that is the tool's
+ * actual source of truth (see the .tsx for why it is not the table itself).
+ * Silently no-ops on an unparsable URL — there is nothing sensible to
+ * rebuild, and the caller already has the parse error on screen.
+ */
+export function replaceQueryString(urlText: string, search: string): string {
+  try {
+    const url = new URL(urlText)
+    url.search = search
+    return url.href
+  } catch {
+    return urlText
+  }
+}
+
+/**
  * True when a value's percent-encoding was itself percent-encoded — the
  * classic "pasted a URL that was already encoded, then encoded it again"
  * mistake. Detected by decoding once, checking whether what is left still
@@ -321,21 +338,27 @@ function decodeBootstring(input: string): string {
 // -------------------------------------------------------------------------
 
 const TRACKING_EXPLANATIONS: Record<string, string> = {
-  utm_source: 'Marketing source of the visit (e.g. a newsletter or ad network) — Google Analytics campaign tracking.',
-  utm_medium: 'Marketing medium (e.g. "cpc", "email", "social") — Google Analytics campaign tracking.',
+  utm_source:
+    'Marketing source of the visit (e.g. a newsletter or ad network) — Google Analytics campaign tracking.',
+  utm_medium:
+    'Marketing medium (e.g. "cpc", "email", "social") — Google Analytics campaign tracking.',
   utm_campaign: 'Name of the specific marketing campaign — Google Analytics campaign tracking.',
   utm_term: 'Paid-search keyword that triggered the ad — Google Analytics campaign tracking.',
-  utm_content: 'Distinguishes similar links within the same ad or campaign — Google Analytics campaign tracking.',
+  utm_content:
+    'Distinguishes similar links within the same ad or campaign — Google Analytics campaign tracking.',
   gclid: 'Google Ads click identifier — attributes this visit back to a specific ad click.',
-  fbclid: 'Facebook/Meta click identifier, appended when a link is shared or clicked on their platforms.',
+  fbclid:
+    'Facebook/Meta click identifier, appended when a link is shared or clicked on their platforms.',
   msclkid: 'Microsoft Advertising click identifier — the Bing Ads equivalent of gclid.',
-  mc_eid: "Mailchimp per-recipient identifier — ties this click back to one specific subscriber's email.",
+  mc_eid:
+    "Mailchimp per-recipient identifier — ties this click back to one specific subscriber's email.",
   ref: 'Generic referral/source marker used by many sites; the exact meaning is site-specific.',
 }
 
 export function trackingExplanation(key: string): string | undefined {
   const lower = key.toLowerCase()
-  if (lower.startsWith('utm_')) return TRACKING_EXPLANATIONS[lower] ?? 'A Google Analytics-style campaign parameter.'
+  if (lower.startsWith('utm_'))
+    return TRACKING_EXPLANATIONS[lower] ?? 'A Google Analytics-style campaign parameter.'
   return TRACKING_EXPLANATIONS[lower]
 }
 
