@@ -41,6 +41,9 @@ const isState = shapeValidator<State>({
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024
 
+/** Multi-byte on purpose: the interesting half of Base64 is the UTF-8 half. */
+const SAMPLE = 'Ђорђе — 🌍 — encoded and back again, byte for byte.'
+
 export default function Base64Tool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const fileRef = useRef<HTMLInputElement | null>(null)
@@ -111,6 +114,13 @@ export default function Base64Tool() {
     <ToolShell
       actions={
         <>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: SAMPLE, direction: 'encode' })}
+          >
+            Sample
+          </Button>
           <Button size="sm" variant="ghost" onClick={swap} disabled={!result.output}>
             <IconArrowSwap size={13} />
             Swap

@@ -32,6 +32,12 @@ interface State {
   zone: string
 }
 
+/**
+ * A real moment worth recognising: 2001-09-09T01:46:40Z, when Unix time first
+ * showed ten digits and every log file in the world got one character wider.
+ */
+const SAMPLE_TIMESTAMP = '1000000000'
+
 /** The browser's own zone, used as the "Local" row and the picker's default. */
 const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -177,15 +183,26 @@ export default function UnixTimestampTool() {
   return (
     <ToolShell
       actions={
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => patch({ input: '', dtLocal: '' })}
-          disabled={!state.input && !state.dtLocal}
-        >
-          <IconTrash size={13} />
-          Clear
-        </Button>
+        <>
+          {/* A fixed moment rather than "now": a sample that changes every time
+              you press it teaches nothing about what the tool does. */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: SAMPLE_TIMESTAMP, unitOverride: 'auto' })}
+          >
+            Sample
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: '', dtLocal: '' })}
+            disabled={!state.input && !state.dtLocal}
+          >
+            <IconTrash size={13} />
+            Clear
+          </Button>
+        </>
       }
     >
       <Panel label="Now" status={paused ? 'paused' : 'live'}>
