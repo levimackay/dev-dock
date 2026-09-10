@@ -141,13 +141,13 @@ The build output is a folder of static files. Any host will serve it.
 
 `deploy/` has ready-made configuration for each target:
 
-| Target                     | Files                                                                                   |
-| -------------------------- | --------------------------------------------------------------------------------------- |
-| Netlify / Cloudflare Pages | `deploy/_headers`, `deploy/_redirects` → copy into `public/`                            |
-| Vercel                     | `deploy/vercel.json` → copy to the repo root                                            |
-| Nginx                      | `deploy/nginx.conf`                                                                     |
-| Docker                     | `deploy/Dockerfile`, multi-stage, ships nginx with no Node in the runtime image         |
-| GitHub Pages               | `.github/workflows/pages.yml`, already wired, set `BASE_PATH` if serving from a subpath |
+| Target                     | Files                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Netlify / Cloudflare Pages | `deploy/_headers`, `deploy/_redirects` → copy into `public/`                                                 |
+| Vercel                     | `deploy/vercel.json` → copy to the repo root                                                                 |
+| Nginx                      | `deploy/nginx.conf`                                                                                          |
+| Docker                     | `deploy/Dockerfile`, multi-stage, ships nginx with no Node in the runtime image                              |
+| GitHub Pages               | `.github/workflows/pages.yml`, deploys on every push to `main`; this is where the live site above comes from |
 
 ```bash
 # Docker
