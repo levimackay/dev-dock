@@ -38,8 +38,15 @@ export function useShareState<T extends object>(
 
   // Held in a ref so the getter handed to the toolbar never goes stale without
   // forcing the toolbar to re-render on every keystroke in the tool.
+  //
+  // The ref is written in an effect rather than during render. Writing it in
+  // the render body works today but is a concurrent-rendering hazard: React may
+  // render a component and then throw the result away, and a ref mutated on
+  // that discarded pass would leak state the user never sees.
   const latest = useRef(state)
-  latest.current = state
+  useEffect(() => {
+    latest.current = state
+  }, [state])
 
   const register = bridge?.register
   useEffect(() => {

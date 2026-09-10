@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { ToolShell } from '@/components/ToolShell'
 import { Panel } from '@/components/Panel'
 import { CodeArea } from '@/components/CodeArea'
@@ -56,16 +56,24 @@ export default function HashGeneratorTool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
   const toast = useToast()
+  // See the JWT tool for why this is generated here rather than left to
+  // `Field`'s own internal id: `Field` has no way to hand that id back to
+  // whatever `children` it wraps.
+  const compareFieldId = useId()
   const fileRef = useRef<HTMLInputElement | null>(null)
 
-  const [file, setFile] = useState<{ name: string; size: number; bytes: ArrayBuffer } | undefined>()
+  // `Uint8Array<ArrayBuffer>` rather than plain `Uint8Array`: Web Crypto takes
+  // a BufferSource, which excludes views backed by a SharedArrayBuffer.
+  const [file, setFile] = useState<
+    { name: string; size: number; bytes: Uint8Array<ArrayBuffer> } | undefined
+  >()
   const [rows, setRows] = useState<DigestRow[]>([])
   const [computing, setComputing] = useState(false)
 
-  const sourceBytes = useMemo<ArrayBuffer | undefined>(() => {
+  const sourceBytes = useMemo<Uint8Array<ArrayBuffer> | undefined>(() => {
     if (file) return file.bytes
     if (state.input === '') return undefined
-    return new TextEncoder().encode(state.input).buffer as ArrayBuffer
+    return new TextEncoder().encode(state.input)
   }, [file, state.input])
 
   // Hashing is async (Web Crypto for the SHA family), so all six algorithms
@@ -73,11 +81,16 @@ export default function HashGeneratorTool() {
   // slower earlier computation (a large file) painting over a newer, faster
   // one if the input changes again before it finishes.
   useEffect(() => {
-    if (!sourceBytes) {
-      setRows([])
-      return
-    }
+    // No early setRows([]) here: clearing is derived below from the absence of
+    // input, which avoids a cascading render on every keystroke that empties
+    // the field.
+    if (!sourceBytes) return
     let stale = false
+    // Flipping the busy flag is precisely "update an external system with the
+    // latest state" — it exists to describe work this effect is starting. The
+    // rule cannot tell that apart from deriving state, so it is silenced here
+    // with the reason rather than reshaped into something less clear.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setComputing(true)
     void Promise.all(ALGORITHMS.map((algorithm) => digest(algorithm, sourceBytes)))
       .then((results) => {
@@ -121,7 +134,7 @@ export default function HashGeneratorTool() {
       )
       return
     }
-    const bytes = await picked.arrayBuffer()
+    const bytes = new Uint8Array(await picked.arrayBuffer())
     setFile({ name: picked.name, size: picked.size, bytes })
     patch({ input: '' })
   }
@@ -265,8 +278,14 @@ export default function HashGeneratorTool() {
         {rows.length > 0 && (
           <Panel label="Compare with">
             <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
-              <Field label="Expected digest" hint="Paste a hex digest — matched automatically by its length.">
+              <Field
+                label="Expected digest"
+                htmlFor={compareFieldId}
+                hint="Paste a hex digest — matched automatically by its length."
+              >
                 <TextInput
+                  id={compareFieldId}
+                  aria-describedby={`${compareFieldId}-hint`}
                   mono
                   value={state.compareWith}
                   onChange={(e) => patch({ compareWith: e.target.value })}

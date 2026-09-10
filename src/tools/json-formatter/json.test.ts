@@ -33,6 +33,9 @@ describe('processJson — pretty', () => {
   it('escapes non-ASCII characters to \\uXXXX when asked', () => {
     const result = processJson('{"name":"héllo 🌍"}', 'pretty', { ...opts, escapeNonAscii: true })
     if (!result.ok) throw new Error('expected success')
+    // The assertion is that nothing outside ASCII survived, control range
+    // included, so the control character in the class is the point.
+    // eslint-disable-next-line no-control-regex
     expect(result.output).not.toMatch(/[^\x00-\x7f]/)
     expect(result.output).toContain('\\u00e9') // é
   })

@@ -1,3 +1,9 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions,
+                  jsx-a11y/no-noninteractive-tabindex -- ARIA's `separator` has
+   two flavours: a decorative rule, and a focusable window splitter (the one
+   carrying aria-valuenow), which is explicitly interactive and keyboard
+   operable. The plugin only models the decorative one, so it flags a correct
+   implementation of the APG splitter pattern. */
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import styles from './SplitPane.module.css'
 import { cx } from '@/lib/cx'
@@ -109,6 +115,9 @@ export function SplitPane({
       <div className={styles.pane} id={`${id}-a`}>
         {first}
       </div>
+      {/* `separator` has two flavours in ARIA: a decorative rule, and a focusable
+          window splitter — the one carrying aria-valuenow, which is explicitly
+          interactive. The rule only models the first. */}
       <div
         role="separator"
         tabIndex={0}

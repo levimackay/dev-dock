@@ -38,7 +38,7 @@ function toBase64Url(bytes: Uint8Array): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-function fromBase64Url(text: string): Uint8Array {
+function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
   const padded = text.replace(/-/g, '+').replace(/_/g, '/')
   const binary = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4))
   const bytes = new Uint8Array(binary.length)
@@ -56,9 +56,11 @@ function fromBase64Url(text: string): Uint8Array {
  * realm outside a browser. Driving the streams directly has no such dependency.
  */
 async function pipe(
-  bytes: Uint8Array,
+  // `Uint8Array<ArrayBuffer>` rather than plain `Uint8Array`: the stream writer
+  // takes a BufferSource, which excludes views backed by a SharedArrayBuffer.
+  bytes: Uint8Array<ArrayBuffer>,
   stream: CompressionStream | DecompressionStream,
-): Promise<Uint8Array> {
+): Promise<Uint8Array<ArrayBuffer>> {
   const writer = stream.writable.getWriter()
   // Not awaited: the writer only settles once the reader below drains it, so
   // awaiting here would deadlock.

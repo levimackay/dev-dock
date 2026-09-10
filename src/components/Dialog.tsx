@@ -132,8 +132,13 @@ export function Dialog({
   if (!open) return null
 
   return createPortal(
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- the backdrop is a click-outside convenience with no role and no tab stop; Escape is the keyboard equivalent and is handled above
     <div
       className={cx(styles.backdrop, styles[placement])}
+      // The backdrop is a click-outside convenience, not a control: it has no
+      // role, is not in the tab order, and duplicates nothing. Escape is the
+      // keyboard equivalent and is handled above, so there is no keyboard user
+      // left without a way to dismiss the dialog.
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}

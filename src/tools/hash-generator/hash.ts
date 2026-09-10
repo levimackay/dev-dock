@@ -47,13 +47,23 @@ const SUBTLE_NAMES: Partial<Record<HashAlgorithm, string>> = {
   'SHA-512': 'SHA-512',
 }
 
-export async function digest(algorithm: HashAlgorithm, data: ArrayBuffer): Promise<Uint8Array> {
+/**
+ * Takes a `Uint8Array` rather than an `ArrayBuffer` on purpose: Web Crypto's
+ * `BufferSource` accepts a typed array directly, and a `Uint8Array`'s own
+ * `.buffer` is typed `ArrayBufferLike` (it could back onto a
+ * `SharedArrayBuffer`), which would force a cast at every call site for no
+ * benefit — every caller here already has bytes, never a raw buffer.
+ */
+export async function digest(
+  algorithm: HashAlgorithm,
+  data: Uint8Array<ArrayBuffer>,
+): Promise<Uint8Array> {
   const subtleName = SUBTLE_NAMES[algorithm]
   if (subtleName) {
     return new Uint8Array(await crypto.subtle.digest(subtleName, data))
   }
-  if (algorithm === 'MD5') return md5(new Uint8Array(data))
-  return crc32(new Uint8Array(data))
+  if (algorithm === 'MD5') return md5(data)
+  return crc32(data)
 }
 
 /* ----------------------------------------------------------------- CRC32 */

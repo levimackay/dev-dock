@@ -125,8 +125,30 @@ function resolve(value: JsonValue, segments: PathSegment[], pathSoFar: string): 
   return resolve(child, rest, extendPath(pathSoFar, segment.key, false))
 }
 
-function extendPath(base: string, key: string, isIndex: boolean): string {
+export function extendPath(base: string, key: string, isIndex: boolean): string {
   return isIndex ? `${base}[${key}]` : `${base}.${key}`
+}
+
+/**
+ * Every container path down to `maxDepth`, for seeding the "expanded" set.
+ * Depth 1 is the root itself, so `maxDepth: 2` (the default view) opens the
+ * root and its immediate container children but nothing deeper — enough to
+ * get oriented in a big document without dumping the whole thing at once.
+ * Called with no depth limit, this is also "expand all".
+ */
+export function containerPaths(value: JsonValue, maxDepth = Infinity): Set<string> {
+  const paths = new Set<string>()
+
+  const walk = (node: JsonValue, path: string, depth: number): void => {
+    if (!isContainer(node) || depth > maxDepth) return
+    paths.add(path)
+    for (const { key, value: child } of childEntries(node)) {
+      walk(child, extendPath(path, key, Array.isArray(node)), depth + 1)
+    }
+  }
+  walk(value, '$', 1)
+
+  return paths
 }
 
 /** Strips the trailing segment of a "$.a.b[2]"-style path, for "jump to parent". */

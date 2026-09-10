@@ -1,0 +1,26 @@
+/* tab-size is inherited, so setting it here reaches every .text cell inside
+   the DiffView nested in this Panel without DiffView needing to know about
+   tab width at all. */
+.tab2 {
+  tab-size: 2;
+}
+
+.tab4 {
+  tab-size: 4;
+}
+
+.tab8 {
+  tab-size: 8;
+}
+
+.filenameInput {
+  width: 8rem;
+}
+
+.changeCount {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

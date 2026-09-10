@@ -32,7 +32,7 @@ class MemoryStorage implements Storage {
   [name: string]: unknown
 }
 
-for (const target of [globalThis, window] as unknown as Array<Record<string, unknown>>) {
+for (const target of [globalThis, window]) {
   Object.defineProperty(target, 'localStorage', {
     value: new MemoryStorage(),
     configurable: true,
@@ -47,16 +47,18 @@ afterEach(() => {
 
 // jsdom implements neither of these, and several tools depend on them.
 if (!globalThis.matchMedia) {
-  globalThis.matchMedia = ((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })) as unknown as typeof globalThis.matchMedia
+  const stub: typeof globalThis.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })
+  globalThis.matchMedia = stub
 }
 
 // jsdom does not lay elements out, so it implements no scrolling APIs at all.

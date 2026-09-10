@@ -1,7 +1,15 @@
+/* eslint-disable jsx-a11y/interactive-supports-focus -- The APG radio-group
+   pattern puts the tab stop on the checked radio (the roving tabindex in
+   SegmentedControl) and leaves the container unfocusable. The rule asks for a
+   second, redundant tab stop on the container. */
 import {
+  Children,
+  cloneElement,
   forwardRef,
+  isValidElement,
   useId,
   type InputHTMLAttributes,
+  type ReactElement,
   type ReactNode,
   type SelectHTMLAttributes,
 } from 'react'
@@ -25,26 +33,52 @@ export interface FieldProps {
 /**
  * Label + control + hint/error, wired together.
  *
- * The point of centralising this is `aria-describedby`: it is easy to write a
- * hint that looks associated with its input and is invisible to a screen
- * reader. Doing it once here means it is right in all 22 tools.
+ * The point of centralising this is the wiring, not the layout. A `<label
+ * htmlFor>` that points at an id no element carries is invisible to a screen
+ * reader while looking perfectly correct on screen, and the same goes for a
+ * hint that is never referenced by `aria-describedby`. Both are easy to get
+ * wrong once per tool and impossible to notice by looking.
+ *
+ * So Field owns the id. It generates one, points the label at it, and clones
+ * its single child to inject `id` and `aria-describedby` — plus `aria-invalid`
+ * when an error is showing. A caller that supplies its own `id` keeps it.
+ *
+ * The clone only happens for a lone element child. Anything else (a fragment, a
+ * group of checkboxes) is rendered untouched and is expected to carry its own
+ * labelling, because there is no single control to point at.
  */
 export function Field({ label, hint, error, inline, htmlFor, className, children }: FieldProps) {
   const autoId = useId()
   const id = htmlFor ?? autoId
+
+  const hintId = hint && !error ? `${id}-hint` : undefined
+  const errorId = error ? `${id}-error` : undefined
+  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined
+
+  const only = Children.count(children) === 1 ? Children.only(children) : null
+  const control =
+    only && isValidElement(only)
+      ? cloneElement(only as ReactElement<Record<string, unknown>>, {
+          id: (only.props as { id?: string }).id ?? id,
+          'aria-describedby':
+            (only.props as { 'aria-describedby'?: string })['aria-describedby'] ?? describedBy,
+          'aria-invalid': error ? true : (only.props as { 'aria-invalid'?: boolean })['aria-invalid'],
+        })
+      : children
+
   return (
     <div className={cx(styles.field, inline && styles.inline, className)}>
       <label className={styles.label} htmlFor={id}>
         {label}
       </label>
-      <div className={styles.control}>{children}</div>
-      {hint && !error && (
-        <span className={styles.hint} id={`${id}-hint`}>
+      <div className={styles.control}>{control}</div>
+      {hintId && (
+        <span className={styles.hint} id={hintId}>
           {hint}
         </span>
       )}
-      {error && (
-        <span className={styles.error} id={`${id}-error`}>
+      {errorId && (
+        <span className={styles.error} id={errorId}>
           {error}
         </span>
       )}
@@ -140,6 +174,10 @@ export function SegmentedControl<T extends string>({
 
   return (
     <div
+      // The APG radio-group pattern gives the tab stop to the checked radio and
+      // leaves the container unfocusable, which is what the roving tabindex
+      // below implements. The rule is asking for the container to be focusable,
+      // which would add a second, redundant stop.
       role="radiogroup"
       aria-label={label}
       className={cx(styles.segmented, fullWidth && styles.segmentFull, className)}

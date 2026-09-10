@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { ToolShell } from '@/components/ToolShell'
 import { Panel } from '@/components/Panel'
 import { CodeArea } from '@/components/CodeArea'
@@ -52,6 +52,11 @@ const TIME_CLAIMS = ['iat', 'nbf', 'exp'] as const
 export default function JwtDecoderTool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
+  // `Field` renders its own `<label htmlFor>`, but leaves wiring an id onto
+  // the actual control to the caller (it has no render-prop to inject one) —
+  // generating it here and passing it both ways is what actually makes the
+  // label reach the input, rather than merely sitting next to it.
+  const secretFieldId = useId()
 
   // The secret NEVER goes through useShareState: that object is what the
   // Share button base64-encodes into a URL fragment, and a URL is logged by
@@ -71,6 +76,10 @@ export default function JwtDecoderTool() {
   // and a stale flag stops an old token's result from painting after the
   // user has already moved on to a new one.
   useEffect(() => {
+    // Clearing a stale verdict, then flagging that work has started: both are
+    // describing this effect's own asynchronous work to the UI, not deriving
+    // state from props.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVerifyResult(undefined)
     if (!canVerify || !secret || !decoded.signingInput || !decoded.signatureB64Url) return
     let stale = false
@@ -244,9 +253,15 @@ export default function JwtDecoderTool() {
                       <OptionSpacer />
                     </OptionsBar>
 
-                    <Field label="Secret" hint="Held only in this tab's memory — never included in a Share link.">
+                    <Field
+                      label="Secret"
+                      htmlFor={secretFieldId}
+                      hint="Held only in this tab's memory — never included in a Share link."
+                    >
                       <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
                         <TextInput
+                          id={secretFieldId}
+                          aria-describedby={`${secretFieldId}-hint`}
                           type={showSecret ? 'text' : 'password'}
                           mono
                           value={secret}

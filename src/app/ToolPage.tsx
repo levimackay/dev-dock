@@ -24,8 +24,25 @@ import styles from './ToolPage.module.css'
 const anyObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+/**
+ * Route entry point.
+ *
+ * The real work is in `ToolRoute`, which is keyed by tool id so that every
+ * piece of per-tool state — most importantly the share-link hydration — is
+ * recreated from scratch on navigation rather than carried across.
+ *
+ * That key is load-bearing. Without it, arriving at tool B via a share link
+ * while tool A is open would find `ready` already true from A's mount, mount B
+ * with its defaults, and only patch in the payload a tick later — clobbering
+ * anything typed in between. Remounting makes the race unrepresentable instead
+ * of merely unlikely.
+ */
 export function ToolPage() {
   const { toolId } = useParams<{ toolId: string }>()
+  return <ToolRoute key={toolId ?? '__none__'} toolId={toolId} />
+}
+
+function ToolRoute({ toolId }: { toolId: string | undefined }) {
   const tool = getTool(toolId)
   const { isPinned, togglePin, noteVisit } = usePreferences()
   const toast = useToast()
@@ -38,11 +55,9 @@ export function ToolPage() {
 
   useEffect(() => {
     const payload = readShareFragment()
-    if (!payload) {
-      setInbound(undefined)
-      setReady(true)
-      return
-    }
+    // No payload means the `ready` initialiser already resolved this
+    // synchronously; setting state again here would only cost a render.
+    if (!payload) return
     let cancelled = false
     void decodeShareState(payload, anyObject).then((decoded) => {
       if (cancelled) return
@@ -56,8 +71,8 @@ export function ToolPage() {
     return () => {
       cancelled = true
     }
-    // Re-run per tool: navigating between tools should not re-apply a payload.
-  }, [toolId, toast])
+    // Runs once per mount, and the component is remounted per tool.
+  }, [toast])
 
   useEffect(() => {
     if (tool) noteVisit(tool.id)

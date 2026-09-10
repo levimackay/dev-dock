@@ -18,6 +18,9 @@ export function downloadText(filename: string, contents: string, mime = 'text/pl
   const type = SAFE_TYPES.has(mime) ? mime : 'text/plain'
   const safeName =
     filename
+      // Control characters are exactly what we are trying to strip here, so the
+      // no-control-regex warning is the rule misreading the intent.
+      // eslint-disable-next-line no-control-regex
       .replace(/[/\\?%*:|"<>\x00-\x1f]/g, '-')
       .replace(/^\.+/, '')
       .slice(0, 120) || 'dev-dock-export.txt'

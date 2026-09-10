@@ -41,7 +41,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     id: 'sql-formatter',
     name: 'SQL Formatter',
-    short: 'Format SQL for eleven dialects, with keyword casing and indent control.',
+    short: 'Format SQL for twenty dialects, with keyword casing and indent control.',
     category: 'data',
     keywords: ['sql', 'format', 'beautify', 'postgres', 'mysql', 'sqlite', 'bigquery', 'query'],
     Component: lazy(() => import('./sql-formatter/SqlFormatterTool')),

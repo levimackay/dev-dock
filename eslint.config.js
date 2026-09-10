@@ -41,7 +41,6 @@ export default tseslint.config(
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      'react/no-danger': 'off', // plugin not installed; enforced by the rule below
       'no-restricted-properties': [
         'error',
         {
@@ -70,9 +69,5 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
     },
-  },
-  {
-    files: ['e2e/**/*.ts', '*.config.{ts,js}'],
-    languageOptions: { parserOptions: { project: './tsconfig.node.json' } },
   },
 )

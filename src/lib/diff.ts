@@ -130,7 +130,6 @@ function backtrack<T>(
 ): DiffChunk<T>[] {
   const chunks: DiffChunk<T>[] = []
   let x = a.length
-  let y = b.length
   let k = finalK
 
   for (let d = finalD; d > 0; d--) {
@@ -143,19 +142,16 @@ function backtrack<T>(
     const prevX = cameFromRight ? right : left
     const prevY = prevX - prevK
 
-    // Diagonal run first: everything between (prevX+step, …) and (x, y).
+    // The free diagonal run: every element matched between the predecessor's
+    // position and where this step ended up. `x` is not decremented here
+    // because it is overwritten with `prevX` a few lines below either way.
     const diagonal = x - (cameFromRight ? prevX : prevX + 1)
-    if (diagonal > 0) {
-      chunks.push({ op: 'equal', values: a.slice(x - diagonal, x) })
-      x -= diagonal
-      y -= diagonal
-    }
+    if (diagonal > 0) chunks.push({ op: 'equal', values: a.slice(x - diagonal, x) })
 
     if (cameFromRight) chunks.push({ op: 'insert', values: [b[prevY]!] })
     else chunks.push({ op: 'delete', values: [a[prevX]!] })
 
     x = prevX
-    y = prevY
     k = prevK
   }
 

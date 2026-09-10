@@ -14,7 +14,9 @@ export function useHotkey(
   options: { allowInInput?: boolean; enabled?: boolean } = {},
 ): void {
   const ref = useRef(handler)
-  ref.current = handler
+  useEffect(() => {
+    ref.current = handler
+  }, [handler])
 
   const { allowInInput = false, enabled = true } = options
 

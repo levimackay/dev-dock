@@ -1,0 +1,192 @@
+/*
+ * Rendering for the shared diff engine. Two layout modes share one row
+ * vocabulary: side-by-side lays two `.side` halves next to each other per
+ * row, unified lays a single `.text` per row with a +/-/space marker.
+ */
+
+.view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.header {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: var(--hairline) solid var(--line);
+  background: var(--bg-inset);
+}
+
+.headerCell {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.headerCell + .headerCell {
+  border-left: var(--hairline) solid var(--line);
+}
+
+.rows {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.sideBySide .row + .row {
+  border-top: var(--hairline) solid var(--line-faint);
+}
+
+.side {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: baseline;
+  min-width: 0;
+  padding: 0.05rem 0;
+}
+
+.side + .side {
+  border-left: var(--hairline) solid var(--line);
+}
+
+.sideEmpty {
+  background: var(--bg-inset);
+}
+
+.sideAdded {
+  background: var(--ok-quiet);
+}
+
+.sideRemoved {
+  background: var(--err-quiet);
+}
+
+.gutter {
+  padding: 0 var(--sp-2);
+  text-align: right;
+  color: var(--fg-subtle);
+  user-select: none;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.text {
+  min-width: 0;
+  padding-right: var(--sp-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.wordDel {
+  background: color-mix(in oklab, var(--err) 32%, transparent);
+  color: inherit;
+  border-radius: var(--radius-sm);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklab, var(--err) 70%, transparent);
+}
+
+.wordIns {
+  background: color-mix(in oklab, var(--ok) 32%, transparent);
+  color: inherit;
+  border-radius: var(--radius-sm);
+}
+
+/* ---- unified mode ------------------------------------------------------ */
+
+.unified .row {
+  grid-template-columns: 3rem 3rem 1.25rem 1fr;
+}
+
+.unifiedRow {
+  align-items: baseline;
+}
+
+.unified .unifiedRow + .unifiedRow {
+  border-top: var(--hairline) solid var(--line-faint);
+}
+
+.marker {
+  text-align: center;
+  color: var(--fg-subtle);
+  user-select: none;
+}
+
+.rowAdded {
+  background: var(--ok-quiet);
+}
+
+.rowAdded .marker {
+  color: var(--ok);
+}
+
+.rowRemoved {
+  background: var(--err-quiet);
+}
+
+.rowRemoved .marker {
+  color: var(--err);
+}
+
+/* side-by-side "changed" row reuses .rowChanged only to opt out of the
+   generic top border look when a pair straddles two block boundaries */
+.rowChanged {
+  border-top: none;
+}
+
+/* ---- collapsing --------------------------------------------------------- */
+
+.separator {
+  grid-template-columns: 1fr;
+  background: var(--bg-sunken);
+  padding: var(--sp-1) var(--sp-3);
+}
+
+.separatorLabel {
+  color: var(--fg-subtle);
+}
+
+.collapseRow {
+  grid-template-columns: 1fr;
+  background: var(--bg-sunken);
+}
+
+.collapseButton {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  padding: var(--sp-1) var(--sp-3);
+  background: none;
+  border: none;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.collapseButton:hover {
+  background: var(--bg-hover);
+  color: var(--fg);
+}
+
+.chevron {
+  transition: transform var(--dur-fast) var(--ease-out);
+  flex: none;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}

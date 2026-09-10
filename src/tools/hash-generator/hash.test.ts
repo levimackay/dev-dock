@@ -43,25 +43,25 @@ describe('crc32', () => {
 
 describe('digest (Web Crypto algorithms)', () => {
   it('computes SHA-256 of "abc"', async () => {
-    const result = await digest('SHA-256', utf8('abc').buffer as ArrayBuffer)
+    const result = await digest('SHA-256', utf8('abc'))
     expect(hex(result)).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')
   })
 
   it('computes SHA-1 of "abc"', async () => {
-    const result = await digest('SHA-1', utf8('abc').buffer as ArrayBuffer)
+    const result = await digest('SHA-1', utf8('abc'))
     expect(hex(result)).toBe('a9993e364706816aba3e25717850c26c9cd0d89d')
   })
 
   it('computes SHA-384 and SHA-512 without throwing, at the right lengths', async () => {
-    const sha384 = await digest('SHA-384', utf8('abc').buffer as ArrayBuffer)
-    const sha512 = await digest('SHA-512', utf8('abc').buffer as ArrayBuffer)
+    const sha384 = await digest('SHA-384', utf8('abc'))
+    const sha512 = await digest('SHA-512', utf8('abc'))
     expect(sha384.length).toBe(48)
     expect(sha512.length).toBe(64)
   })
 
   it('computes MD5 and CRC32 through the same digest() entry point', async () => {
-    const md5Result = await digest('MD5', utf8('abc').buffer as ArrayBuffer)
-    const crcResult = await digest('CRC32', utf8('123456789').buffer as ArrayBuffer)
+    const md5Result = await digest('MD5', utf8('abc'))
+    const crcResult = await digest('CRC32', utf8('123456789'))
     expect(hex(md5Result)).toBe('900150983cd24fb0d6963f7d28e17f72')
     expect(hex(crcResult)).toBe('cbf43926')
   })

@@ -190,11 +190,11 @@ export function AppShell() {
         <Outlet />
       </main>
 
-      <CommandPalette
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        commands={commands}
-      />
+      {/* Mounted only while open, so its query and highlight reset for free
+          instead of needing an effect to clear them. */}
+      {paletteOpen && (
+        <CommandPalette open onClose={() => setPaletteOpen(false)} commands={commands} />
+      )}
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   )

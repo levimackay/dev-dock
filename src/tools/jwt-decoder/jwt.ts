@@ -34,11 +34,16 @@ export interface JwtDecodeResult {
   algNone?: boolean
 }
 
-const HS_ALGORITHMS = ['HS256', 'HS384', 'HS512'] as const
+export const HS_ALGORITHMS = ['HS256', 'HS384', 'HS512'] as const
 export type HmacAlgorithm = (typeof HS_ALGORITHMS)[number]
 
 export function isHmacAlgorithm(alg: string | undefined): alg is HmacAlgorithm {
-  return HS_ALGORITHMS.includes(alg as HmacAlgorithm)
+  // A manual comparison, not `HS_ALGORITHMS.includes(alg)`, because `includes`
+  // on a `readonly HmacAlgorithm[]` requires its argument to already be a
+  // `HmacAlgorithm` — exactly the thing this function exists to establish —
+  // so checking it that way would need a cast to silence the very question
+  // being asked.
+  return alg === 'HS256' || alg === 'HS384' || alg === 'HS512'
 }
 
 /** Decodes base64url (no padding, `-`/`_` alphabet) to a UTF-8 string. Throws on invalid input. */
@@ -79,7 +84,14 @@ export function decodeJwt(token: string): JwtDecodeResult {
       error: `A compact JWT has exactly 3 dot-separated segments (header.payload.signature); this has ${segments.length}.`,
     }
   }
-  const [headerSeg, payloadSeg, signatureSeg] = segments as [string, string, string]
+  // `segments` is still typed as `string[]` here, not a 3-tuple, even after
+  // the length check above — so indexed access is `string | undefined` under
+  // `noUncheckedIndexedAccess`. The `?? ''` fallbacks are dead code (length
+  // is already known to be exactly 3) but they are what let this destructure
+  // without a tuple cast.
+  const headerSeg = segments[0] ?? ''
+  const payloadSeg = segments[1] ?? ''
+  const signatureSeg = segments[2] ?? ''
 
   for (const [name, seg] of [
     ['header', headerSeg],
@@ -98,8 +110,15 @@ export function decodeJwt(token: string): JwtDecodeResult {
     return { ok: false, error: 'The header segment could not be base64url-decoded (invalid encoding or invalid UTF-8).' }
   }
 
+  // `JSON.parse` returns `any`, which is assignable to `JwtHeader` with no
+  // cast needed — `any` bypasses assignability checks in both directions.
+  // That is a real TypeScript escape hatch, which is exactly why the shape
+  // is never trusted beyond "some JSON value"; every field is still read
+  // through an explicit `typeof` check wherever it matters (see the UI).
   let header: JwtHeader
   try {
+    // Funnelled through `unknown` so the widening to JwtHeader is one visible,
+    // deliberate step rather than `any` leaking through the whole function.
     header = JSON.parse(headerRaw) as JwtHeader
   } catch {
     return { ok: false, error: 'The header decodes fine as base64url, but is not valid JSON.', headerRaw }

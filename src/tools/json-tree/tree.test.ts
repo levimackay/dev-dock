@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { childEntries, isContainer, parentPath, parsePath, queryPath, searchTree, type JsonValue } from './tree'
+import {
+  childEntries,
+  containerPaths,
+  isContainer,
+  parentPath,
+  parsePath,
+  queryPath,
+  searchTree,
+  type JsonValue,
+} from './tree'
 
 const doc: JsonValue = {
   data: {
@@ -161,6 +170,28 @@ describe('searchTree', () => {
     const { matches, truncated } = searchTree(big, 'match')
     expect(matches.length).toBeLessThanOrEqual(500)
     expect(truncated).toBe(true)
+  })
+})
+
+describe('containerPaths', () => {
+  it('includes only the root at depth 1', () => {
+    expect(containerPaths(doc, 1)).toEqual(new Set(['$']))
+  })
+
+  it('includes containers down to the given depth, not scalars', () => {
+    const paths = containerPaths(doc, 2)
+    expect(paths).toEqual(new Set(['$', '$.data']))
+  })
+
+  it('reaches every container with no depth limit ("expand all")', () => {
+    const paths = containerPaths(doc)
+    expect(paths).toEqual(
+      new Set(['$', '$.data', '$.data.items', '$.data.items[0]', '$.data.items[0].tags', '$.data.items[1]', '$.data.items[1].tags']),
+    )
+  })
+
+  it('is empty for a scalar document — there is nothing to expand', () => {
+    expect(containerPaths(42)).toEqual(new Set())
   })
 })
 

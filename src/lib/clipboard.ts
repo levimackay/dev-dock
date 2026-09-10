@@ -23,7 +23,8 @@ export async function copyText(text: string): Promise<boolean> {
     el.style.cssText = 'position:fixed;top:-1000px;opacity:0'
     document.body.appendChild(el)
     el.select()
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    // execCommand is deprecated, and is still the only clipboard API that
+    // works outside a secure context.
     const okay = document.execCommand('copy')
     document.body.removeChild(el)
     return okay

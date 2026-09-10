@@ -36,23 +36,20 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
 
   const results = useMemo(() => rankCommands(commands, query), [commands, query])
 
-  useEffect(() => {
-    if (open) {
-      setQuery('')
-      setActive(0)
-    }
-  }, [open])
-
-  useEffect(() => {
-    setActive(0)
-  }, [query])
-
   // Keep the highlighted row in view when arrowing past the fold.
   useEffect(() => {
     const list = listRef.current
     const row = list?.querySelector<HTMLElement>('[data-active="true"]')
     row?.scrollIntoView({ block: 'nearest' })
   }, [active, results])
+
+  const onQueryChange = (next: string) => {
+    setQuery(next)
+    // Reset the highlight here rather than in an effect on `query`. An effect
+    // would render the old highlight against the new list for one frame, and
+    // React 19 flags the cascading render for exactly that reason.
+    setActive(0)
+  }
 
   const run = (command: Command | undefined) => {
     if (!command) return
@@ -83,7 +80,12 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
   const listId = `${baseId}-list`
   const optionId = (index: number) => `${baseId}-option-${index}`
 
-  let lastSection = ''
+  // Precomputed rather than tracked with a mutable cursor inside the map
+  // callback: mutating a variable during render is a concurrent-rendering
+  // hazard, since React may render, discard, and re-render the same tree.
+  const startsSection = results.map(
+    (result, index) => index === 0 || results[index - 1]!.section !== result.section,
+  )
 
   return (
     <Dialog
@@ -100,7 +102,7 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
           data-autofocus
           className={styles.search}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="Search tools and actions…"
           role="combobox"
@@ -122,8 +124,7 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
       ) : (
         <ul className={styles.results} id={listId} role="listbox" aria-label="Results" ref={listRef}>
           {results.map((result, index) => {
-            const showSection = result.section !== lastSection
-            lastSection = result.section
+            const showSection = startsSection[index]
             return (
               <li key={result.id}>
                 {showSection && (
