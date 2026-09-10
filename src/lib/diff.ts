@@ -304,8 +304,26 @@ export function diffWords(left: string, right: string): WordSpan[] {
 // -------------------------------------------------------- unified patch
 
 /**
- * Renders a unified diff with the given amount of context, the format `patch`
- * and `git apply` read.
+ * Renders a unified diff: the format `patch` and `git apply` read.
+ *
+ * Three details separate a patch that applies from a string that merely looks
+ * like one, and the first version of this function got all three wrong.
+ *
+ * 1. **The phantom trailing line.** `splitLines("a\nb\nc\n")` yields
+ *    `['a','b','c','']`, because the text really does have an empty string
+ *    after the final newline. That is the right model for an editor, and the
+ *    wrong one for a patch: `diff -u` reports three lines, not four, so a hunk
+ *    header counting the phantom is off by one and git refuses the patch.
+ *    The trailing newline is therefore stripped before diffing and recorded as
+ *    a flag instead.
+ *
+ * 2. **`\ No newline at end of file`.** When a side does *not* end in a
+ *    newline, the format says so explicitly after the last line it contributes.
+ *    Without the marker git assumes a newline is there, the context fails to
+ *    match, and the patch is rejected.
+ *
+ * 3. **The trailing newline on the patch itself.** A patch that does not end
+ *    with one is "corrupt patch at line N" before git looks at the content.
  */
 export function toUnifiedDiff(
   left: string,
@@ -313,9 +331,42 @@ export function toUnifiedDiff(
   options: { leftName?: string; rightName?: string; context?: number } & LineDiffOptions = {},
 ): string {
   const { leftName = 'a', rightName = 'b', context = 3 } = options
-  const { lines } = diffLines(left, right, options)
+
+  const leftEndsWithEol = left === '' || left.endsWith('\n')
+  const rightEndsWithEol = right === '' || right.endsWith('\n')
+  const leftBody = leftEndsWithEol && left !== '' ? left.slice(0, -1) : left
+  const rightBody = rightEndsWithEol && right !== '' ? right.slice(0, -1) : right
+
+  const { lines } = diffLines(leftBody, rightBody, options)
+
+  // Adding or removing the final newline changes no *line*, so the diff above
+  // sees two identical files. `diff -u` handles this by rewriting the last line
+  // as a delete plus an insert of the same text, differing only in the marker
+  // that follows. Do the same, or the patch has a header and no hunks and git
+  // reports "No valid patches in input".
+  if (leftEndsWithEol !== rightEndsWithEol) {
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i]!
+      if (line.op !== 'equal') break
+      lines.splice(
+        i,
+        1,
+        { op: 'delete', text: line.text, leftNo: line.leftNo, rightNo: null },
+        { op: 'insert', text: line.text, leftNo: null, rightNo: line.rightNo },
+      )
+      break
+    }
+  }
 
   if (lines.every((line) => line.op === 'equal')) return ''
+
+  // The last line each side contributes: where a "no newline" marker belongs.
+  let lastLeftIndex = -1
+  let lastRightIndex = -1
+  for (const [i, line] of lines.entries()) {
+    if (line.leftNo !== null) lastLeftIndex = i
+    if (line.rightNo !== null) lastRightIndex = i
+  }
 
   // Group changed lines into hunks, padding each with `context` equal lines and
   // merging hunks that would otherwise overlap.
@@ -335,17 +386,28 @@ export function toUnifiedDiff(
 
   for (const hunk of hunks) {
     const slice = lines.slice(hunk.start, hunk.end + 1)
-    const leftStart = slice.find((l) => l.leftNo !== null)?.leftNo ?? 0
-    const rightStart = slice.find((l) => l.rightNo !== null)?.rightNo ?? 0
     const leftCount = slice.filter((l) => l.leftNo !== null).length
     const rightCount = slice.filter((l) => l.rightNo !== null).length
+    // An empty side is written as `0,0` starting at line 0, which is what
+    // `diff -u` emits when a hunk only inserts or only deletes.
+    const leftStart = leftCount === 0 ? 0 : (slice.find((l) => l.leftNo !== null)?.leftNo ?? 0)
+    const rightStart = rightCount === 0 ? 0 : (slice.find((l) => l.rightNo !== null)?.rightNo ?? 0)
 
     out.push(`@@ -${leftStart},${leftCount} +${rightStart},${rightCount} @@`)
-    for (const line of slice) {
+
+    for (const [offset, line] of slice.entries()) {
+      const index = hunk.start + offset
       const marker = line.op === 'equal' ? ' ' : line.op === 'delete' ? '-' : '+'
       out.push(marker + line.text)
+
+      // The marker follows the line it describes. A context line belongs to
+      // both sides, so it needs the marker only once even if neither side ends
+      // in a newline.
+      const leftNeedsMarker = !leftEndsWithEol && index === lastLeftIndex && line.leftNo !== null
+      const rightNeedsMarker = !rightEndsWithEol && index === lastRightIndex && line.rightNo !== null
+      if (leftNeedsMarker || rightNeedsMarker) out.push('\\ No newline at end of file')
     }
   }
 
-  return out.join('\n')
+  return `${out.join('\n')}\n`
 }
