@@ -62,3 +62,67 @@ which produced noise without catching a real defect in this codebase.
 - Build verified: one chunk per tool, 72 KB gzip shell.
 
 **Next:** implement the 22 tools.
+
+## Phase 3 — Shared algorithms (done)
+
+Four non-trivial pieces written rather than installed, each with a design
+comment at the top of the file and a test suite that pins the behaviour:
+
+| Module | Tests | Replaces |
+| --- | --- | --- |
+| `src/lib/diff.ts` — Myers O(ND) with prefix/suffix trimming and an edit-distance ceiling | 28 | `diff` (~30 KB) |
+| `src/lib/regex*` — user patterns in a Web Worker with a hard timeout | 11 | nothing; there is no library for this |
+| `src/tools/cron-helper/cron.ts` — parse, describe, project | 44 | `cron-parser` + `cronstrue` (~60 KB) |
+| `src/tools/color-converter/color.ts` — sRGB ↔ HSL ↔ OKLCH, WCAG, gamut | 39 | `culori` (~40 KB) |
+
+Two real bugs were caught by writing the tests first:
+
+- The cron field parser rejected `JAN,jul` because the Quartz-extension scan
+  for `L`/`W`/`#` ran against the raw text, and `JUL` contains an L.
+- `nextRuns` could return the starting instant itself when snapping to the top
+  of the minute, and searched by iteration count rather than by elapsed time —
+  so an expression that can never fire (`0 0 30 2 *`) walked thousands of
+  simulated years and blocked the main thread for a full second. Bounding by a
+  five-year horizon took it to 13 ms.
+
+## Phase 4 — Tools (in progress)
+
+Implementation was delegated to specialist agents in batches of four to five
+tools, two agents at a time, each working only inside its own tool folders and
+against `docs/TOOL-AUTHORING.md`. Shared code stayed under my hand so that no
+two agents could race on it.
+
+Landed so far: Base64 (the reference implementation), JSON Formatter, JSON Tree
+Viewer, SQL Formatter, URL Encoder, HTML Entities, JWT Decoder, Hash Generator.
+
+### Fixes that came out of reviewing that work against the whole tree
+
+- **`Field` did not wire its own control.** It rendered `<label htmlFor>`
+  pointing at an id nothing carried, so every `Field`/`TextInput` pair was
+  unlabelled unless the caller threaded ids by hand. It now owns the id and
+  clones its child to inject `id`, `aria-describedby`, and `aria-invalid`.
+- **The dialog focus trap filtered focusables with `offsetParent !== null`.**
+  `offsetParent` is null for every descendant of a `position: fixed` element —
+  which the dialog is — so the trap silently reduced to a single element and
+  Tab wrapping broke in both directions. Caught by a component test.
+- **A share-link hydration race.** Arriving at tool B from tool A via a pasted
+  link found `ready` already true, mounted B with defaults, and patched the
+  payload in a tick later. The route is now keyed by tool id, which makes the
+  race unrepresentable rather than merely unlikely.
+- **Share encoding silently fell back to uncompressed base64** because the
+  `Blob → Response` stream pipeline does not compose across realms outside a
+  browser. Driving the compression stream's writer and reader directly removed
+  the dependency, and a test now asserts the payload actually shrinks.
+- **Ref writes during render** in `useShareState` and `useHotkey`, and a
+  variable mutated during render in the command palette. All are concurrent
+  rendering hazards: React may render a tree and discard it.
+
+### Lint policy note
+
+React 19's `react-hooks/set-state-in-effect` and `react-hooks/refs` rules found
+several genuine issues and a handful of false positives around legitimately
+asynchronous work (setting a busy flag before an `await`). Rather than
+downgrade the rules and lose the signal, each false positive carries a
+`eslint-disable-next-line` with the reason written out. Same for the three
+`jsx-a11y` rules that do not model the APG patterns this app implements
+(focusable `separator`, roving-tabindex `radiogroup`).
