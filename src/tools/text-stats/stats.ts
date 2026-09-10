@@ -15,7 +15,7 @@ export function countWords(text: string): number {
   return text.match(WORD_RE)?.length ?? 0
 }
 
-export function extractWords(text: string): string[] {
+function extractWords(text: string): string[] {
   return text.match(WORD_RE) ?? []
 }
 
@@ -129,7 +129,7 @@ export function readingEaseBand(score: number): string {
 
 /* -------------------------------------------------------------- frequency */
 
-export const DEFAULT_STOPWORDS = new Set([
+const DEFAULT_STOPWORDS = new Set([
   'a',
   'an',
   'and',

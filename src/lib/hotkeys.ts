@@ -157,8 +157,3 @@ export function formatCombo(combo: string): string[] {
     })
     .filter(Boolean)
 }
-
-/** Test seam. */
-export function __clearHotkeys(): void {
-  bindings.clear()
-}

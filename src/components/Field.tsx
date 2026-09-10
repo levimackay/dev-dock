@@ -234,8 +234,3 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
     </label>
   )
 })
-
-/** Horizontal group for dense option rows. */
-export function OptionRow({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cx(styles.row, className)}>{children}</div>
-}

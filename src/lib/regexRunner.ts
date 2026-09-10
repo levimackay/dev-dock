@@ -82,10 +82,3 @@ export function runRegex(
     active.postMessage(full)
   })
 }
-
-/** Test seam: drops the shared worker. */
-export function __resetRegexRunner(): void {
-  for (const entry of pending.values()) clearTimeout(entry.timer)
-  pending.clear()
-  killWorker()
-}

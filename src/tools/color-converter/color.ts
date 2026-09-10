@@ -208,8 +208,6 @@ const NAMED: Record<string, number> = {
   yellowgreen: 0x9acd32,
 }
 
-export const NAMED_COLORS = Object.keys(NAMED)
-
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 /** Parses a percentage-or-number token: `50%` -> 0.5, `0.5` -> 0.5. */

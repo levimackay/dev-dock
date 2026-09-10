@@ -137,12 +137,6 @@ export const IconLink = (p: IconProps) => (
   </Svg>
 )
 
-export const IconPlay = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M4.5 2.9 12.5 8l-8 5.1z" fill="currentColor" />
-  </Svg>
-)
-
 export const IconPlus = (p: IconProps) => (
   <Svg {...p}>
     <path d="M8 3v10M3 8h10" />

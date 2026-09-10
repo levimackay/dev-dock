@@ -32,13 +32,3 @@ export async function copyText(text: string): Promise<boolean> {
     return false
   }
 }
-
-export async function readClipboard(): Promise<string | null> {
-  try {
-    if (!navigator.clipboard?.readText || !window.isSecureContext) return null
-    return await navigator.clipboard.readText()
-  } catch {
-    // Permission denied, or the user dismissed the prompt. Not an error.
-    return null
-  }
-}

@@ -110,7 +110,7 @@ export function queryPath(value: JsonValue, rawPath: string): QueryResult {
  * tool down on paste, or on opening a share link, before the user touches
  * anything. See MAX_JSON_DEPTH in the JSON formatter for the full note.
  */
-export const MAX_TREE_DEPTH = 1000
+const MAX_TREE_DEPTH = 1000
 
 function resolve(
   value: JsonValue,

@@ -31,10 +31,3 @@ export function pluralize(n: number, one: string, many = `${one}s`): string {
 export function byteLength(text: string): number {
   return new TextEncoder().encode(text).length
 }
-
-/** Truncates in the middle, keeping both ends legible. */
-export function truncateMiddle(text: string, max: number): string {
-  if (text.length <= max) return text
-  const half = Math.floor((max - 1) / 2)
-  return `${text.slice(0, half)}…${text.slice(text.length - (max - half - 1))}`
-}

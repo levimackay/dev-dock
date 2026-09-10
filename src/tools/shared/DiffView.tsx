@@ -50,7 +50,7 @@ export interface EqualBlock {
 
 export type Block = EqualBlock | ChangeBlock
 
-export function buildBlocks(lines: DiffLine[]): Block[] {
+function buildBlocks(lines: DiffLine[]): Block[] {
   const blocks: Block[] = []
   let i = 0
 

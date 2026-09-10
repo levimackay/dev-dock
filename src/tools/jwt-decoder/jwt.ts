@@ -34,16 +34,18 @@ export interface JwtDecodeResult {
   algNone?: boolean
 }
 
-export const HS_ALGORITHMS = ['HS256', 'HS384', 'HS512'] as const
-export type HmacAlgorithm = (typeof HS_ALGORITHMS)[number]
+export type HmacAlgorithm = 'HS256' | 'HS384' | 'HS512'
+
+// Built as a `Set<HmacAlgorithm>` for the literal check, then widened to
+// `ReadonlySet<string>`. That widening is the whole trick: `Array.includes` and
+// `Set.has` on a narrowly typed collection demand an argument that is already
+// the narrow type, which is exactly the question the guard exists to answer, so
+// the obvious spelling needs a cast to silence itself. Widening the collection
+// instead of casting the argument keeps the list in one place and stays honest.
+const HS_ALGORITHMS: ReadonlySet<string> = new Set<HmacAlgorithm>(['HS256', 'HS384', 'HS512'])
 
 export function isHmacAlgorithm(alg: string | undefined): alg is HmacAlgorithm {
-  // A manual comparison, not `HS_ALGORITHMS.includes(alg)`, because `includes`
-  // on a `readonly HmacAlgorithm[]` requires its argument to already be a
-  // `HmacAlgorithm`, exactly the thing this function exists to establish,
-  // so checking it that way would need a cast to silence the very question
-  // being asked.
-  return alg === 'HS256' || alg === 'HS384' || alg === 'HS512'
+  return alg !== undefined && HS_ALGORITHMS.has(alg)
 }
 
 /** Decodes base64url (no padding, `-`/`_` alphabet) to a UTF-8 string. Throws on invalid input. */
@@ -56,19 +58,13 @@ function base64UrlDecodeText(segment: string): string {
   return new TextDecoder('utf-8', { fatal: true }).decode(bytes) // throws on invalid UTF-8
 }
 
-export function base64UrlDecodeBytes(segment: string): Uint8Array {
+function base64UrlDecodeBytes(segment: string): Uint8Array {
   const standard = segment.replace(/-/g, '+').replace(/_/g, '/')
   const padded = standard + '='.repeat((4 - (standard.length % 4)) % 4)
   const binary = atob(padded)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
   return bytes
-}
-
-export function base64UrlEncodeBytes(bytes: Uint8Array): string {
-  let binary = ''
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i] ?? 0)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
 const B64URL_RE = /^[A-Za-z0-9_-]*$/
