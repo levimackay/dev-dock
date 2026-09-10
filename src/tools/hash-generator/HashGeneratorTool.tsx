@@ -82,13 +82,19 @@ export default function HashGeneratorTool() {
     void Promise.all(ALGORITHMS.map((algorithm) => digest(algorithm, sourceBytes)))
       .then((results) => {
         if (stale) return
+        // Zip against the same ALGORITHMS array `digest` was mapped over,
+        // rather than indexing `results` by position, so no cast is needed
+        // to recover which algorithm produced which digest.
         setRows(
-          results.map((bytes, i) => ({
-            algorithm: ALGORITHMS[i] as HashAlgorithm,
-            hex: bytesToHex(bytes),
-            hexUpper: bytesToHex(bytes, true),
-            base64: bytesToBase64(bytes),
-          })),
+          ALGORITHMS.map((algorithm, i) => {
+            const bytes = results[i] ?? new Uint8Array()
+            return {
+              algorithm,
+              hex: bytesToHex(bytes),
+              hexUpper: bytesToHex(bytes, true),
+              base64: bytesToBase64(bytes),
+            }
+          }),
         )
       })
       .finally(() => {

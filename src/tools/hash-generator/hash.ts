@@ -206,16 +206,19 @@ export function compareDigest(
     return { ok: false, message: 'Not a hex digest — only 0-9 and a-f are expected.' }
   }
 
-  const candidate = Object.entries(digests).find(([, value]) => value?.hex.length === cleaned.length)
-  if (!candidate) {
-    return { ok: false, message: `No algorithm here produces a ${cleaned.length}-character digest.` }
+  // Walk the fixed algorithm list rather than `Object.entries(digests)` so the
+  // key stays typed as `HashAlgorithm` throughout — no cast needed to recover
+  // what `Object.entries` would otherwise widen to `string`.
+  for (const algorithm of ALGORITHMS) {
+    const value = digests[algorithm]
+    if (!value || value.hex.length !== cleaned.length) continue
+    const matches = hexEqualConstantTime(cleaned, value.hex)
+    return {
+      ok: matches,
+      message: matches ? `Matches ${algorithm}.` : `Does not match ${algorithm} (the only algorithm at this length).`,
+    }
   }
-  const [algorithm, value] = candidate as [HashAlgorithm, { hex: string }]
-  const matches = hexEqualConstantTime(cleaned, value.hex)
-  return {
-    ok: matches,
-    message: matches ? `Matches ${algorithm}.` : `Does not match ${algorithm} (the only algorithm at this length).`,
-  }
+  return { ok: false, message: `No algorithm here produces a ${cleaned.length}-character digest.` }
 }
 
 /** Same rationale as the JWT tool's byte comparison: never exit early on the first mismatch. */
