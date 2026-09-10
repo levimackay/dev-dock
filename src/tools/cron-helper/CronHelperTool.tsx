@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { ToolShell } from '@/components/ToolShell'
 import { Panel } from '@/components/Panel'
 import { CopyButton } from '@/components/CopyButton'
@@ -12,6 +12,8 @@ import { pluralize } from '@/lib/format'
 import { MACROS, describeCron, explainFields, nextRuns, parseCron } from './cron'
 import { formatRelative } from './relative'
 import { labelCronTokens, tokenizeCronInput } from './ruler'
+import { cx } from '@/lib/cx'
+import styles from './CronHelperTool.module.css'
 
 interface State {
   expression: string
@@ -44,15 +46,6 @@ const PRESETS: Array<{ label: string; expression: string }> = [
   { label: 'Christmas morning at 9am', expression: '0 9 25 12 *' },
 ]
 
-const RULER_FONT: React.CSSProperties = {
-  fontFamily: 'var(--font-mono)',
-  fontSize: 'var(--text-sm)',
-  // Matches TextInput's own inset (padding 0 var(--sp-2) plus its 1px
-  // border) so a `ch` offset computed against the raw string lands on the
-  // same character in the input below.
-  paddingLeft: 'calc(var(--sp-2) + var(--hairline))',
-}
-
 export default function CronHelperTool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
@@ -62,6 +55,16 @@ export default function CronHelperTool() {
     () => labelCronTokens(tokenizeCronInput(state.expression)),
     [state.expression],
   )
+
+  // Clicking a ruler cell selects that field in the input, which turns the
+  // diagram into a way to edit as well as a way to read.
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const selectField = (start: number, end: number) => {
+    const el = inputRef.current
+    if (!el) return
+    el.focus()
+    el.setSelectionRange(start, end)
+  }
 
   const runsResult = useMemo(() => {
     if (!parsed.ok) return undefined
@@ -92,76 +95,42 @@ export default function CronHelperTool() {
           label="Expression"
           actions={<CopyButton value={state.expression} disabled={!state.expression} />}
         >
-          <div
-            style={{
-              padding: 'var(--sp-3)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--sp-2)',
-            }}
-          >
-            {/* The field ruler: labels are positioned in `ch` units directly
-                above the characters they describe, using the same monospace
-                font and left inset as the input beneath them. */}
+          <div className={styles.expression}>
+            <TextInput
+              ref={inputRef}
+              mono
+              className={styles.input}
+              value={state.expression}
+              onChange={(e) => patch({ expression: e.target.value })}
+              placeholder="0 9 * * 1-5"
+              aria-label="Cron expression"
+              invalid={Boolean(state.expression.trim()) && !parsed.ok}
+            />
+
+            {/* The field ruler. Clicking a cell selects that field's text in
+                the input, so the diagram is a way to edit as well as read. */}
             {labelled.length > 0 && (
-              <div style={{ position: 'relative', height: '1.1rem', ...RULER_FONT }}>
+              <div className={styles.ruler}>
                 {labelled.map((token, i) => {
                   const errored = !parsed.ok && parsed.error.fieldIndex === i
                   return (
-                    <span
+                    <button
+                      type="button"
                       key={`${token.field}-${i}`}
-                      style={{
-                        position: 'absolute',
-                        left: `${token.start}ch`,
-                        fontSize: 'var(--text-2xs)',
-                        letterSpacing: 'var(--tracking-label)',
-                        textTransform: 'uppercase',
-                        whiteSpace: 'nowrap',
-                        color: errored ? 'var(--err)' : 'var(--fg-subtle)',
-                        fontWeight: errored ? 600 : 400,
-                      }}
+                      className={cx(styles.cell, errored && styles.cellError)}
+                      title={`Select the ${token.field} field`}
+                      onClick={() => selectField(token.start, token.end)}
                     >
-                      {token.field}
-                    </span>
+                      <span className={styles.cellLabel}>{token.field}</span>
+                      <span className={styles.cellToken}>{token.text}</span>
+                    </button>
                   )
                 })}
               </div>
             )}
 
-            <div style={{ position: 'relative' }}>
-              {!parsed.ok &&
-                parsed.error.fieldIndex !== undefined &&
-                labelled[parsed.error.fieldIndex] && (
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      bottom: 0,
-                      left: `calc(${labelled[parsed.error.fieldIndex]!.start}ch + var(--sp-2) + var(--hairline))`,
-                      width: `${labelled[parsed.error.fieldIndex]!.end - labelled[parsed.error.fieldIndex]!.start}ch`,
-                      background: 'var(--err-quiet)',
-                      borderRadius: 'var(--radius-sm)',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                )}
-              <TextInput
-                mono
-                value={state.expression}
-                onChange={(e) => patch({ expression: e.target.value })}
-                placeholder="0 9 * * 1-5"
-                aria-label="Cron expression"
-                style={{
-                  position: 'relative',
-                  background: 'transparent',
-                  fontSize: 'var(--text-sm)',
-                }}
-              />
-            </div>
-
             {!state.expression.trim() ? (
-              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
+              <p className={styles.hint}>
                 Type a cron expression — five fields, six with a leading seconds column, or a macro
                 like <code>@daily</code> — or pick a preset below.
               </p>

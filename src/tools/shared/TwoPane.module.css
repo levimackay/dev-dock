@@ -54,6 +54,13 @@
   overflow: auto;
 }
 
+/* Flex children shrink by default, and a Panel whose body scrolls will happily
+   be squeezed to nothing and hide its own content. In a scrolling stack each
+   panel should take its natural height and let the stack do the scrolling. */
+.stack > * {
+  flex: 0 0 auto;
+}
+
 .paneInner {
   flex: 1;
   min-height: 0;

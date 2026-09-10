@@ -1,0 +1,94 @@
+.expression {
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.input {
+  font-size: var(--text-md);
+  height: 2.5rem;
+  letter-spacing: 0.06em;
+}
+
+/*
+ * The field ruler.
+ *
+ * The first version drew each field name absolutely, offset in `ch` units so
+ * it sat directly over the characters it described. That is elegant and it is
+ * wrong: a real expression like `0 9 * * 1-5` puts its fields two characters
+ * apart, so five labels of eight to twelve characters each pile on top of one
+ * another and the whole row becomes unreadable.
+ *
+ * A column diagram cannot collide. Each field gets a cell sized to whichever
+ * is wider — its label or its token — so alignment is guaranteed by layout
+ * rather than by arithmetic, and the connection between name and value is
+ * clearer than a floating label ever was.
+ */
+.ruler {
+  display: flex;
+  border: var(--hairline) solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-inset);
+}
+
+.cell {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-2);
+  border-right: var(--hairline) solid var(--line);
+  text-align: center;
+  background: transparent;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.cell:last-child {
+  border-right: none;
+}
+
+.cell:hover {
+  background: var(--bg-hover);
+}
+
+.cellLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cellToken {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellError {
+  background: var(--err-quiet);
+}
+
+.cellError .cellLabel,
+.cellError .cellToken {
+  color: var(--err);
+}
+
+.hint {
+  color: var(--fg-subtle);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.hint code {
+  color: var(--fg-muted);
+}
