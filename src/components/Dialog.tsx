@@ -181,8 +181,11 @@ export function Dialog({
           </header>
         )}
         {/* The body scrolls when the content overflows, so it takes a tab stop:
-            a scroll container that no keyboard user can reach is content they
-            cannot read. WCAG 2.1.1, and axe's scrollable-region-focusable. */}
+            a scroll container no keyboard user can reach is content they cannot
+            read. WCAG 2.1.1, and axe's scrollable-region-focusable rule. The
+            plugin only models tabindex on elements that handle events, and has
+            no notion of a scroll container. */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <div className={styles.body} tabIndex={0}>
           {children}
         </div>

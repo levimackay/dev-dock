@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 /**
  * Shell-level end-to-end coverage: the parts of the app every tool depends on.
@@ -14,7 +14,7 @@ import { expect, test } from '@playwright/test'
  * a key or asserts on app markup waits for a control the shell renders first;
  * without it the suite is a coin toss on a cold cache.
  */
-async function openApp(page: import('@playwright/test').Page, path = '/') {
+async function openApp(page: Page, path = '/') {
   await page.goto(path)
   await page.getByRole('button', { name: /Search 22 tools/ }).waitFor()
 }
