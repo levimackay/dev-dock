@@ -90,25 +90,29 @@ export default function JwtDecoderTool() {
 
   const claimStats: Stat[] = useMemo(() => {
     if (!decoded.ok || !decoded.payload) return []
+    const payload = decoded.payload
+    const timeState = expiryState(payload) // only depends on exp/nbf, computed once for both
+
     const stats: Stat[] = []
     for (const key of REGISTERED_CLAIMS) {
-      const value = decoded.payload[key]
+      const value = payload[key]
       if (value === undefined) continue
       stats.push({ label: key, value: formatClaimValue(value) })
     }
     for (const key of TIME_CLAIMS) {
-      const value = decoded.payload[key]
-      const time = readClaimTime(value)
+      const time = readClaimTime(payload[key])
       if (!time) continue
-      const state =
-        key === 'iat' ? undefined : key === 'exp' ? expiryState(decoded.payload) : expiryState(decoded.payload)
-      // iat has no pass/fail state of its own — only exp/nbf gate validity.
-      const tone = key === 'iat' ? undefined : CLAIM_TONE[state ?? 'n/a']
+      // iat is informational only — exp/nbf are what gate validity, so only
+      // they get a pass/fail colour on the "expired N ago" style note.
+      // StatGrid itself only has one accent colour, not a tone palette, so
+      // the state colour is applied directly here rather than widening a
+      // shared component's API for two rows in one tool.
+      const gates = key === 'exp' || key === 'nbf'
+      const tone = gates ? CLAIM_TONE[timeState] : undefined
       stats.push({
         label: key,
         value: time.absolute,
-        note: key === 'exp' && state === 'expired' ? `expired ${time.relative}` : key === 'nbf' && state === 'not-yet-valid' ? `valid ${time.relative}` : time.relative,
-        accent: tone === 'err' || tone === 'warn',
+        note: tone ? <span style={{ color: `var(--${tone})` }}>{time.relative}</span> : time.relative,
       })
     }
     return stats
