@@ -23,8 +23,9 @@ for (const toolId of TOOL_IDS) {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await page.waitForLoadState('networkidle')
 
-    // Every tool must offer the shared chrome.
-    await expect(page.getByRole('button', { name: /^Pin / })).toBeVisible()
+    // Every tool must offer the shared chrome. Scoped to <main>, because the
+    // rail carries a pin button for all 22 tools at once.
+    await expect(page.getByRole('main').getByRole('button', { name: /^Pin / })).toBeVisible()
     expect(errors).toEqual([])
   })
 }

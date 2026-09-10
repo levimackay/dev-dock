@@ -21,13 +21,27 @@ async function scan(page: Page) {
   return new AxeBuilder({ page }).withTags(TAGS).analyze()
 }
 
+/**
+ * Axe returns the full DOM node for every violation, which turns a one-line
+ * failure into hundreds of lines of serialised HTML. Summarising first means
+ * the failure message names the rule and where it fired, which is the part
+ * anyone actually reads.
+ */
+function summarise(results: Awaited<ReturnType<typeof scan>>) {
+  return results.violations.map((violation) => ({
+    id: violation.id,
+    impact: violation.impact,
+    where: violation.nodes.slice(0, 4).map((node) => node.target.join(' ')),
+    count: violation.nodes.length,
+  }))
+}
+
 test.describe('accessibility', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`home page has no violations in ${theme} mode`, async ({ page }) => {
       await page.goto('/')
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
-      const results = await scan(page)
-      expect(results.violations).toEqual([])
+      expect(summarise(await scan(page))).toEqual([])
     })
   }
 
@@ -35,8 +49,7 @@ test.describe('accessibility', () => {
     test(`${toolId} has no violations`, async ({ page }) => {
       await page.goto(`/t/${toolId}`)
       await page.getByRole('heading', { level: 1 }).waitFor()
-      const results = await scan(page)
-      expect(results.violations).toEqual([])
+      expect(summarise(await scan(page))).toEqual([])
     })
   }
 
@@ -44,15 +57,13 @@ test.describe('accessibility', () => {
     await page.goto('/')
     await page.keyboard.press('ControlOrMeta+k')
     await page.getByRole('dialog').waitFor()
-    const results = await scan(page)
-    expect(results.violations).toEqual([])
+    expect(summarise(await scan(page))).toEqual([])
   })
 
   test('the shortcut dialog has no violations while open', async ({ page }) => {
     await page.goto('/')
     await page.keyboard.press('Shift+/')
     await page.getByRole('dialog', { name: 'Keyboard shortcuts' }).waitFor()
-    const results = await scan(page)
-    expect(results.violations).toEqual([])
+    expect(summarise(await scan(page))).toEqual([])
   })
 })
