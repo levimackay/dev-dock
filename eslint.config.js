@@ -73,6 +73,25 @@ export default tseslint.config(
     },
   },
   {
+    /*
+     * React Fast Refresh wants a module to export components only, so that it
+     * can swap them without remounting. Three modules here break that on
+     * purpose:
+     *
+     *   - a context provider and the hook that reads it belong together. Split
+     *     across two files they drift, and the hook's error message ("used
+     *     outside its provider") stops being next to the provider it names.
+     *   - the shared layout module exports its CSS Module alongside the
+     *     components that use it, because one tool composes the layout by hand.
+     *
+     * The cost is a full remount of that subtree on edit, in development only.
+     * That is a smaller price than three files that exist to satisfy a
+     * dev-server optimisation.
+     */
+    files: ['src/app/preferences.tsx', 'src/components/Toast.tsx', 'src/tools/shared/TwoPane.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     // Tests and config are allowed to be looser about async/unsafe typing.
     files: ['**/*.test.{ts,tsx}', 'vitest.setup.ts', 'e2e/**/*.ts', '*.config.{ts,js}'],
     rules: {
