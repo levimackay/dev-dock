@@ -141,11 +141,11 @@ export default function UrlParserTool() {
                 {/* Masked for display, but the copy button carries the real value: a
               button that copies six bullet characters is worse than no button.
               This is a URL the user pasted, in a tool for taking URLs apart. */}
-          <PartRow
-            label="password"
-            value={result.parts.password}
-            display={result.parts.password ? '••••••' : ''}
-          />
+                <PartRow
+                  label="password"
+                  value={result.parts.password}
+                  display={result.parts.password ? '••••••' : ''}
+                />
                 <PartRow label="host" value={result.parts.host} />
                 <PartRow label="hostname" value={result.parts.hostname} />
                 <PartRow label="port" value={result.parts.port} />
@@ -179,13 +179,23 @@ export default function UrlParserTool() {
           </Panel>
 
           {result.parts.pathname !== '/' && pathSegments(result.parts.pathname).length > 0 && (
-            <Panel label="Path segments">
+            <Panel
+              label="Path segments"
+              actions={<CopyButton value={result.parts.pathname} label="Copy path" />}
+            >
               <div className={styles.section}>
                 <div className={styles.segments}>
                   {pathSegments(result.parts.pathname).map((seg, i) => (
                     <span key={i} style={{ display: 'contents' }}>
                       {i > 0 && <span className={styles.slash}>/</span>}
                       <span className={styles.segment}>{seg}</span>
+                      <CopyButton
+                        value={seg}
+                        size="sm"
+                        variant="ghost"
+                        iconOnly
+                        label={`Copy segment ${i + 1}`}
+                      />
                     </span>
                   ))}
                 </div>

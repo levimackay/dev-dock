@@ -5,6 +5,7 @@ import { CodeArea } from '@/components/CodeArea'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
+import { EmptyState } from '@/components/EmptyState'
 import { Field, Checkbox, SegmentedControl, TextInput } from '@/components/Field'
 import { IconRefresh, IconShield, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
@@ -285,13 +286,11 @@ export default function UuidGeneratorTool() {
               </Callout>
             </div>
           ) : ids.length === 0 ? (
-            <div style={{ padding: 'var(--sp-3)' }}>
-              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)', margin: 0 }}>
-                Pick a kind and a count above, then Generate. Nothing here is shareable by link,
-                regenerate whenever you need fresh ids, the options above are all a share link
-                carries.
-              </p>
-            </div>
+            <EmptyState compact title="Nothing generated yet" mark={<IconRefresh size={24} />}>
+              Pick a kind and a count above, then Generate. Nothing here is shareable by link,
+              regenerate whenever you need fresh ids, the options above are all a share link
+              carries.
+            </EmptyState>
           ) : (
             <CodeArea
               label="Generated ids"

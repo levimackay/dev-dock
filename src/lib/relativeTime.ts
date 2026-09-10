@@ -34,7 +34,11 @@ export interface RelativeOptions {
   maxUnit?: Unit['singular']
 }
 
-export function formatRelative(fromMs: number, toMs: number, options: RelativeOptions = {}): string {
+export function formatRelative(
+  fromMs: number,
+  toMs: number,
+  options: RelativeOptions = {},
+): string {
   const { nearMs = 5000, nowLabel = 'just now', maxUnit = 'year' } = options
 
   const diff = toMs - fromMs

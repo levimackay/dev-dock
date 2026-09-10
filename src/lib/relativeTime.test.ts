@@ -46,7 +46,7 @@ describe('formatRelative', () => {
   })
 
   it('stops at the unit ceiling when asked', () => {
-    expect(after(400 * DAY, )).toBe('in 1 year')
+    expect(after(400 * DAY)).toBe('in 1 year')
     expect(formatRelative(0, 400 * DAY, { maxUnit: 'day' })).toBe('in 400 days')
   })
 

@@ -29,12 +29,25 @@
 }
 
 .value {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.valueText {
   font-family: var(--font-mono);
   font-size: var(--text-md);
   color: var(--fg);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
   line-height: 1.2;
+  min-width: 0;
+}
+
+.copyBtn {
+  flex: none;
+  align-self: center;
 }
 
 .note {

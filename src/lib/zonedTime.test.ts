@@ -92,7 +92,13 @@ describe('zonedTimeToUtc', () => {
   })
 
   it('round-trips a wall time through the offset it reports', () => {
-    for (const zone of ['UTC', 'America/Denver', 'Europe/Dublin', 'Asia/Kolkata', 'Pacific/Auckland']) {
+    for (const zone of [
+      'UTC',
+      'America/Denver',
+      'Europe/Dublin',
+      'Asia/Kolkata',
+      'Pacific/Auckland',
+    ]) {
       const instant = zonedTimeToUtc(civil(2026, 6, 15, 14, 30), zone)
       const offset = tzOffsetMs(instant.getTime(), zone)
       expect(new Date(instant.getTime() + offset).toISOString()).toContain('T14:30:00')

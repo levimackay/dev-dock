@@ -561,15 +561,9 @@ function FilterResults({
   return (
     <div className={styles.results}>
       {shown.length === 0 ? (
-        <div
-          style={{
-            padding: 'var(--sp-2) var(--sp-3)',
-            fontSize: 'var(--text-2xs)',
-            color: 'var(--fg-subtle)',
-          }}
-        >
-          <IconSearch size={11} /> No match.
-        </div>
+        <EmptyState compact title="No matches for this filter" mark={<IconSearch size={18} />}>
+          Try a plain substring, or a path expression like items[*].id.
+        </EmptyState>
       ) : (
         shown.map((match) => (
           <button

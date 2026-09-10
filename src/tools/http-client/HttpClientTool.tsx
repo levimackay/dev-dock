@@ -413,6 +413,13 @@ export default function HttpClientTool() {
                 <span className={`${styles.statusCode} ${styles[statusTone]}`}>
                   {response.status} {response.statusText}
                 </span>
+                <CopyButton
+                  value={`${response.status} ${response.statusText}`}
+                  size="sm"
+                  variant="ghost"
+                  iconOnly
+                  label="Copy status"
+                />
                 {summaryStats && <StatGrid stats={summaryStats} />}
               </div>
 
@@ -422,6 +429,13 @@ export default function HttpClientTool() {
                     <div className={styles.headerRow} key={key}>
                       <span className={styles.headerKey}>{key}</span>
                       <span className={styles.headerValue}>{value}</span>
+                      <CopyButton
+                        value={`${key}: ${value}`}
+                        size="sm"
+                        variant="ghost"
+                        iconOnly
+                        label={`Copy ${key} header`}
+                      />
                     </div>
                   ))}
                 </div>

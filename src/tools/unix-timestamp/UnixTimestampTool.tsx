@@ -4,6 +4,7 @@ import { Panel } from '@/components/Panel'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
+import { EmptyState } from '@/components/EmptyState'
 import { Field, Select, SegmentedControl, TextInput } from '@/components/Field'
 import { IconClock, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, PaneStack } from '@/tools/shared/TwoPane'
@@ -242,6 +243,13 @@ export default function UnixTimestampTool() {
           >
             {nowEpochs.seconds}s · {nowEpochs.milliseconds}ms
           </code>
+          <CopyButton
+            value={() => `${formatInZone(now, LOCAL_ZONE)} (${nowEpochs.seconds}s)`}
+            size="sm"
+            variant="ghost"
+            iconOnly
+            label="Copy now"
+          />
           <OptionSpacer />
           <Button size="sm" variant="ghost" pressed={paused} onClick={() => setPaused((v) => !v)}>
             {paused ? 'Resume' : 'Pause'}
@@ -310,11 +318,11 @@ export default function UnixTimestampTool() {
             </div>
 
             {!state.input.trim() ? (
-              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
+              <EmptyState compact title="Nothing to convert yet" mark={<IconClock size={24} />}>
                 Type an epoch timestamp above, seconds, milliseconds, microseconds, or nanoseconds,
-                positive or negative. The unit is guessed from its magnitude; override it if the
-                guess is wrong.
-              </p>
+                positive or negative, or load the Sample. The unit is guessed from its magnitude;
+                override it if the guess is wrong.
+              </EmptyState>
             ) : !parsed?.ok ? (
               <Callout tone="err" title="Cannot parse this timestamp" live>
                 {parsed?.error}
@@ -391,10 +399,10 @@ export default function UnixTimestampTool() {
             </div>
 
             {!parsedFields ? (
-              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
+              <EmptyState compact title="Nothing picked yet" mark={<IconClock size={24} />}>
                 Pick a date and time above, using your browser's own date/time control, interpreted
                 in the time zone you choose, to get its epoch value in every unit.
-              </p>
+              </EmptyState>
             ) : (
               <div
                 style={{

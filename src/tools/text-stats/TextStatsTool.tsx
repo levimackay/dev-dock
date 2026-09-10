@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { ToolShell } from '@/components/ToolShell'
 import { Panel } from '@/components/Panel'
 import { CodeArea } from '@/components/CodeArea'
+import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
-import { StatGrid, type Stat } from '@/components/StatGrid'
+import { StatGrid } from '@/components/StatGrid'
 import { Checkbox } from '@/components/Field'
 import { IconLayers, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
@@ -90,14 +91,19 @@ export default function TextStatsTool() {
     }
   }, [debounced, state.includeStopwords])
 
-  const headline: Stat[] = [
+  // Not typed as `Stat[]` here: `Stat.value`/`note` are `ReactNode` for the
+  // general case, but every entry below is actually a plain string, and
+  // leaving these at their inferred (narrower) type is what lets `statsText`
+  // build a copyable block without a runtime type check. They still satisfy
+  // `Stat[]` structurally when handed to `StatGrid` below.
+  const headline = [
     { label: 'words', value: formatCount(stats.words) },
     { label: 'characters', value: stats.chars.withSpaces.toLocaleString() },
     { label: 'sentences', value: stats.sentences.toLocaleString() },
     { label: 'paragraphs', value: stats.paragraphs.toLocaleString() },
   ]
 
-  const detail: Stat[] = [
+  const detail = [
     { label: 'chars (no spaces)', value: stats.chars.withoutSpaces.toLocaleString() },
     { label: 'UTF-8 bytes', value: stats.bytes.toLocaleString() },
     { label: 'unique words', value: stats.uniqueWords.toLocaleString() },
@@ -116,7 +122,7 @@ export default function TextStatsTool() {
     },
   ]
 
-  const readability: Stat[] = [
+  const readability = [
     {
       label: 'Flesch Reading Ease',
       value: stats.readingEase.toFixed(1),
@@ -128,6 +134,15 @@ export default function TextStatsTool() {
       note: 'US school grade level',
     },
   ]
+
+  // Flattens the three StatGrids into one plain-text block, in the same order
+  // they render, so "copy the full statistics" gives back exactly what's on
+  // screen rather than a re-derived summary that could drift from it.
+  const statsText = [...headline, ...detail, ...readability]
+    .map((s) => `${s.label}: ${s.value}`)
+    .join('\n')
+
+  const charFreqText = stats.charFreq.map((f) => `${describeChar(f.char)}: ${f.count}`).join('\n')
 
   const hasInput = state.input !== ''
 
@@ -147,6 +162,7 @@ export default function TextStatsTool() {
             <IconTrash size={13} />
             Clear
           </Button>
+          <CopyButton value={() => statsText} label="Copy stats" disabled={!hasInput} />
         </>
       }
     >
@@ -217,13 +233,24 @@ export default function TextStatsTool() {
                         <span className={styles.freqCount}>
                           {f.count} · {f.percent.toFixed(1)}%
                         </span>
+                        <CopyButton
+                          value={f.word}
+                          size="sm"
+                          variant="ghost"
+                          iconOnly
+                          label={`Copy "${f.word}"`}
+                        />
                       </li>
                     ))}
                   </ul>
                 )}
               </Panel>
 
-              <Panel label="Character frequency" status={pluralize(stats.charFreq.length, 'char')}>
+              <Panel
+                label="Character frequency"
+                status={pluralize(stats.charFreq.length, 'char')}
+                actions={<CopyButton value={() => charFreqText} label="Copy list" />}
+              >
                 <ul className={styles.freqList}>
                   {stats.charFreq.map((f) => (
                     <li key={JSON.stringify(f.char)} className={styles.freqRow}>
@@ -250,7 +277,9 @@ export default function TextStatsTool() {
             <Panel label="Longest words">
               <div className={styles.chipRow}>
                 {stats.longest.length === 0 ? (
-                  <span className={styles.chipEmpty}>No words found.</span>
+                  <EmptyState compact title="No words found" mark={<IconLayers size={20} />}>
+                    The text has characters but nothing this tool counts as a word.
+                  </EmptyState>
                 ) : (
                   stats.longest.map((w) => (
                     <code key={w} className={styles.chip}>

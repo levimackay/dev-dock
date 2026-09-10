@@ -88,7 +88,7 @@ function myers<T>(a: readonly T[], b: readonly T[], maxD: number): DiffChunk<T>[
   const offset = max + 1
 
   // v[k + offset] = furthest x reached on diagonal k
-  let v = new Int32Array(2 * max + 3)
+  const v = new Int32Array(2 * max + 3)
   const trace: Int32Array[] = []
 
   for (let d = 0; d <= max; d++) {
@@ -116,7 +116,6 @@ function myers<T>(a: readonly T[], b: readonly T[], maxD: number): DiffChunk<T>[
 
       if (x >= n && y >= m) return backtrack(a, b, trace, offset, d, k)
     }
-
   }
 
   // Edit distance exceeded the ceiling.

@@ -110,7 +110,8 @@
 
 .headerRow {
   display: grid;
-  grid-template-columns: minmax(8rem, auto) 1fr;
+  grid-template-columns: minmax(8rem, auto) 1fr auto;
+  align-items: baseline;
   gap: var(--sp-2);
   padding: 0.1rem 0;
   border-bottom: var(--hairline) solid var(--line-faint);

@@ -4,8 +4,9 @@ import { Panel } from '@/components/Panel'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
+import { EmptyState } from '@/components/EmptyState'
 import { Field, Select, SegmentedControl, TextInput } from '@/components/Field'
-import { IconGlobe, IconPlus, IconTrash, IconX } from '@/components/Icon'
+import { IconClock, IconGlobe, IconPlus, IconTrash, IconX } from '@/components/Icon'
 import { PaneStack } from '@/tools/shared/TwoPane'
 import { oneOf, shapeValidator, stringArrayOf, useShareState } from '@/tools/useShareState'
 import {
@@ -226,11 +227,11 @@ export default function DateTimeConverterTool() {
             />
 
             {!state.input.trim() ? (
-              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
-                Type a date or time above in almost any common shape. A bare date like{' '}
-                <code>2026-03-15</code> is genuinely ambiguous, the toggle that appears will let you
-                say which midnight you meant.
-              </p>
+              <EmptyState compact title="Nothing to convert yet" mark={<IconClock size={24} />}>
+                Type a date or time above in almost any common shape, or load the Sample. A bare
+                date like <code>2026-03-15</code> is genuinely ambiguous, the toggle that appears
+                will let you say which midnight you meant.
+              </EmptyState>
             ) : !parsed?.ok ? (
               <Callout tone="err" title="Cannot parse this input" live>
                 {parsed?.error}
@@ -409,9 +410,9 @@ export default function DateTimeConverterTool() {
                 })}
               </div>
             ) : (
-              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
-                Enter a moment above to see it rendered in every pinned zone.
-              </p>
+              <EmptyState compact title="Nothing to show yet" mark={<IconGlobe size={24} />}>
+                Enter a moment in the panel above to see it rendered in every pinned zone here.
+              </EmptyState>
             )}
           </div>
         </Panel>
@@ -453,12 +454,32 @@ export default function DateTimeConverterTool() {
 
             {duration && (
               <>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-md)' }}>
-                  {duration.negative && 'minus '}
-                  {duration.years > 0 && `${duration.years}y `}
-                  {duration.months > 0 && `${duration.months}mo `}
-                  {duration.days}d {duration.hours}h {duration.minutes}m {duration.seconds}s
-                </p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-2)' }}>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 'var(--text-md)',
+                      margin: 0,
+                    }}
+                  >
+                    {duration.negative && 'minus '}
+                    {duration.years > 0 && `${duration.years}y `}
+                    {duration.months > 0 && `${duration.months}mo `}
+                    {duration.days}d {duration.hours}h {duration.minutes}m {duration.seconds}s
+                  </p>
+                  <CopyButton
+                    value={
+                      (duration.negative ? 'minus ' : '') +
+                      (duration.years > 0 ? `${duration.years}y ` : '') +
+                      (duration.months > 0 ? `${duration.months}mo ` : '') +
+                      `${duration.days}d ${duration.hours}h ${duration.minutes}m ${duration.seconds}s`
+                    }
+                    size="sm"
+                    variant="ghost"
+                    iconOnly
+                    label="Copy duration"
+                  />
+                </div>
                 <div
                   style={{
                     border: 'var(--hairline) solid var(--line)',

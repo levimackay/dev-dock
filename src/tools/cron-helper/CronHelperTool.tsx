@@ -4,6 +4,7 @@ import { Panel } from '@/components/Panel'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
+import { EmptyState } from '@/components/EmptyState'
 import { SegmentedControl, TextInput } from '@/components/Field'
 import { IconClock, IconTrash, IconWarning } from '@/components/Icon'
 import { PaneStack } from '@/tools/shared/TwoPane'
@@ -137,21 +138,34 @@ export default function CronHelperTool() {
             )}
 
             {!state.expression.trim() ? (
-              <p className={styles.hint}>
-                Type a cron expression, five fields, six with a leading seconds column, or a macro
-                like <code>@daily</code>, or pick a preset below.
-              </p>
+              <EmptyState compact title="Nothing to schedule yet" mark={<IconClock size={24} />}>
+                Type a cron expression above, five fields, six with a leading seconds column, or a
+                macro like <code>@daily</code>, or pick a preset below to see it explained in plain
+                English with its next ten run times.
+              </EmptyState>
             ) : !parsed.ok ? (
               <Callout tone="err" title="Cannot parse this expression" live>
                 {parsed.error.message}
               </Callout>
             ) : (
-              // Not `live`: this recomputes on every keystroke while the
-              // expression stays parseable, so announcing it every time would
-              // be the over-announce anti-pattern, not a screen-reader
-              // courtesy. The error branch above stays live. That is a real
-              // state transition, not a per-keystroke redraw.
-              <Callout tone="info" title={describeCron(parsed.expression)} />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-2)' }}>
+                {/* Not `live`: this recomputes on every keystroke while the
+                    expression stays parseable, so announcing it every time
+                    would be the over-announce anti-pattern, not a
+                    screen-reader courtesy. The error branch above stays
+                    live. That is a real state transition, not a
+                    per-keystroke redraw. */}
+                <Callout
+                  tone="info"
+                  title={describeCron(parsed.expression)}
+                  className={styles.descriptionCallout}
+                />
+                <CopyButton
+                  value={describeCron(parsed.expression)}
+                  iconOnly
+                  label="Copy description"
+                />
+              </div>
             )}
           </div>
         </Panel>
@@ -192,7 +206,16 @@ export default function CronHelperTool() {
                     >
                       {row.raw}
                     </code>
-                    <span style={{ fontSize: 'var(--text-sm)' }}>{row.meaning}</span>
+                    <span style={{ fontSize: 'var(--text-sm)', flex: 1, minWidth: 0 }}>
+                      {row.meaning}
+                    </span>
+                    <CopyButton
+                      value={row.meaning}
+                      size="sm"
+                      variant="ghost"
+                      iconOnly
+                      label={`Copy ${row.field} meaning`}
+                    />
                   </div>
                 ))}
               </div>
@@ -273,6 +296,13 @@ export default function CronHelperTool() {
                           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--fg-subtle)' }}>
                             {formatRelative(run, new Date())}
                           </span>
+                          <CopyButton
+                            value={absolute}
+                            size="sm"
+                            variant="ghost"
+                            iconOnly
+                            label="Copy run time"
+                          />
                         </div>
                       )
                     })}

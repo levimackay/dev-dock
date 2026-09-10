@@ -3,6 +3,7 @@ import styles from './DiffView.module.css'
 import { cx } from '@/lib/cx'
 import { diffWords, type DiffLine, type LineDiffResult, type WordSpan } from '@/lib/diff'
 import { IconChevronRight } from '@/components/Icon'
+import { CopyButton } from '@/components/CopyButton'
 import { pluralize } from '@/lib/format'
 
 /**
@@ -341,6 +342,7 @@ function PlainRow({ line, mode }: { line: DiffLine; mode: 'side-by-side' | 'unif
         <span className={styles.gutter}>{line.rightNo ?? ''}</span>
         <span className={styles.marker}> </span>
         <span className={styles.text}>{line.text}</span>
+        <RowCopy text={line.text} />
       </div>
     )
   }
@@ -381,7 +383,28 @@ function Side({
       <span className={styles.gutter}>{lineNo ?? ''}</span>
       <span className={styles.sideMarker}>{marker}</span>
       <span className={styles.text}>{renderWords(line.text, words)}</span>
+      <RowCopy text={line.text} />
     </span>
+  )
+}
+
+/**
+ * Per-row copy, shown on hover/focus like the rail's pin button
+ * (`AppShell.module.css` `.pinBtn`). Always occupies its grid cell so hovering
+ * doesn't reflow the row; only its opacity changes. Lives in its own small
+ * component because every row shape (`PlainRow` unified, both `Side`s) needs
+ * one and the label should always name the actual line.
+ */
+function RowCopy({ text }: { text: string }) {
+  return (
+    <CopyButton
+      value={text}
+      size="sm"
+      variant="ghost"
+      iconOnly
+      label="Copy line"
+      className={styles.rowCopy}
+    />
   )
 }
 
@@ -412,6 +435,7 @@ function ChangeRows({
             <span className={styles.text}>
               {renderWords(line.text, block.wordsByLine.get(line))}
             </span>
+            <RowCopy text={line.text} />
           </div>
         ))}
       </div>

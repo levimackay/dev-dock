@@ -5,8 +5,9 @@ import { CodeArea } from '@/components/CodeArea'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
+import { EmptyState } from '@/components/EmptyState'
 import { Checkbox, Field, TextInput } from '@/components/Field'
-import { IconTrash, IconUpload } from '@/components/Icon'
+import { IconShield, IconTrash, IconUpload } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
 import { shapeValidator, useShareState } from '@/tools/useShareState'
 import { formatBytes, pluralize } from '@/lib/format'
@@ -241,15 +242,10 @@ export default function HashGeneratorTool() {
           }
         >
           {!sourceBytes ? (
-            <div
-              style={{
-                padding: 'var(--sp-3)',
-                color: 'var(--fg-subtle)',
-                fontSize: 'var(--text-sm)',
-              }}
-            >
-              Nothing to hash yet.
-            </div>
+            <EmptyState compact title="Nothing to hash yet" mark={<IconShield size={24} />}>
+              Type or paste text above, drop a file onto it, or load the Sample, to see every
+              algorithm's digest here at once.
+            </EmptyState>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {rows.map((row) => {

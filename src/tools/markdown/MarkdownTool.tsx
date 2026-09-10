@@ -4,8 +4,9 @@ import { Panel } from '@/components/Panel'
 import { CodeArea } from '@/components/CodeArea'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
+import { EmptyState } from '@/components/EmptyState'
 import { Checkbox, SegmentedControl } from '@/components/Field'
-import { IconDownload, IconTrash } from '@/components/Icon'
+import { IconDownload, IconKeyboard, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, twoPaneStyles } from '@/tools/shared/TwoPane'
 import { SplitPane } from '@/components/SplitPane'
 import { shapeValidator, useShareState } from '@/tools/useShareState'
@@ -226,9 +227,10 @@ export default function MarkdownTool() {
           // eslint-disable-next-line no-restricted-syntax -- sanitized by DOMPurify.sanitize inside renderMarkdown
           <div className={styles.prose} dangerouslySetInnerHTML={{ __html: html }} />
         ) : (
-          <div style={{ padding: 'var(--sp-6)', color: 'var(--fg-subtle)' }}>
-            Nothing to preview yet. Start typing, or load the Sample.
-          </div>
+          <EmptyState compact title="Nothing to preview yet" mark={<IconKeyboard size={24} />}>
+            Start typing Markdown on the left, or load the Sample, to see it rendered here as
+            sanitised HTML.
+          </EmptyState>
         )}
       </div>
     </Panel>

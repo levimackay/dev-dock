@@ -5,8 +5,9 @@ import { CodeArea } from '@/components/CodeArea'
 import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
+import { EmptyState } from '@/components/EmptyState'
 import { Checkbox, Field, Select, SegmentedControl, TextInput } from '@/components/Field'
-import { IconDownload, IconPlus, IconTrash } from '@/components/Icon'
+import { IconDownload, IconLayers, IconPlus, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
 import { numberBetween, oneOf, shapeValidator, useShareState } from '@/tools/useShareState'
 import { downloadText } from '@/lib/download'
@@ -304,9 +305,10 @@ export default function TestDataTool() {
               }
             >
               {fields.length === 0 ? (
-                <div style={{ padding: 'var(--sp-3)' }}>
-                  <Callout tone="info">Add a field to start building a schema.</Callout>
-                </div>
+                <EmptyState compact title="No fields yet" mark={<IconPlus size={24} />}>
+                  Add a field above to start building a schema, name, type, and options, then
+                  generate rows from it below.
+                </EmptyState>
               ) : (
                 <div style={{ overflowX: 'auto' }}>
                   <table className={styles.table}>
@@ -404,11 +406,9 @@ export default function TestDataTool() {
           actions={<CopyButton value={output} label="Copy" disabled={!output} />}
         >
           {!output ? (
-            <div style={{ padding: 'var(--sp-3)' }}>
-              <Callout tone="info">
-                Nothing to generate yet, add a field or raise the count above.
-              </Callout>
-            </div>
+            <EmptyState compact title="Nothing generated yet" mark={<IconLayers size={24} />}>
+              Add a field or raise the row count above, output updates here live as you go.
+            </EmptyState>
           ) : (
             <CodeArea
               label="Generated output"

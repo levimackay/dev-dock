@@ -108,7 +108,8 @@ export default function JwtDecoderTool() {
     for (const key of REGISTERED_CLAIMS) {
       const value = payload[key]
       if (value === undefined) continue
-      stats.push({ label: key, value: formatClaimValue(value) })
+      const text = formatClaimValue(value)
+      stats.push({ label: key, value: text, copy: text })
     }
     for (const key of TIME_CLAIMS) {
       const time = readClaimTime(payload[key])
@@ -123,6 +124,7 @@ export default function JwtDecoderTool() {
       stats.push({
         label: key,
         value: time.absolute,
+        copy: time.absolute,
         note: tone ? (
           <span style={{ color: `var(--${tone})` }}>{time.relative}</span>
         ) : (
@@ -201,7 +203,11 @@ export default function JwtDecoderTool() {
         ) : (
           <>
             {decoded.algNone && (
-              <Callout tone="err" title={`alg: "${decoded.header?.alg}", no signature is possible`} live>
+              <Callout
+                tone="err"
+                title={`alg: "${decoded.header?.alg}", no signature is possible`}
+                live
+              >
                 This token declares the JWS "none" algorithm, which has no signature at all. A
                 server that honours <code>alg: none</code> on an incoming token is trivially
                 bypassable. This is a real, historical vulnerability class, not a theoretical one.

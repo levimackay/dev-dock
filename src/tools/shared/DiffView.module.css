@@ -51,7 +51,7 @@
 
 .side {
   display: grid;
-  grid-template-columns: 3rem 1.1rem 1fr;
+  grid-template-columns: 3rem 1.1rem 1fr auto;
   align-items: baseline;
   min-width: 0;
   padding: 0.05rem 0;
@@ -117,10 +117,22 @@
   border-radius: var(--radius-sm);
 }
 
+/* Reserves its grid cell always, so hovering never reflows the row; only
+   opacity toggles, the same convention as the rail's .pinBtn. */
+.rowCopy {
+  opacity: 0;
+}
+
+.side:hover .rowCopy,
+.unifiedRow:hover .rowCopy,
+.rowCopy:focus-visible {
+  opacity: 1;
+}
+
 /* ---- unified mode ------------------------------------------------------ */
 
 .unified .row {
-  grid-template-columns: 3rem 3rem 1.25rem 1fr;
+  grid-template-columns: 3rem 3rem 1.25rem 1fr auto;
 }
 
 .unifiedRow {

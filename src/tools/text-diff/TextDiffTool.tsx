@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ToolShell } from '@/components/ToolShell'
 import { Panel } from '@/components/Panel'
 import { CodeArea } from '@/components/CodeArea'
+import { CopyButton } from '@/components/CopyButton'
 import { Button } from '@/components/Button'
 import { Callout } from '@/components/Callout'
 import { EmptyState } from '@/components/EmptyState'
@@ -11,7 +12,7 @@ import { IconArrowSwap, IconLayers, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack, TwoPane } from '@/tools/shared/TwoPane'
 import { DiffView, type ChangeGroupInfo } from '@/tools/shared/DiffView'
 import { shapeValidator, useShareState } from '@/tools/useShareState'
-import { diffLines } from '@/lib/diff'
+import { diffLines, toUnifiedDiff } from '@/lib/diff'
 import { pluralize } from '@/lib/format'
 import { SAMPLE_LEFT, SAMPLE_RIGHT, similarityPercent } from './textdiff'
 
@@ -66,8 +67,23 @@ export default function TextDiffTool() {
     { label: 'similarity', value: `${similarityPercent(result)}%` },
   ]
 
+  const summaryLine = `+${result.added} -${result.removed} ~${result.unchanged} unchanged, ${similarityPercent(result)}% similar`
+
   const hasInput = state.left !== '' || state.right !== ''
   const hasChanges = result.added > 0 || result.removed > 0
+
+  // Unified form, same as code-diff's "Copy patch": a plain-text diff is the
+  // one shape every editor, chat client, and `git apply` can consume.
+  const patchText = useMemo(
+    () =>
+      toUnifiedDiff(state.left, state.right, {
+        leftName: 'left',
+        rightName: 'right',
+        ignoreWhitespace: state.ignoreWhitespace,
+        ignoreCase: state.ignoreCase,
+      }),
+    [state.left, state.right, state.ignoreWhitespace, state.ignoreCase],
+  )
 
   return (
     <ToolShell
@@ -98,6 +114,7 @@ export default function TextDiffTool() {
             <IconTrash size={13} />
             Clear
           </Button>
+          <CopyButton value={() => patchText} label="Copy diff" disabled={!hasChanges} />
         </>
       }
     >
@@ -191,7 +208,11 @@ export default function TextDiffTool() {
               </Callout>
             )}
 
-            <Panel label="Summary" padded>
+            <Panel
+              label="Summary"
+              padded
+              actions={<CopyButton value={summaryLine} label="Copy summary" />}
+            >
               <StatGrid stats={stats} />
             </Panel>
 
