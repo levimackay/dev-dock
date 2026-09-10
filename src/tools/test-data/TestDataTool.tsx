@@ -8,7 +8,7 @@ import { Callout } from '@/components/Callout'
 import { Checkbox, Field, Select, SegmentedControl, TextInput } from '@/components/Field'
 import { IconDownload, IconPlus, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
-import { shapeValidator, useShareState } from '@/tools/useShareState'
+import { numberBetween, oneOf, shapeValidator, useShareState } from '@/tools/useShareState'
 import { downloadText } from '@/lib/download'
 import { pluralize } from '@/lib/format'
 import styles from './TestDataTool.module.css'
@@ -66,15 +66,15 @@ const DEFAULTS: State = {
 }
 
 const isState = shapeValidator<State>({
-  mode: 'string',
-  loremUnit: 'string',
-  loremCount: 'number',
+  mode: oneOf('lorem', 'records'),
+  loremUnit: oneOf('words', 'sentences', 'paragraphs', 'listItems', 'bytes'),
+  loremCount: numberBetween(1, 100_000),
   loremSeed: 'string',
   loremStartWithLorem: 'boolean',
-  recordsCount: 'number',
+  recordsCount: numberBetween(1, MAX_ROWS),
   recordsSeed: 'string',
   fieldsJson: 'string',
-  outputFormat: 'string',
+  outputFormat: oneOf('json', 'jsonl', 'csv', 'tsv', 'sql', 'ts'),
   tableName: 'string',
   interfaceName: 'string',
 })
@@ -189,6 +189,13 @@ export default function TestDataTool() {
         return toSqlInserts(rows, fields, state.tableName)
       case 'ts':
         return toTsInterface(fields, state.interfaceName)
+      default:
+        // Unreachable while the validator holds, and cheap insurance if a
+        // format is added to the union without a case here. Falling off the end
+        // of this switch used to return `undefined` from a function typed
+        // `string`, which TypeScript cannot catch across an exhaustive-looking
+        // switch on a value that arrived from a URL.
+        return toJson(rows)
     }
   }, [rows, fields, state.outputFormat, state.tableName, state.interfaceName])
 

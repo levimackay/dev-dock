@@ -8,12 +8,13 @@ import { Callout } from '@/components/Callout'
 import { Field, Checkbox, SegmentedControl, TextInput } from '@/components/Field'
 import { IconRefresh, IconShield, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
-import { shapeValidator, useShareState } from '@/tools/useShareState'
+import { numberBetween, oneOf, shapeValidator, useShareState } from '@/tools/useShareState'
 import { pluralize } from '@/lib/format'
 import {
   DEFAULT_BULK_FORMAT,
   DEFAULT_NANOID_ALPHABET,
   DEFAULT_NANOID_LENGTH,
+  MAX_NANOID_ALPHABET,
   MAX_NANOID_LENGTH,
   decodeUuid,
   formatBulk,
@@ -46,11 +47,14 @@ const DEFAULTS: State = {
   ...DEFAULT_BULK_FORMAT,
 }
 
+const MAX_COUNT = 1000
+
 const isState = shapeValidator<State>({
-  kind: 'string',
-  count: 'number',
-  nanoidLength: 'number',
-  nanoidAlphabet: 'string',
+  kind: oneOf('uuidv4', 'uuidv7', 'nanoid', 'ulid'),
+  count: numberBetween(1, MAX_COUNT),
+  nanoidLength: numberBetween(1, MAX_NANOID_LENGTH),
+  nanoidAlphabet: (value) =>
+    typeof value === 'string' && value.length > 0 && value.length <= MAX_NANOID_ALPHABET,
   decodeInput: 'string',
   uppercase: 'boolean',
   noHyphens: 'boolean',
@@ -60,8 +64,6 @@ const isState = shapeValidator<State>({
   sql: 'boolean',
   json: 'boolean',
 })
-
-const MAX_COUNT = 1000
 
 const KIND_LABEL: Record<IdKind, string> = {
   uuidv4: 'UUID v4',
@@ -106,6 +108,7 @@ export default function UuidGeneratorTool() {
     // the button simply did nothing.
     const count = Math.min(MAX_COUNT, Math.max(1, Math.floor(state.count) || 1))
     const nanoidLength = Math.min(
+      MAX_NANOID_ALPHABET,
       MAX_NANOID_LENGTH,
       Math.max(1, Math.floor(state.nanoidLength) || DEFAULT_NANOID_LENGTH),
     )

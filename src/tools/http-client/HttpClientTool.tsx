@@ -10,7 +10,7 @@ import { StatGrid, type Stat } from '@/components/StatGrid'
 import { Checkbox, Select, SegmentedControl, TextInput } from '@/components/Field'
 import { IconGlobe, IconPlus, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, PaneStack } from '@/tools/shared/TwoPane'
-import { shapeValidator, useShareState } from '@/tools/useShareState'
+import { oneOf, shapeValidator, useShareState } from '@/tools/useShareState'
 import { formatBytes, formatDuration, pluralize } from '@/lib/format'
 import styles from './HttpClientTool.module.css'
 import {
@@ -55,7 +55,10 @@ interface State {
 // the method and URL, the part someone actually wants a colleague to be
 // able to open with one click, are shareable. The UI says so, once.
 const DEFAULTS: State = { method: 'GET', url: '' }
-const isState = shapeValidator<State>({ method: 'string', url: 'string' })
+// `fetch` accepts any token as a method, so a link must not be able to pick
+// one. The URL stays a plain string: it is validated where it is used, by the
+// URL parser, which produces a better message than a validator could.
+const isState = shapeValidator<State>({ method: oneOf(...HTTP_METHODS), url: 'string' })
 
 const SAMPLE_URL = 'https://httpbin.org/get?greeting=hello'
 

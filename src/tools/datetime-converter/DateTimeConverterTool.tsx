@@ -7,7 +7,7 @@ import { Callout } from '@/components/Callout'
 import { Field, Select, SegmentedControl, TextInput } from '@/components/Field'
 import { IconGlobe, IconPlus, IconTrash, IconX } from '@/components/Icon'
 import { PaneStack } from '@/tools/shared/TwoPane'
-import { shapeValidator, useShareState } from '@/tools/useShareState'
+import { oneOf, shapeValidator, stringArrayOf, useShareState } from '@/tools/useShareState'
 import {
   durationBetween,
   parseFlexible,
@@ -98,9 +98,11 @@ const DEFAULTS: State = {
 
 const isState = shapeValidator<State>({
   input: 'string',
-  dateOnlyAs: 'string',
+  dateOnlyAs: oneOf('utc', 'zone'),
   zone: 'string',
-  pinnedZones: 'string[]',
+  // Capped: nothing stops a link listing all ~400 IANA zone names, and the
+  // table renders one row each.
+  pinnedZones: stringArrayOf(12, 64),
   addZone: 'string',
   durationFrom: 'string',
   durationTo: 'string',

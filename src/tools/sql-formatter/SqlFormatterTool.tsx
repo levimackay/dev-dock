@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { Checkbox, Select, SegmentedControl } from '@/components/Field'
 import { IconDownload, IconLayers, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, TwoPane } from '@/tools/shared/TwoPane'
-import { shapeValidator, useShareState } from '@/tools/useShareState'
+import { numberBetween, oneOf, shapeValidator, useShareState } from '@/tools/useShareState'
 import { pluralize } from '@/lib/format'
 import { downloadText } from '@/lib/download'
 import { DIALECTS, formatSql, isSqlDialect, type KeywordCase, type SqlDialect } from './sql'
@@ -34,10 +34,12 @@ const DEFAULTS: State = {
 
 const isState = shapeValidator<State>({
   input: 'string',
-  dialect: 'string',
-  keywordCase: 'string',
-  indentWidth: 'number',
-  linesBetweenQueries: 'number',
+  // `isSqlDialect` already existed and was used in the UI but not here, so a
+  // link could set a dialect the formatter has never heard of.
+  dialect: (value) => typeof value === 'string' && isSqlDialect(value),
+  keywordCase: oneOf('preserve', 'upper', 'lower'),
+  indentWidth: numberBetween(1, 8),
+  linesBetweenQueries: numberBetween(0, 10),
   minify: 'boolean',
 })
 

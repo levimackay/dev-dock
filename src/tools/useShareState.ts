@@ -60,19 +60,61 @@ export function useShareState<T extends object>(
   return [state, update]
 }
 
-/** Builds a validator for a flat object of strings, booleans, and numbers. */
+/**
+ * How a single field of shared state is checked.
+ *
+ * A kind name covers the common case. A predicate covers everything else, and
+ * the reason it exists is worth stating: for a while this only accepted kind
+ * names, so a union-typed field was validated as "a string" and a bounded
+ * number as "a number". An inbound link could then carry
+ * `nanoidLength: 100000` into `crypto.getRandomValues`, or an arbitrary word
+ * into `fetch(url, { method })`. A validator that cannot express the
+ * constraint is not a validator; it is a type annotation that ran at runtime.
+ */
+export type FieldSpec = 'string' | 'boolean' | 'number' | 'string[]' | ((value: unknown) => boolean)
+
+/** Accepts a member of a fixed set. The common shape for a union-typed field. */
+export const oneOf =
+  (...allowed: readonly string[]) =>
+  (value: unknown): boolean =>
+    typeof value === 'string' && allowed.includes(value)
+
+/** Accepts a finite number inside an inclusive range. */
+export const numberBetween =
+  (min: number, max: number) =>
+  (value: unknown): boolean =>
+    typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max
+
+/** Accepts an array of strings no longer than `max`, each no longer than `maxLength`. */
+export const stringArrayOf =
+  (max: number, maxLength = 256) =>
+  (value: unknown): boolean =>
+    Array.isArray(value) &&
+    value.length <= max &&
+    value.every((item) => typeof item === 'string' && item.length <= maxLength)
+
+/**
+ * Builds a validator for a flat object of shared tool state.
+ *
+ * A field the payload omits is skipped, because partial payloads merge over the
+ * tool's defaults. A field the payload includes must satisfy its spec or the
+ * whole payload is rejected: a link is either the state it claims to be or it
+ * is not worth guessing at.
+ */
 export function shapeValidator<T extends object>(shape: {
-  [K in keyof T]: 'string' | 'boolean' | 'number' | 'string[]'
+  [K in keyof T]: FieldSpec
 }): (value: unknown) => value is T {
   return (value: unknown): value is T => {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
     const record = value as Record<string, unknown>
-    for (const [key, kind] of Object.entries(shape)) {
-      if (!(key in record)) continue // partial payloads merge over defaults
+    for (const [key, spec] of Object.entries(shape)) {
+      if (!(key in record)) continue
       const actual = record[key]
-      if (kind === 'string[]') {
+      if (typeof spec === 'function') {
+        if (!spec(actual)) return false
+      } else if (spec === 'string[]') {
         if (!Array.isArray(actual) || !actual.every((v) => typeof v === 'string')) return false
-      } else if (typeof actual !== kind) {
+      } else if (typeof actual !== spec) {
         return false
       }
     }
