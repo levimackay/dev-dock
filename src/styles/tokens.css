@@ -21,14 +21,14 @@
   /* A 1.2 minor-third scale from a 13px base. Deliberately small and tight:
      this is a tool, and the value of a tool screen is how much of the problem
      fits on it. */
-  --text-2xs: 0.6875rem; /* 11px — mono chrome labels, keycaps */
-  --text-xs: 0.75rem; /* 12px — metadata, help text */
-  --text-sm: 0.8125rem; /* 13px — UI base */
-  --text-base: 0.875rem; /* 14px — editor + prose base */
-  --text-md: 1rem; /* 16px — tool titles */
+  --text-2xs: 0.6875rem; /* 11px, mono chrome labels, keycaps */
+  --text-xs: 0.75rem; /* 12px, metadata, help text */
+  --text-sm: 0.8125rem; /* 13px, UI base */
+  --text-base: 0.875rem; /* 14px, editor + prose base */
+  --text-md: 1rem; /* 16px, tool titles */
   --text-lg: 1.25rem; /* 20px */
-  --text-xl: 1.625rem; /* 26px — page titles */
-  --text-2xl: 2.25rem; /* 36px — empty-state display */
+  --text-xl: 1.625rem; /* 26px, page titles */
+  --text-2xl: 2.25rem; /* 36px, empty-state display */
 
   --leading-tight: 1.15;
   --leading-snug: 1.35;
@@ -118,7 +118,7 @@
 
   --ok: oklch(0.5 0.13 152);
   --ok-quiet: oklch(0.935 0.038 152);
-  /* 0.58 measured 3.7:1 against --warn-quiet — the Callout warn title sits
+  /* 0.58 measured 3.7:1 against --warn-quiet, the Callout warn title sits
      directly on that background at body size, so it needs 4.5:1. Darkened to
      the minimum that clears it, same hue and chroma. */
   --warn: oklch(0.53 0.13 68);
@@ -179,7 +179,7 @@
  * There is no `@media (prefers-color-scheme: dark)` copy of the block above.
  *
  * There used to be, and it was thirty duplicated declarations that had to be
- * edited twice for every palette change — a contrast fix landed in one copy and
+ * edited twice for every palette change, a contrast fix landed in one copy and
  * not the other within a day of the palette existing. The app now resolves the
  * system preference itself and always writes a concrete `data-theme` attribute,
  * so this file states each palette exactly once. See `preferences.tsx`, and the

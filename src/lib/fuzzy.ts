@@ -1,8 +1,8 @@
 /**
  * A small subsequence fuzzy matcher, used by the command palette and search.
  *
- * The requirement is narrow — rank ~22 short strings against a query of a few
- * characters — so a full trigram index or a dependency like Fuse.js would be
+ * The requirement is narrow: rank ~22 short strings against a query of a few
+ * characters, so a full trigram index or a dependency like Fuse.js would be
  * more machinery than the problem deserves. What matters instead is that the
  * *ordering* feels right, and ordering comes from the bonus structure, not
  * from the matching algorithm:

@@ -2,7 +2,7 @@
  * Text statistics: counts, reading/speaking time, readability, and frequency
  * tables.
  *
- * Everything here is a heuristic over plain text — there is no NLP library
+ * Everything here is a heuristic over plain text. There is no NLP library
  * involved, on purpose (the app has no dependency for this and does not need
  * one). Sentence and syllable counting in particular are approximations;
  * both are documented at the point they are least trustworthy rather than
@@ -24,7 +24,7 @@ export function countUniqueWords(text: string): number {
 }
 
 /**
- * Sentence counting by punctuation is inherently approximate — "Mr. Smith
+ * Sentence counting by punctuation is inherently approximate, "Mr. Smith
  * arrived at 3.5 p.m." reads as more sentences than it is, because a period
  * after an abbreviation looks identical to a period ending a sentence with no
  * dictionary of abbreviations to rule it out. This treats a run of `.!?`
@@ -38,7 +38,7 @@ export function countSentences(text: string): number {
   if (trimmed === '') return 0
   const matches = trimmed.match(/[^.!?]*[A-Za-z0-9][^.!?]*[.!?]+(?=\s|$)/g)
   if (matches) return matches.length
-  // No terminal punctuation at all — the whole thing is one sentence
+  // No terminal punctuation at all, the whole thing is one sentence
   // fragment, which is still one sentence for averaging purposes.
   return 1
 }
@@ -64,7 +64,7 @@ export function countCharacters(text: string): { withSpaces: number; withoutSpac
  * irregular words (contractions, "queue", "simile", proper nouns borrowed
  * from other languages) at a rate that is generally cited around 10-15% of
  * running text. That is accurate enough for a Flesch score, which is itself
- * an estimate, not a guarantee — but it should not be read as an exact count
+ * an estimate, not a guarantee, but it should not be read as an exact count
  * for any single word.
  */
 export function countSyllables(word: string): number {
@@ -256,5 +256,5 @@ what they paste in is handled the same way every time.
 
 This paragraph exists mainly to give the statistics something real to count:
 multiple sentences, a couple of paragraphs, and a reasonably varied
-vocabulary. Try pasting your own writing here instead — the numbers update
+vocabulary. Try pasting your own writing here instead, the numbers update
 as you type.`

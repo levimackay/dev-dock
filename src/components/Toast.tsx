@@ -28,7 +28,7 @@ interface ToastApi {
 const ToastContext = createContext<ToastApi | null>(null)
 
 /**
- * Toasts are reserved for things that happen *away* from the user's cursor —
+ * Toasts are reserved for things that happen *away* from the user's cursor,
  * a share link written to the clipboard, a file that failed to read. Anything
  * with a visible control attached to it confirms in place instead (see
  * CopyButton), because a toast per click becomes wallpaper.

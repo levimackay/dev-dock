@@ -61,7 +61,7 @@ describe('explainPattern', () => {
     const tokens = explainPattern('\\.')
     expect(tokens[0]).toEqual({
       token: '\\.',
-      meaning: 'Escaped literal "." — matches the character itself, not as a special one',
+      meaning: 'Escaped literal ".", matches the character itself, not as a special one',
     })
   })
 
@@ -73,8 +73,8 @@ describe('explainPattern', () => {
     const tokens = explainPattern('(a)(?:b)(c)')
     const groupTokens = tokens.filter((t) => t.token === '(')
     expect(groupTokens.map((t) => t.meaning)).toEqual([
-      'Capturing group 1 — remembers what it matches',
-      'Capturing group 2 — remembers what it matches',
+      'Capturing group 1, remembers what it matches',
+      'Capturing group 2, remembers what it matches',
     ])
   })
 })

@@ -39,12 +39,12 @@ export function AppShell() {
   const [routeAnnouncement, setRouteAnnouncement] = useState('')
 
   // A tool switch replaces the whole Outlet in place, so nothing else moves
-  // keyboard focus or tells a screen reader the page changed — the same
+  // keyboard focus or tells a screen reader the page changed, the same
   // React-Router SPA gap `docs/ARCHITECTURE.md` §4 calls out for share-link
   // hydration exists here for navigation. Moving focus to <main> resets tab
   // order to the top of the new tool instead of leaving it on a rail link
   // that may have scrolled away, and the live region announces the new title
-  // for anyone not watching focus land. Skipped on the very first render —
+  // for anyone not watching focus land. Skipped on the very first render,
   // stealing focus from the page a user arrived on would be its own bug.
   const firstRender = useRef(true)
   useEffect(() => {

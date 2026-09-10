@@ -53,7 +53,7 @@ export default function JwtDecoderTool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
   // `Field` renders its own `<label htmlFor>`, but leaves wiring an id onto
-  // the actual control to the caller (it has no render-prop to inject one) —
+  // the actual control to the caller (it has no render-prop to inject one),
   // generating it here and passing it both ways is what actually makes the
   // label reach the input, rather than merely sitting next to it.
   const secretFieldId = useId()
@@ -113,7 +113,7 @@ export default function JwtDecoderTool() {
     for (const key of TIME_CLAIMS) {
       const time = readClaimTime(payload[key])
       if (!time) continue
-      // iat is informational only — exp/nbf are what gate validity, so only
+      // iat is informational only, exp/nbf are what gate validity, so only
       // they get a pass/fail colour on the "expired N ago" style note.
       // StatGrid itself only has one accent colour, not a tone palette, so
       // the state colour is applied directly here rather than widening a
@@ -161,7 +161,7 @@ export default function JwtDecoderTool() {
       }
     >
       <Callout tone="warn" title="Decoding is not verification">
-        Anyone can construct a JWT with any header and payload — only a valid signature proves it
+        Anyone can construct a JWT with any header and payload, only a valid signature proves it
         came from whoever holds the key. A token is often itself a credential (a bearer token):
         treat a token you did not issue as sensitive, and never paste a live session token here and
         then Share the link.
@@ -201,13 +201,10 @@ export default function JwtDecoderTool() {
         ) : (
           <>
             {decoded.algNone && (
-              <Callout
-                tone="err"
-                title={`alg: "${decoded.header?.alg}" — no signature is possible`}
-              >
+              <Callout tone="err" title={`alg: "${decoded.header?.alg}", no signature is possible`}>
                 This token declares the JWS "none" algorithm, which has no signature at all. A
                 server that honours <code>alg: none</code> on an incoming token is trivially
-                bypassable — this is a real, historical vulnerability class, not a theoretical one.
+                bypassable. This is a real, historical vulnerability class, not a theoretical one.
                 Never treat a "none" token as authenticated.
               </Callout>
             )}
@@ -265,7 +262,7 @@ export default function JwtDecoderTool() {
               >
                 {!isHmacAlgorithm(alg) ? (
                   <Callout tone="info" title={`${alg ?? 'This algorithm'} is not verifiable here`}>
-                    Only HS256, HS384, and HS512 are offered — those verify against a shared secret,
+                    Only HS256, HS384, and HS512 are offered, those verify against a shared secret,
                     which is the only kind of key this tool ever asks for. RS*, ES*, and PS*
                     algorithms verify against a public key instead (a JWK or PEM, with
                     algorithm-specific padding or curve handling), which is a different code path
@@ -292,7 +289,7 @@ export default function JwtDecoderTool() {
                     <Field
                       label="Secret"
                       htmlFor={secretFieldId}
-                      hint="Held only in this tab's memory — never included in a Share link."
+                      hint="Held only in this tab's memory, never included in a Share link."
                     >
                       <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
                         <TextInput

@@ -87,7 +87,7 @@ export default function HashGeneratorTool() {
     if (!sourceBytes) return
     let stale = false
     // Flipping the busy flag is precisely "update an external system with the
-    // latest state" — it exists to describe work this effect is starting. The
+    // latest state", it exists to describe work this effect is starting. The
     // rule cannot tell that apart from deriving state, so it is silenced here
     // with the reason rather than reshaped into something less clear.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -280,8 +280,8 @@ export default function HashGeneratorTool() {
                       {broken && (
                         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--fg-subtle)' }}>
                           {row.algorithm === 'MD5'
-                            ? 'broken — checksums only'
-                            : 'broken — legacy only'}
+                            ? 'broken, checksums only'
+                            : 'broken, legacy only'}
                         </div>
                       )}
                     </div>
@@ -317,7 +317,7 @@ export default function HashGeneratorTool() {
               <Field
                 label="Expected digest"
                 htmlFor={compareFieldId}
-                hint="Paste a hex digest — matched automatically by its length."
+                hint="Paste a hex digest, matched automatically by its length."
               >
                 <TextInput
                   id={compareFieldId}

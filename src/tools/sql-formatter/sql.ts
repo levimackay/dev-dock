@@ -6,7 +6,7 @@
  * whitespace would mean maintaining a second, worse parser next to a real
  * one. Formatting first and then collapsing the pretty output's whitespace
  * reuses the same grammar for both jobs and gets validation "for free" on the
- * minify path too — an unparseable query fails exactly the same way in
+ * minify path too: an unparseable query fails exactly the same way in
  * either mode.
  *
  * The dialect list below is not guessed: it is every key of the real
@@ -113,7 +113,7 @@ export function formatSql(input: string, options: SqlOptions): SqlResult {
 /**
  * `sql-formatter`'s parse errors lead with a one-line "Parse error at
  * token: ..." summary and then dump the entire nearley grammar state that
- * produced it — hundreds of lines naming rules nobody using this tool has
+ * produced it: hundreds of lines naming rules nobody using this tool has
  * heard of. Only the headline is useful; the rest is truncated.
  */
 function describeSqlError(error: unknown): string {
@@ -121,5 +121,5 @@ function describeSqlError(error: unknown): string {
     const headline = error.message.split('\n')[0]
     return headline !== undefined && headline !== '' ? headline : error.message
   }
-  return 'Could not format this SQL — the parser could not make sense of the input.'
+  return 'Could not format this SQL, the parser could not make sense of the input.'
 }

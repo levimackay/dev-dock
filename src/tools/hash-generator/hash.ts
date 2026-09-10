@@ -2,12 +2,12 @@
  * Hashing: SHA-1/256/384/512 via Web Crypto, plus MD5 and CRC32 hand-rolled.
  *
  * Web Crypto's `subtle.digest` covers the SHA-2 family and SHA-1, but not MD5
- * or CRC32 — neither is in the SubtleCrypto spec, because neither is
+ * or CRC32: neither is in the SubtleCrypto spec, because neither is
  * considered a cryptographic hash worth standardising a browser API around.
  * MD5 and SHA-1 are both broken for *security* use (practical collision
  * attacks exist for both), and are implemented here only because they are
  * still what a lot of legacy tooling, package checksums, and "does this file
- * match" comparisons use — the UI says so next to their rows.
+ * match" comparisons use: the UI says so next to their rows.
  *
  * CRC32 is not a cryptographic hash at all; it is an error-detecting
  * checksum (used by zip/png/ethernet) that is trivial to forge. It is here
@@ -26,7 +26,7 @@ export const ALGORITHMS: HashAlgorithm[] = [
   'CRC32',
 ]
 
-/** Algorithms with known practical attacks — flagged in the UI, not hidden here. */
+/** Algorithms with known practical attacks, flagged in the UI, not hidden here. */
 export const BROKEN_ALGORITHMS = new Set<HashAlgorithm>(['MD5', 'SHA-1'])
 
 export function bytesToHex(bytes: Uint8Array, uppercase = false): string {
@@ -59,7 +59,7 @@ const SUBTLE_NAMES: Partial<Record<HashAlgorithm, string>> = {
  * `BufferSource` accepts a typed array directly, and a `Uint8Array`'s own
  * `.buffer` is typed `ArrayBufferLike` (it could back onto a
  * `SharedArrayBuffer`), which would force a cast at every call site for no
- * benefit — every caller here already has bytes, never a raw buffer.
+ * benefit: every caller here already has bytes, never a raw buffer.
  */
 export async function digest(
   algorithm: HashAlgorithm,
@@ -141,7 +141,7 @@ export function md5(bytes: Uint8Array): Uint8Array {
   padded[bytes.length] = 0x80
   const view = new DataView(padded.buffer)
   // bitLen fits in 32 bits for anything under 512 MiB, which the file cap
-  // downstream (64 MiB) guarantees — the upper 32 bits of the 64-bit length
+  // downstream (64 MiB) guarantees, the upper 32 bits of the 64-bit length
   // are always zero here.
   view.setUint32(paddedLen - 8, bitLen >>> 0, true)
   view.setUint32(paddedLen - 4, 0, true)
@@ -207,7 +207,7 @@ export interface CompareResult {
 
 /**
  * Compares an expected digest against every computed digest, matching by
- * length rather than assuming which algorithm the user meant — a 32-char hex
+ * length rather than assuming which algorithm the user meant, a 32-char hex
  * string is unambiguously MD5-shaped among these algorithms, a 40-char one
  * is SHA-1-shaped, and so on. The response never says *which specific
  * characters* differed, only match/no-match, so this cannot be used as an
@@ -220,11 +220,11 @@ export function compareDigest(
   const cleaned = expected.trim().toLowerCase().replace(/^0x/, '')
   if (cleaned === '') return { ok: false, message: 'Enter a digest to compare.' }
   if (!/^[0-9a-f]+$/.test(cleaned)) {
-    return { ok: false, message: 'Not a hex digest — only 0-9 and a-f are expected.' }
+    return { ok: false, message: 'Not a hex digest, only 0-9 and a-f are expected.' }
   }
 
   // Walk the fixed algorithm list rather than `Object.entries(digests)` so the
-  // key stays typed as `HashAlgorithm` throughout — no cast needed to recover
+  // key stays typed as `HashAlgorithm` throughout, no cast needed to recover
   // what `Object.entries` would otherwise widen to `string`.
   for (const algorithm of ALGORITHMS) {
     const value = digests[algorithm]

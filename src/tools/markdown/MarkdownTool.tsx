@@ -30,11 +30,11 @@ interface State {
 
 const SAMPLE = `# Dev Dock
 
-A **toolbox** that runs entirely *in your browser* — nothing you paste here ever leaves the tab.
+A **toolbox** that runs entirely *in your browser*, nothing you paste here ever leaves the tab.
 
 ## Why a sanitised preview matters
 
-This editor renders through \`marked\` and then through DOMPurify before it ever touches the DOM. Try pasting \`<script>alert(1)</script>\` above — it renders as inert text, not a running script.
+This editor renders through \`marked\` and then through DOMPurify before it ever touches the DOM. Try pasting \`<script>alert(1)</script>\` above, it renders as inert text, not a running script.
 
 - Real GFM tables
 - Task-list-shaped bullets
@@ -111,7 +111,7 @@ export default function MarkdownTool() {
     const result = action.run(el.value, el.selectionStart, el.selectionEnd)
     patch({ source: result.value })
     // The textarea's own selection has to be restored after React re-renders
-    // it with the new value — doing it synchronously here would race the
+    // it with the new value, doing it synchronously here would race the
     // DOM update, the same reason CodeArea's own Tab handling queues a
     // microtask rather than calling setSelectionRange immediately.
     queueMicrotask(() => {
@@ -146,7 +146,7 @@ export default function MarkdownTool() {
   )
 
   // Synced scroll in Split mode. This is a proportional approximation, not a
-  // line-accurate one — a heading renders taller than a paragraph line, a
+  // line-accurate one, a heading renders taller than a paragraph line, a
   // code block renders as a fixed-width box, so "40% down the source" and
   // "40% down the rendered document" are not the same point on the page.
   // Matching scroll *position* rather than scroll *ratio* would need a
@@ -206,7 +206,7 @@ export default function MarkdownTool() {
         onValueChange={(source) => patch({ source })}
         softWrap
         acceptDrop
-        placeholder="# Start writing…&#10;&#10;Paste a README, or load the Sample to see a fenced code block, a table, and a blockquote all rendered — and sanitised."
+        placeholder="# Start writing…&#10;&#10;Paste a README, or load the Sample to see a fenced code block, a table, and a blockquote all rendered, and sanitised."
       />
     </Panel>
   )
@@ -221,7 +221,7 @@ export default function MarkdownTool() {
         {html ? (
           // The one `dangerouslySetInnerHTML` in the entire codebase. `html`
           // comes from `renderMarkdown`, which runs every byte of it through
-          // DOMPurify before it reaches this line — see markdown.ts for why
+          // DOMPurify before it reaches this line, see markdown.ts for why
           // that is the only thing that makes this safe to do at all.
           <div className={styles.prose} dangerouslySetInnerHTML={{ __html: html }} />
         ) : (

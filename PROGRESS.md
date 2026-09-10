@@ -1,16 +1,16 @@
-# Dev Dock — build log
+# Dev Dock: build log
 
 A running record of what is done, what is next, and why each significant
 decision went the way it did. Newest phase at the bottom.
 
 ---
 
-## Phase 0 — Survey
+## Phase 0: Survey
 
 No existing repository, no stack to inherit. Node 26 and pnpm 11 on the
 machine. Greenfield.
 
-## Phase 1 — Architecture decisions
+## Phase 1: Architecture decisions
 
 | Decision         | Choice                                          | Reasoning                                                                                                                                                                                                                                            |
 | ---------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -40,10 +40,10 @@ tells the decoder which path produced the string.
 
 **`exactOptionalPropertyTypes` is off.** Every other strict flag is on
 (including `noUncheckedIndexedAccess`). This one makes ordinary React prop
-forwarding — `className={className}` where the prop is optional — a type error,
+forwarding, `className={className}` where the prop is optional, a type error,
 which produced noise without catching a real defect in this codebase.
 
-## Phase 2 — Foundation (done)
+## Phase 2: Foundation (done)
 
 - Tokens, base stylesheet, light/dark/system theming with a pre-paint script so
   dark-mode users never see a white flash.
@@ -63,29 +63,29 @@ which produced noise without catching a real defect in this codebase.
 
 **Next:** implement the 22 tools.
 
-## Phase 3 — Shared algorithms (done)
+## Phase 3: Shared algorithms (done)
 
 Four non-trivial pieces written rather than installed, each with a design
 comment at the top of the file and a test suite that pins the behaviour:
 
-| Module                                                                                   | Tests | Replaces                              |
-| ---------------------------------------------------------------------------------------- | ----- | ------------------------------------- |
-| `src/lib/diff.ts` — Myers O(ND) with prefix/suffix trimming and an edit-distance ceiling | 28    | `diff` (~30 KB)                       |
-| `src/lib/regex*` — user patterns in a Web Worker with a hard timeout                     | 11    | nothing; there is no library for this |
-| `src/tools/cron-helper/cron.ts` — parse, describe, project                               | 44    | `cron-parser` + `cronstrue` (~60 KB)  |
-| `src/tools/color-converter/color.ts` — sRGB ↔ HSL ↔ OKLCH, WCAG, gamut                   | 39    | `culori` (~40 KB)                     |
+| Module                                                                                  | Tests | Replaces                              |
+| --------------------------------------------------------------------------------------- | ----- | ------------------------------------- |
+| `src/lib/diff.ts`, Myers O(ND) with prefix/suffix trimming and an edit-distance ceiling | 28    | `diff` (~30 KB)                       |
+| `src/lib/regex*`, user patterns in a Web Worker with a hard timeout                     | 11    | nothing; there is no library for this |
+| `src/tools/cron-helper/cron.ts`, parse, describe, project                               | 44    | `cron-parser` + `cronstrue` (~60 KB)  |
+| `src/tools/color-converter/color.ts`, sRGB ↔ HSL ↔ OKLCH, WCAG, gamut                   | 39    | `culori` (~40 KB)                     |
 
 Two real bugs were caught by writing the tests first:
 
 - The cron field parser rejected `JAN,jul` because the Quartz-extension scan
   for `L`/`W`/`#` ran against the raw text, and `JUL` contains an L.
 - `nextRuns` could return the starting instant itself when snapping to the top
-  of the minute, and searched by iteration count rather than by elapsed time —
+  of the minute, and searched by iteration count rather than by elapsed time,
   so an expression that can never fire (`0 0 30 2 *`) walked thousands of
   simulated years and blocked the main thread for a full second. Bounding by a
   five-year horizon took it to 13 ms.
 
-## Phase 4 — Tools (in progress)
+## Phase 4: Tools (in progress)
 
 Implementation was delegated to specialist agents in batches of four to five
 tools, two agents at a time, each working only inside its own tool folders and
@@ -102,8 +102,8 @@ Viewer, SQL Formatter, URL Encoder, HTML Entities, JWT Decoder, Hash Generator.
   unlabelled unless the caller threaded ids by hand. It now owns the id and
   clones its child to inject `id`, `aria-describedby`, and `aria-invalid`.
 - **The dialog focus trap filtered focusables with `offsetParent !== null`.**
-  `offsetParent` is null for every descendant of a `position: fixed` element —
-  which the dialog is — so the trap silently reduced to a single element and
+  `offsetParent` is null for every descendant of a `position: fixed` element,
+  which the dialog is, so the trap silently reduced to a single element and
   Tab wrapping broke in both directions. Caught by a component test.
 - **A share-link hydration race.** Arriving at tool B from tool A via a pasted
   link found `ready` already true, mounted B with defaults, and patched the

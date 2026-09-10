@@ -6,8 +6,8 @@
  * 1. **Fragment, not query string.** Everything after `#` is stripped by the
  *    browser before the request leaves the machine. It never appears in server
  *    access logs, proxy logs, CDN logs, or the `Referer` header sent to third
- *    parties. Since the payload is whatever the user pasted into a tool — which
- *    could be a JWT or a config file — the query string would leak it to any
+ *    parties. Since the payload is whatever the user pasted into a tool, which
+ *    could be a JWT or a config file, the query string would leak it to any
  *    host the page is served from. The fragment does not.
  *
  * 2. **deflate-raw via the native CompressionStream API.** Tool payloads are
@@ -51,8 +51,8 @@ function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
  * API.
  *
  * The shorter `new Response(blob.stream().pipeThrough(cs)).arrayBuffer()` form
- * reads better but couples three separate stream implementations — Blob,
- * fetch's Response, and the compression stream — which do not reliably share a
+ * reads better but couples three separate stream implementations, Blob,
+ * fetch's Response, and the compression stream, which do not reliably share a
  * realm outside a browser. Driving the streams directly has no such dependency.
  */
 async function pipe(

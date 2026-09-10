@@ -52,8 +52,8 @@ interface State {
 // Deliberately NOT in useShareState: headers routinely carry bearer tokens
 // and API keys, and this object base64-encodes straight into a URL that can
 // end up in browser history, a chat log, or a bug-tracker screenshot. Only
-// the method and URL — the part someone actually wants a colleague to be
-// able to open with one click — are shareable. The UI says so, once.
+// the method and URL, the part someone actually wants a colleague to be
+// able to open with one click, are shareable. The UI says so, once.
 const DEFAULTS: State = { method: 'GET', url: '' }
 const isState = shapeValidator<State>({ method: 'string', url: 'string' })
 
@@ -205,11 +205,11 @@ export default function HttpClientTool() {
       }
     >
       <Callout tone="info">
-        This tool runs in your browser, so normal CORS rules apply — a target that has not opted in
+        This tool runs in your browser, so normal CORS rules apply, a target that has not opted in
         will fail with a generic error, explained below as best it can be. Browsers silently drop
         forbidden headers (Host, Origin, Cookie, Referer, and a few others) even if you set them
         here. Cookies are not sent unless "Send credentials" is checked. Only the method and URL are
-        included in a Share link — headers and the body routinely carry secrets, so they stay local
+        included in a Share link, headers and the body routinely carry secrets, so they stay local
         to this tab.
       </Callout>
 
@@ -300,7 +300,7 @@ export default function HttpClientTool() {
       {!bodyAllowed && section === 'body' && (
         <div style={{ padding: '0 var(--sp-3)' }}>
           <Callout tone="info">
-            {state.method} requests do not send a body — switch method to enable one.
+            {state.method} requests do not send a body, switch method to enable one.
           </Callout>
         </div>
       )}
@@ -549,7 +549,7 @@ function KeyValueTable({
                       />
                       {forbidden && (
                         <span className={styles.warnNote}>
-                          Forbidden header — the browser will silently drop this.
+                          Forbidden header, the browser will silently drop this.
                         </span>
                       )}
                     </td>

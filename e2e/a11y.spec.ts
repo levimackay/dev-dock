@@ -5,7 +5,7 @@ import { TOOL_IDS } from './toolIds'
 /**
  * Automated accessibility checks.
  *
- * Axe catches perhaps a third of real accessibility problems — the mechanical
+ * Axe catches perhaps a third of real accessibility problems, the mechanical
  * third: missing names, bad contrast, invalid ARIA, orphaned form controls. It
  * cannot tell you whether a keyboard user can actually complete a task, which
  * is why `shell.spec.ts` tests focus order, the focus trap, and the palette's

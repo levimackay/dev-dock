@@ -27,7 +27,7 @@ type IdKind = 'uuidv4' | 'uuidv7' | 'nanoid' | 'ulid'
 
 // Generated ids never go into share state: a link encoding 1000 freshly
 // rolled UUIDs would be enormous and, being random, meaningless to whoever
-// opened it — the *options* that produced them are what's worth sharing.
+// opened it, the *options* that produced them are what's worth sharing.
 interface State extends BulkFormatOptions {
   kind: IdKind
   count: number
@@ -196,7 +196,7 @@ export default function UuidGeneratorTool() {
       <PaneStack>
         <Callout tone="info" title="Randomness comes from the platform CSPRNG">
           Every id here is built from <code>crypto.getRandomValues</code>, never{' '}
-          <code>Math.random()</code> — the latter is fast but not unpredictable enough to use as an
+          <code>Math.random()</code>, the latter is fast but not unpredictable enough to use as an
           identifier that must not be guessable.
         </Callout>
 
@@ -257,7 +257,7 @@ export default function UuidGeneratorTool() {
           {ids.length === 0 ? (
             <div style={{ padding: 'var(--sp-3)' }}>
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)', margin: 0 }}>
-                Pick a kind and a count above, then Generate. Nothing here is shareable by link —
+                Pick a kind and a count above, then Generate. Nothing here is shareable by link,
                 regenerate whenever you need fresh ids, the options above are all a share link
                 carries.
               </p>
@@ -285,7 +285,7 @@ export default function UuidGeneratorTool() {
             <Field
               label="UUID"
               htmlFor={decodeFieldId}
-              hint="Hyphenated, bare hex, or brace-wrapped — all accepted."
+              hint="Hyphenated, bare hex, or brace-wrapped, all accepted."
             >
               <TextInput
                 id={decodeFieldId}
@@ -322,7 +322,7 @@ export default function UuidGeneratorTool() {
                       color: 'var(--fg-subtle)',
                     }}
                   >
-                    v4 is fully random — it has no embedded timestamp to extract.
+                    v4 is fully random. It has no embedded timestamp to extract.
                   </div>
                 )}
               </div>
@@ -332,7 +332,7 @@ export default function UuidGeneratorTool() {
 
         <Callout tone="info" title="Why UUID v7 over v4 for a primary key">
           <IconShield size={12} style={{ verticalAlign: '-2px', marginRight: '0.35em' }} />A v4 UUID
-          is uniformly random, so every insert lands at a random point in a B-tree index — no
+          is uniformly random, so every insert lands at a random point in a B-tree index, no
           locality, constant page splits. v7 encodes creation time in its high bits, so inserts sort
           the way an auto-increment id always did, while the low bits stay random enough that a v7
           id still cannot be guessed or enumerated.

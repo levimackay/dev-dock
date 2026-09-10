@@ -5,7 +5,7 @@ things and nothing else:
 
 ```
 src/tools/<id>/
-  <name>.ts          pure logic — no React, no DOM
+  <name>.ts          pure logic, no React, no DOM
   <name>.test.ts     vitest unit tests for that logic
   <Name>Tool.tsx     the UI, default-exported
 ```
@@ -22,7 +22,7 @@ new one.
 
 2. **Tests cover behaviour, not lines.** Every exported function gets tests for
    the happy path, the empty input, and at least two ways real input goes wrong.
-   Error _messages_ are part of the contract — assert on them.
+   Error _messages_ are part of the contract, assert on them.
 
 3. **Never crash on user input.** All input is untrusted. `JSON.parse`,
    `new RegExp`, `new URL`, `atob`, and `new Date` all throw. Catch, and return
@@ -40,7 +40,7 @@ new one.
 
 6. **State goes through `useShareState`.** One flat object of strings, booleans,
    numbers, and string arrays, with a `shapeValidator`. That is what makes the
-   Share button work with no extra code. Keep the shape small — it ends up in a
+   Share button work with no extra code. Keep the shape small, it ends up in a
    URL.
 
 7. **Empty states do work.** "No input yet" is not an empty state. Say what to
@@ -48,7 +48,7 @@ new one.
    be demonstrated should have a **Sample** button in its toolbar.
 
 8. **Errors name the position.** "Invalid JSON" is useless. "Unexpected `}` at
-   line 4, column 12 — the previous property has a trailing comma" is a tool.
+   line 4, column 12, the previous property has a trailing comma" is a tool.
 
 9. **Copy buttons everywhere a value is produced**, including individual rows in
    a results table where that is the thing someone wants.
@@ -56,7 +56,7 @@ new one.
 10. **Accessibility is not optional.** Every input has a label (visible, or via
     the `label` prop on `CodeArea`). Every icon-only button has `aria-label`.
     Results that change in response to typing live in a region a screen reader
-    is told about — `Callout` has a `live` prop for exactly this.
+    is told about, `Callout` has a `live` prop for exactly this.
 
 11. **Nothing hits the network** except `http-client`, which is flagged
     `network: true` in the registry.
@@ -90,7 +90,7 @@ export default function ThingTool() {
 Computation runs on every keystroke. That is fine for anything linear on a few
 hundred kilobytes. It is _not_ fine for:
 
-- user-supplied regular expressions (catastrophic backtracking — must be run
+- user-supplied regular expressions (catastrophic backtracking, must be run
   with a timeout, see `src/lib/regexWorker.ts`)
 - quadratic diff on large inputs (cap the input, say so in the UI)
 - rendering a tree of 100k nodes (virtualise or collapse by default)

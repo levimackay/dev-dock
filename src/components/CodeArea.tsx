@@ -40,7 +40,7 @@ const DEFAULT_MAX_DROP = 5 * 1024 * 1024
  * Monaco) would add 300 KB-1 MB to the bundle and bring its own accessibility
  * and mobile-keyboard quirks, in exchange for syntax colouring that none of
  * these tools actually need to do their job. What a textarea *does* lack is
- * tab-to-indent and a line gutter, so both are added here — about forty lines
+ * tab-to-indent and a line gutter, so both are added here, about forty lines
  * against a megabyte.
  *
  * The gutter scrolls in lockstep with the textarea by mirroring `scrollTop`,

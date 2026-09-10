@@ -1,5 +1,5 @@
 /**
- * Flexible date/time parsing and multi-format rendering — the pure logic half
+ * Flexible date/time parsing and multi-format rendering, the pure logic half
  * of the tool.
  *
  * The core rule this file follows: **never hand ambiguous text straight to
@@ -19,8 +19,8 @@
  * below) instead of picking silently.
  *
  * Every format this file accepts is identified by its own regex before any
- * `Date` object is built from it, and only RFC 2822 — which is unambiguous
- * once matched, because the standard always carries an explicit zone — is
+ * `Date` object is built from it, and only RFC 2822, which is unambiguous
+ * once matched, because the standard always carries an explicit zone, is
  * ever handed to the `Date` constructor at all.
  */
 
@@ -40,7 +40,7 @@ export type ParsedFormat = 'now' | 'iso-date' | 'iso-datetime' | 'rfc2822' | 'ep
 export interface ParseSuccess {
   ok: true
   date: Date
-  /** True for a bare date with no time part — the ambiguous case `dateOnlyAs` resolves. */
+  /** True for a bare date with no time part, the ambiguous case `dateOnlyAs` resolves. */
   dateOnly: boolean
   format: ParsedFormat
 }
@@ -79,11 +79,11 @@ function validateCivilFields(
   mi: number,
   s: number,
 ): string | undefined {
-  if (mo < 1 || mo > 12) return `Month ${mo} is not valid — expected 1-12.`
+  if (mo < 1 || mo > 12) return `Month ${mo} is not valid, expected 1-12.`
   if (d < 1 || d > daysInMonth(y, mo)) return `${y}-${String(mo).padStart(2, '0')} has no day ${d}.`
-  if (h > 23) return `Hour ${h} is not valid — expected 0-23.`
-  if (mi > 59) return `Minute ${mi} is not valid — expected 0-59.`
-  if (s > 59) return `Second ${s} is not valid — expected 0-59.`
+  if (h > 23) return `Hour ${h} is not valid, expected 0-23.`
+  if (mi > 59) return `Minute ${mi} is not valid, expected 0-59.`
+  if (s > 59) return `Second ${s} is not valid, expected 0-59.`
   return undefined
 }
 
@@ -191,7 +191,7 @@ export function parseFlexible(input: string, options: ParseOptions): ParseResult
 
   if (RFC2822.test(text)) {
     // RFC 2822 always carries an explicit zone (a numeric offset or a named
-    // one), so unlike a bare ISO string it has no local-vs-UTC ambiguity —
+    // one), so unlike a bare ISO string it has no local-vs-UTC ambiguity,
     // this is the one case where deferring to the platform parser is safe,
     // precisely because the shape has already been verified.
     const parsedMs = Date.parse(text)
@@ -202,7 +202,7 @@ export function parseFlexible(input: string, options: ParseOptions): ParseResult
   }
 
   if (EPOCH_NUMBER.test(text)) {
-    // Two units only (seconds, milliseconds) — the dedicated Unix Timestamp
+    // Two units only (seconds, milliseconds), the dedicated Unix Timestamp
     // tool covers micro/nanosecond epochs with a fuller heuristic; here the
     // question is only ever "seconds or millis", so a digit-count split is
     // enough: "now" in seconds is 10 digits, in millis 13.
@@ -283,7 +283,7 @@ export function toHumanString(date: Date, timeZone: string): string {
 
 /**
  * ISO 8601 week-date: `YYYY-Www-D`. Weeks start Monday, and week 1 is the week
- * containing the year's first Thursday — equivalently, the week containing
+ * containing the year's first Thursday, equivalently, the week containing
  * 4 January. The civil date is read in `timeZone` first, because a week date
  * is a property of a calendar date, not of an instant.
  */
@@ -319,7 +319,7 @@ export interface ZoneSnapshot {
   /** "+05:30" style, always signed. */
   offset: string
   offsetMinutes: number
-  /** e.g. "EDT", "GMT+2" — whatever the platform's short name is. */
+  /** e.g. "EDT", "GMT+2", whatever the platform's short name is. */
   abbreviation: string
   isDst: boolean
   /** A full readable rendering in this zone. */
@@ -339,7 +339,7 @@ function formatOffset(offsetMinutes: number): string {
 /**
  * DST detection by comparison, not by name: fetch the zone's offset in
  * January and July of the instant's year. Daylight saving always moves the
- * clock *forward* relative to standard time — in either hemisphere — so the
+ * clock *forward* relative to standard time, in either hemisphere, so the
  * smaller of those two offsets is standard time, and "now" is in DST exactly
  * when its own offset is larger than that.
  */
@@ -382,15 +382,15 @@ export interface DurationBreakdown {
   totalMinutes: number
   totalSeconds: number
   totalMs: number
-  /** True when `to` is earlier than `from` — every field above is still non-negative. */
+  /** True when `to` is earlier than `from`, every field above is still non-negative. */
   negative: boolean
 }
 
 /**
  * The calendar-aware breakdown between two instants: "2 years, 1 month,
  * 4 days" rather than just a total. Computed the way a person counts it by
- * hand — subtract field by field, borrowing from the next field up when a
- * subtraction goes negative — using UTC field accessors throughout so the
+ * hand: subtract field by field, borrowing from the next field up when a
+ * subtraction goes negative: using UTC field accessors throughout so the
  * result never depends on the machine's own time zone.
  */
 export function durationBetween(from: Date, to: Date): DurationBreakdown {
@@ -419,7 +419,7 @@ export function durationBetween(from: Date, to: Date): DurationBreakdown {
   }
   if (days < 0) {
     // Borrow a month's worth of days from the month immediately before
-    // `end`'s own month — `daysInMonth` handles the month=0 → previous
+    // `end`'s own month, `daysInMonth` handles the month=0 → previous
     // December wraparound the same way `Date` itself does.
     const borrowYear = end.getUTCMonth() === 0 ? end.getUTCFullYear() - 1 : end.getUTCFullYear()
     const borrowMonth = end.getUTCMonth() === 0 ? 12 : end.getUTCMonth()

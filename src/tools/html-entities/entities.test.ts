@@ -25,7 +25,7 @@ describe('escapeHtml', () => {
   })
 
   it('numeric mode handles an astral character as one reference, not two', () => {
-    // 🌍 is U+1F30D, outside the BMP — a naive UTF-16 loop would see two
+    // 🌍 is U+1F30D, outside the BMP, a naive UTF-16 loop would see two
     // surrogate code units and emit two broken references.
     expect(escapeHtml('🌍', 'numeric')).toBe('&#x1F30D;')
   })
@@ -91,7 +91,7 @@ describe('unescapeHtml', () => {
     expect(unescapeHtml(escapeHtml(text, 'numeric'))).toBe(text)
   })
 
-  it('does not execute or interpret markup — it only substitutes text', () => {
+  it('does not execute or interpret markup. It only substitutes text', () => {
     // The whole point of hand-parsing instead of innerHTML: this must come
     // back as inert text, never be parsed as a tag.
     const result = unescapeHtml('&lt;img src=x onerror=alert(1)&gt;')

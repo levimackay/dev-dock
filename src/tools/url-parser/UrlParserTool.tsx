@@ -43,7 +43,7 @@ export default function UrlParserTool() {
 
   // The URL text is the single source of truth (and the only thing that ends
   // up in the share link). `params` is a working copy the table edits
-  // directly — keeping it separate from re-deriving on every render is what
+  // directly, keeping it separate from re-deriving on every render is what
   // lets a per-row "don't encode this" toggle survive editing a *different*
   // row without being clobbered by a fresh parse of the URL it just helped
   // produce. Typing straight into the URL field clears it, so the table
@@ -162,7 +162,7 @@ export default function UrlParserTool() {
                 )}
                 {isIdnHost(result.parts.hostname) && (
                   <span className={styles.badge + ' ' + styles.badgeWarn}>
-                    IDN host — decodes to "{decodeIdnHostname(result.parts.hostname)}". Verify this
+                    IDN host, decodes to "{decodeIdnHostname(result.parts.hostname)}". Verify this
                     is the domain you expect; visually similar characters are a real phishing
                     technique.
                   </span>
@@ -261,7 +261,7 @@ export default function UrlParserTool() {
             >
               <div className={styles.section}>
                 <Callout tone="info">
-                  The hash looks like a second query string — common in routers that predate the
+                  The hash looks like a second query string, common in routers that predate the
                   History API. Shown for reference; edit it via the URL field above.
                 </Callout>
                 <div className={styles.partsGrid}>
@@ -316,7 +316,7 @@ function QueryRow({
 }) {
   const tracking = trackingExplanation(row.key)
   // A raw form that differs from the decoded value after a second decode
-  // pass is the double-encoding tell — computed inline here rather than in
+  // pass is the double-encoding tell, computed inline here rather than in
   // the logic file's isDoubleEncoded, which is exercised directly by its own
   // tests; this just decides whether to show the hint.
   const showRaw = row.rawValue && row.rawValue !== row.value

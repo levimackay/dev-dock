@@ -13,7 +13,7 @@
  *  3. **Key collisions.** Everything is prefixed so the app owns a clear
  *     namespace and `clearAll()` can never wipe an unrelated origin's data.
  *
- * Nothing sensitive is stored here by design — see SECURITY.md.
+ * Nothing sensitive is stored here by design, see SECURITY.md.
  */
 
 const PREFIX = 'devdock:'

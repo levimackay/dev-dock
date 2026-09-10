@@ -62,7 +62,7 @@ describe('decodeBase64', () => {
   })
 
   it('round-trips multi-byte UTF-8', () => {
-    const text = 'Ђорђе — 🇷🇸'
+    const text = 'Ђорђе, 🇷🇸'
     expect(decodeBase64(encodeBase64(text, opts)).text).toBe(text)
   })
 
@@ -109,7 +109,7 @@ describe('looksLikeBase64', () => {
   })
 
   it('rejects ordinary prose', () => {
-    expect(looksLikeBase64('hello world, this is a sentence.')).toBe(false)
+    expect(looksLikeBase64('hello world. This is a sentence.')).toBe(false)
   })
 
   it('rejects anything too short to be worth guessing about', () => {

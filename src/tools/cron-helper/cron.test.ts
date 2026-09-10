@@ -13,7 +13,7 @@ const failure = (text: string) => {
   return result.error
 }
 
-describe('parseCron — accepting', () => {
+describe('parseCron: accepting', () => {
   it('parses the all-wildcards expression', () => {
     const expr = parse('* * * * *')
     expect(expr.minutes.values).toHaveLength(60)
@@ -70,7 +70,7 @@ describe('parseCron — accepting', () => {
   })
 })
 
-describe('parseCron — rejecting', () => {
+describe('parseCron: rejecting', () => {
   it('rejects an empty expression with a usable hint', () => {
     expect(failure('').message).toMatch(/for example/)
   })
@@ -116,7 +116,7 @@ describe('parseCron — rejecting', () => {
   })
 })
 
-describe('matchesDay — the either/both rule', () => {
+describe('matchesDay: the either/both rule', () => {
   const monday = new Date(2026, 5, 1) // 1 June 2026 is a Monday
   const tuesday = new Date(2026, 5, 2)
   const laterMonday = new Date(2026, 5, 8)

@@ -11,7 +11,7 @@ import { encodeShareState } from '@/lib/share'
  * Integration coverage for the seams between the shell and a real tool.
  *
  * Each unit is already tested in isolation; what these exercise is the wiring
- * that no unit test can see — a lazy chunk resolving into the shell, the
+ * that no unit test can see, a lazy chunk resolving into the shell, the
  * toolbar chrome coming from route context rather than from the tool, share
  * state hydrating from the URL before the tool mounts, and preferences
  * surviving across a navigation.
@@ -136,7 +136,7 @@ describe('app integration', () => {
     await user.click(rail.getByRole('link', { name: 'Base64' }))
 
     await screen.findByRole('heading', { level: 1, name: 'Base64' })
-    // Nothing else in the app moves focus on a route change — <main> is the
+    // Nothing else in the app moves focus on a route change, <main> is the
     // one landmark that persists across every tool, so it is what has to
     // pick focus up when the outlet swaps out from under whatever had it.
     await waitFor(() => expect(screen.getByRole('main')).toHaveFocus())

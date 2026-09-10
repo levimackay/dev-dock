@@ -52,7 +52,7 @@ const isState = shapeValidator<State>({
   ignoreBlankLines: 'boolean',
 })
 
-// Runs longer than this collapse behind a "N unchanged lines" toggle — the
+// Runs longer than this collapse behind a "N unchanged lines" toggle, the
 // one interaction that makes Code Diff read differently from Text Diff, which
 // always shows every line.
 const COLLAPSE_THRESHOLD = 6
@@ -103,7 +103,7 @@ export default function CodeDiffTool() {
     if (group) {
       // `base.css` forces CSS `scroll-behavior` back to `auto` under
       // prefers-reduced-motion, but that override cannot reach a `behavior`
-      // passed straight to `scrollIntoView` — this is the one JS-driven
+      // passed straight to `scrollIntoView`. This is the one JS-driven
       // scroll in the app, so it has to make the same check itself.
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       document.getElementById(group.id)?.scrollIntoView({
@@ -113,7 +113,7 @@ export default function CodeDiffTool() {
     }
   }
 
-  // "n / p when not typing" — useHotkey suppresses unmodified bindings while
+  // "n / p when not typing", useHotkey suppresses unmodified bindings while
   // focus is in a text field by default, which is exactly the "not typing"
   // gate the spec asks for, so no extra focus-tracking is needed here.
   useHotkey('n', () => goToChange(1))

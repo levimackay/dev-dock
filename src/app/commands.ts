@@ -20,7 +20,7 @@ export interface RankedCommand extends Command {
  * Ranks commands against a query.
  *
  * Fields are weighted so a hit on the visible name always beats a hit on
- * invisible keyword metadata — otherwise a user typing "hash" gets a result
+ * invisible keyword metadata: otherwise a user typing "hash" gets a result
  * whose title contains no "hash" anywhere, which reads as a bug.
  */
 export function rankCommands(commands: Command[], query: string): RankedCommand[] {

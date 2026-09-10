@@ -2,7 +2,7 @@
  * A short "in 3 hours" / "2 days ago" phrase for a projected cron run.
  *
  * Deliberately a small independent copy of the same idea in the Unix
- * Timestamp tool's `epoch.ts`, not a shared import — see
+ * Timestamp tool's `epoch.ts`, not a shared import, see
  * docs/ARCHITECTURE.md §2: a tool folder never imports another tool folder.
  * The duplication is a dozen lines; the alternative is coupling two tools
  * that should be free to evolve their own notion of "relative" independently.

@@ -46,7 +46,7 @@ export default function TextDiffTool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
   // Only used to render "change N of M" if a future revision adds jump-to-change
-  // nav here too — kept for symmetry with Code Diff's DiffView usage, cheap to
+  // nav here too, kept for symmetry with Code Diff's DiffView usage, cheap to
   // leave wired since DiffView calls it unconditionally anyway.
   const [, setChangeGroups] = useState<ChangeGroupInfo[]>([])
 

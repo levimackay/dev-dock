@@ -3,7 +3,7 @@
  * that make a URL parser actually useful: tracking-parameter recognition,
  * IP/IDN detection, and double-encoding detection.
  *
- * Everything here is plain data in, plain data out — the platform `URL`
+ * Everything here is plain data in, plain data out, the platform `URL`
  * parser (WHATWG URL, available as a global outside the DOM too) does the
  * real work; this file explains its failures and adds the editable-table
  * layer on top.
@@ -62,7 +62,7 @@ export function parseUrl(input: string): ParseResult {
 function explainUrlFailure(text: string): string {
   const schemeMatch = /^([a-zA-Z][a-zA-Z\d+.-]*):/.exec(text)
   if (!schemeMatch) {
-    return `Missing scheme — a URL needs "https://" (or another scheme) before the host. Try "https://${text}".`
+    return `Missing scheme, a URL needs "https://" (or another scheme) before the host. Try "https://${text}".`
   }
 
   const scheme = schemeMatch[1]!
@@ -72,7 +72,7 @@ function explainUrlFailure(text: string): string {
     const authority = rest.slice(2).split(/[/?#]/)[0] ?? ''
     const hostPart = authority.split('@').pop() ?? ''
 
-    // A trailing ":<garbage>" on the authority is almost always a bad port —
+    // A trailing ":<garbage>" on the authority is almost always a bad port,
     // this is the one case worth calling out by name rather than folding
     // into the generic fallback below.
     const portMatch = /:([^:]*)$/.exec(hostPart)
@@ -80,13 +80,13 @@ function explainUrlFailure(text: string): string {
       const portText = portMatch[1]!
       const portValue = Number(portText)
       if (portText !== '' && (!/^\d+$/.test(portText) || portValue > 65535)) {
-        return `Invalid port "${portText}" — a port must be a whole number from 0 to 65535.`
+        return `Invalid port "${portText}", a port must be a whole number from 0 to 65535.`
       }
     }
 
     const hostOnly = hostPart.replace(/:\d*$/, '')
     if (!hostOnly) {
-      return 'Missing host — nothing between "//" and the next "/", "?", or "#".'
+      return 'Missing host, nothing between "//" and the next "/", "?", or "#".'
     }
   }
 
@@ -104,7 +104,7 @@ export interface QueryParam {
   /**
    * The value exactly as it appeared in the source query string, still
    * percent-encoded. Empty for a row added in the UI, which has no "source"
-   * form yet — used for the double-encoding check and the raw-form display.
+   * form yet: used for the double-encoding check and the raw-form display.
    */
   rawValue: string
   /** Percent-encode `value` when the query string is rebuilt. Default true. */
@@ -114,14 +114,14 @@ export interface QueryParam {
 }
 
 /** `+` means space in a query string by long-standing convention (HTML forms),
- *  even though it is outside the URL spec proper — every real server treats it
+ *  even though it is outside the URL spec proper, every real server treats it
  *  that way, so a parser that does not would be wrong about real-world URLs. */
 function decodeQueryToken(token: string): string {
   const withSpaces = token.replace(/\+/g, ' ')
   try {
     return decodeURIComponent(withSpaces)
   } catch {
-    return withSpaces // malformed escape — show it raw rather than throwing
+    return withSpaces // malformed escape, show it raw rather than throwing
   }
 }
 
@@ -163,7 +163,7 @@ export function buildQueryString(params: QueryParam[]): string {
  * Swaps the query string of a URL, leaving everything else untouched. Used
  * to push table edits back into the one url string that is the tool's
  * actual source of truth (see the .tsx for why it is not the table itself).
- * Silently no-ops on an unparsable URL — there is nothing sensible to
+ * Silently no-ops on an unparsable URL, there is nothing sensible to
  * rebuild, and the caller already has the parse error on screen.
  */
 export function replaceQueryString(urlText: string, search: string): string {
@@ -177,7 +177,7 @@ export function replaceQueryString(urlText: string, search: string): string {
 }
 
 /**
- * True when a value's percent-encoding was itself percent-encoded — the
+ * True when a value's percent-encoding was itself percent-encoded, the
  * classic "pasted a URL that was already encoded, then encoded it again"
  * mistake. Detected by decoding once, checking whether what is left still
  * looks like a percent-encoded sequence, and confirming a second decode
@@ -201,7 +201,7 @@ export function pathSegments(pathname: string): string[] {
   return pathname.split('/').filter(Boolean)
 }
 
-/** Looks like `a=1&b=2` — a fragment used as a second query string, a common
+/** Looks like `a=1&b=2`: a fragment used as a second query string, a common
  *  pattern in client-side routers that predate the History API. */
 const FRAGMENT_PARAMS_RE = /^[^&=]+=[^&]*(&[^&=]+=[^&]*)*$/
 
@@ -225,7 +225,7 @@ export function isIpAddress(hostname: string): boolean {
  * A naive "public suffix" guess: the last two dot-labels. Real effective-TLD
  * detection needs the Public Suffix List (thousands of entries, e.g. "co.uk"
  * vs "london" vs "github.io") which is not worth bundling for a hint in a
- * dev tool — this is wrong for exactly the multi-label-suffix domains that
+ * dev tool: this is wrong for exactly the multi-label-suffix domains that
  * matter most (it reports "co.uk" for "bbc.co.uk", which is technically the
  * registrable suffix there, but also "co.uk" for "example.co.uk" with no way
  * to tell those apart from string shape alone). Labelled as a heuristic in
@@ -246,14 +246,14 @@ export function isIdnHost(hostname: string): boolean {
  * Decodes a punycode label (RFC 3492) back to Unicode for display.
  *
  * `URL` converts a typed Unicode host *to* punycode (ToASCII) but the
- * platform gives no scriptable way back — browsers only do ToUnicode in
+ * platform gives no scriptable way back, browsers only do ToUnicode in
  * their own address-bar rendering, not through an API. This is the standard
  * bootstring algorithm, about 40 lines, verified against Node's built-in
  * (deprecated, Node-only) `punycode` module against RFC 3492's own sample
  * strings during development; it is not a runtime dependency.
  *
- * Worth having at all because a homograph domain — Cyrillic "а" standing in
- * for Latin "a" — is a real phishing technique, and "xn--" prefixes alone
+ * Worth having at all because a homograph domain, Cyrillic "а" standing in
+ * for Latin "a": is a real phishing technique, and "xn--" prefixes alone
  * are unreadable enough that nobody actually checks them by eye.
  */
 export function decodePunycodeLabel(label: string): string {
@@ -261,7 +261,7 @@ export function decodePunycodeLabel(label: string): string {
   try {
     return decodeBootstring(label.slice(4))
   } catch {
-    return label // malformed punycode — show the raw label rather than throwing
+    return label // malformed punycode, show the raw label rather than throwing
   }
 }
 
@@ -339,19 +339,19 @@ function decodeBootstring(input: string): string {
 
 const TRACKING_EXPLANATIONS: Record<string, string> = {
   utm_source:
-    'Marketing source of the visit (e.g. a newsletter or ad network) — Google Analytics campaign tracking.',
+    'Marketing source of the visit (e.g. a newsletter or ad network), Google Analytics campaign tracking.',
   utm_medium:
-    'Marketing medium (e.g. "cpc", "email", "social") — Google Analytics campaign tracking.',
-  utm_campaign: 'Name of the specific marketing campaign — Google Analytics campaign tracking.',
-  utm_term: 'Paid-search keyword that triggered the ad — Google Analytics campaign tracking.',
+    'Marketing medium (e.g. "cpc", "email", "social"), Google Analytics campaign tracking.',
+  utm_campaign: 'Name of the specific marketing campaign, Google Analytics campaign tracking.',
+  utm_term: 'Paid-search keyword that triggered the ad, Google Analytics campaign tracking.',
   utm_content:
-    'Distinguishes similar links within the same ad or campaign — Google Analytics campaign tracking.',
-  gclid: 'Google Ads click identifier — attributes this visit back to a specific ad click.',
+    'Distinguishes similar links within the same ad or campaign, Google Analytics campaign tracking.',
+  gclid: 'Google Ads click identifier, attributes this visit back to a specific ad click.',
   fbclid:
     'Facebook/Meta click identifier, appended when a link is shared or clicked on their platforms.',
-  msclkid: 'Microsoft Advertising click identifier — the Bing Ads equivalent of gclid.',
+  msclkid: 'Microsoft Advertising click identifier, the Bing Ads equivalent of gclid.',
   mc_eid:
-    "Mailchimp per-recipient identifier — ties this click back to one specific subscriber's email.",
+    "Mailchimp per-recipient identifier: ties this click back to one specific subscriber's email.",
   ref: 'Generic referral/source marker used by many sites; the exact meaning is site-specific.',
 }
 

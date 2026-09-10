@@ -5,7 +5,7 @@
  * even though nothing here is security-sensitive: the whole point of test
  * data is that a test using it is reproducible. A failing test that
  * regenerates *different* fixture data on the next run is not a failing
- * test — it is a coin flip wearing a test's clothes. Two people (or two CI
+ * test: it is a coin flip wearing a test's clothes. Two people (or two CI
  * runs) typing the same seed must get byte-identical output, which
  * `Math.random()` cannot promise and a seeded PRNG can.
  *
@@ -82,7 +82,7 @@ function capitalize(s: string): string {
 // Small, obviously-fake corpora on purpose: this is filler data for a UI
 // mockup or a test fixture, not a synthetic-population tool, and a few dozen
 // entries repeated across rows is *more* honest about that than a few
-// thousand would be — nobody should ever mistake this output for a real
+// thousand would be, nobody should ever mistake this output for a real
 // person or a real business.
 
 const FIRST_NAMES = [
@@ -464,7 +464,7 @@ const JOB_ROLES = [
   'Director',
 ]
 
-// RFC 2606 reserved domains — deliberately non-deliverable, so a fake email
+// RFC 2606 reserved domains, deliberately non-deliverable, so a fake email
 // generated here can never land in a real inbox by accident.
 const EMAIL_DOMAINS = ['example.com', 'example.org', 'example.net', 'mail.example']
 
@@ -592,7 +592,7 @@ export function generateLorem(opts: LoremOptions): string {
     }
     case 'bytes': {
       // Lorem text here is pure ASCII, so character count and UTF-8 byte
-      // count are the same number — a plain `.slice` is an exact byte
+      // count are the same number, a plain `.slice` is an exact byte
       // truncation, not an approximation that risks cutting a multi-byte
       // character in half.
       let text = opts.startWithLorem ? `${LOREM_OPENER_SENTENCE} ` : ''
@@ -648,7 +648,7 @@ export interface FieldSchema {
 export type RecordValue = string | number | boolean
 export type DataRecord = Record<string, RecordValue>
 
-/** Keeps the tab responsive and the output readable — stated in the UI. */
+/** Keeps the tab responsive and the output readable, stated in the UI. */
 export const MAX_ROWS = 5000
 
 /** Fills in blank field names and de-duplicates repeats, once, so every
@@ -666,7 +666,7 @@ export function resolveFieldNames(fields: FieldSchema[]): FieldSchema[] {
 
 function fakeUuid(rng: Rng): string {
   const seg = (n: number) => Array.from({ length: n }, () => hexDigit(rng)).join('')
-  const variant = (8 + Math.floor(rng() * 4)).toString(16) // one of 8, 9, a, b — RFC 4122 variant bits
+  const variant = (8 + Math.floor(rng() * 4)).toString(16) // one of 8, 9, a, b, RFC 4122 variant bits
   return `${seg(8)}-${seg(4)}-4${seg(3)}-${variant}${seg(3)}-${seg(12)}`
 }
 

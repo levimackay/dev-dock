@@ -3,9 +3,9 @@ import { defineConfig, devices } from '@playwright/test'
 /**
  * End-to-end tests run against the *production build*, not the dev server.
  *
- * That is deliberate: the things most likely to break between dev and prod —
+ * That is deliberate: the things most likely to break between dev and prod,
  * lazy chunk loading, the manual chunk split, minification of a hand-written
- * worker, base-path handling — are invisible if the suite only ever exercises
+ * worker, base-path handling, are invisible if the suite only ever exercises
  * Vite's dev middleware.
  */
 export default defineConfig({

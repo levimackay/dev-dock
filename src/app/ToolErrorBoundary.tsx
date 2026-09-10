@@ -19,7 +19,7 @@ interface State {
  * Error boundaries are the one place React still requires a class component:
  * `componentDidCatch` and `getDerivedStateFromError` have no hook equivalents.
  * The boundary is keyed by tool id, so navigating to another tool remounts it
- * and clears the error automatically — the user is never stranded on a dead
+ * and clears the error automatically, the user is never stranded on a dead
  * screen because a stale error state outlived the thing that caused it.
  *
  * The message deliberately shows the real error text. This is a developer tool;

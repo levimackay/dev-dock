@@ -6,7 +6,7 @@
  * The `diff` npm package is 30 KB and does considerably more than this app
  * needs (patch application, JSON diffing, five output formats). What Dev Dock
  * needs is the core sequence alignment plus line and word wrappers, which is
- * about 150 lines — and the algorithm is the single most interesting thing in
+ * about 150 lines, and the algorithm is the single most interesting thing in
  * the codebase to read, so it is worth having in the repo.
  *
  * ## The algorithm, briefly
@@ -14,7 +14,7 @@
  * Model the diff as a path through an (N+1)×(M+1) grid, from (0,0) to (N,M).
  * Moving right deletes from `a`; moving down inserts from `b`; moving
  * diagonally matches an element for free. The shortest edit script is the path
- * with the fewest non-diagonal moves — call that count D.
+ * with the fewest non-diagonal moves, call that count D.
  *
  * Myers' insight is to search by increasing D rather than by position. For each
  * D, track only the furthest-reaching x on each diagonal k = x − y. That is one

@@ -10,7 +10,7 @@ import {
 /**
  * Parses rendered HTML into a detached element so tests can assert on the
  * actual DOM (attribute values, element presence) rather than substring
- * matching the HTML string — a substring check would pass a still-dangerous
+ * matching the HTML string: a substring check would pass a still-dangerous
  * payload that merely got reformatted, and would fail a safe payload that
  * happens to contain the same characters in inert text content.
  */
@@ -24,7 +24,7 @@ function hrefsIn(html: string): (string | null)[] {
   return Array.from(parse(html).querySelectorAll('[href]')).map((el) => el.getAttribute('href'))
 }
 
-describe('renderMarkdown — plain formatting', () => {
+describe('renderMarkdown: plain formatting', () => {
   it('renders headings, emphasis, and lists', () => {
     const html = renderMarkdown('# Title\n\n**bold** and *italic*\n\n- one\n- two')
     const div = parse(html)
@@ -66,7 +66,7 @@ describe('renderMarkdown — plain formatting', () => {
   })
 })
 
-describe('renderMarkdown — XSS resistance', () => {
+describe('renderMarkdown: XSS resistance', () => {
   it('strips a <script> tag entirely, content included', () => {
     const html = renderMarkdown('before <script>alert(1)</script> after')
     expect(parse(html).querySelector('script')).toBeNull()

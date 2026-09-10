@@ -12,7 +12,7 @@ export interface PanelProps {
   footer?: ReactNode
   /** Applies the standard content inset. Off for editors, which bleed. */
   padded?: boolean
-  /** Drops the border and background — for a panel inside another frame. */
+  /** Drops the border and background, for a panel inside another frame. */
   flush?: boolean
   tone?: 'default' | 'err'
   className?: string
@@ -23,7 +23,7 @@ export interface PanelProps {
 /**
  * The single container primitive in the app.
  *
- * Every tool region — input, output, options, results — is a Panel. That is
+ * Every tool region: input, output, options, results, is a Panel. That is
  * what keeps 22 independently written tools looking like one product: nobody
  * gets to invent their own box.
  */

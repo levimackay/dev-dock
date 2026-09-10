@@ -1,11 +1,11 @@
 /**
- * ID generation: UUID v4, UUID v7, NanoID, and ULID — plus a decoder that
+ * ID generation: UUID v4, UUID v7, NanoID, and ULID, plus a decoder that
  * reads a pasted UUID back apart.
  *
  * SECURITY: every generator below draws its randomness from
  * `crypto.getRandomValues`, the platform CSPRNG (cryptographically secure
  * pseudo-random number generator), never `Math.random()`. `Math.random()` is
- * specified only to be "approximately uniform" — most engines back it with a
+ * specified only to be "approximately uniform", most engines back it with a
  * fast, non-cryptographic PRNG (xorshift128+ in V8) whose output can be
  * predicted from a handful of samples. That is irrelevant for a dice-roll
  * animation and disqualifying for anything used as an identifier that must
@@ -37,7 +37,7 @@ function randomBytes(length: number): Uint8Array {
  * Uses the platform's own `crypto.randomUUID()` where it exists (every
  * evergreen browser since 2022). The manual fallback below is what that
  * function is doing internally, spelled out: 16 random bytes, then the four
- * version bits and the two variant bits are overwritten per RFC 4122 §4.4 —
+ * version bits and the two variant bits are overwritten per RFC 4122 §4.4,
  * everything else in the UUID stays random. Version 4 means "no meaning in
  * this UUID besides being random"; the variant bits (`10` in the top two
  * bits of byte 8) mark it as an RFC 4122 UUID rather than one of the three
@@ -61,7 +61,7 @@ export function generateUuidV4(): string {
  *
  * The reason v7 exists at all: a v4 UUID is uniformly random, which means a
  * database index built on it (a B-tree, which is what a primary-key index
- * almost always is) gets an insert at a random leaf every time — no
+ * almost always is) gets an insert at a random leaf every time, no
  * locality, constant page splits, and a working set that never fits in
  * cache. A v7 UUID sorts by creation time because its high-order bits *are*
  * a timestamp, so inserts land at the right edge of the index the way an
@@ -77,7 +77,7 @@ export function generateUuidV7(now: number = Date.now()): string {
   }
 
   // 10 random bytes cover: 4 bits into byte 6 (rand_a high nibble), all of
-  // byte 7 (rand_a low byte) — 12 bits of rand_a total — then 6 bits into
+  // byte 7 (rand_a low byte), 12 bits of rand_a total, then 6 bits into
   // byte 8 plus all of bytes 9-15 for the 62 bits of rand_b.
   const rnd = randomBytes(10)
   bytes[6] = 0x70 | (rnd[0]! & 0x0f) // version 7
@@ -97,15 +97,15 @@ export const DEFAULT_NANOID_LENGTH = 21
 /**
  * Generates a NanoID: `length` characters drawn uniformly from `alphabet`.
  *
- * The naive approach — `alphabet[randomByte % alphabet.length]` — is biased
+ * The naive approach: `alphabet[randomByte % alphabet.length]`, is biased
  * whenever `alphabet.length` does not evenly divide 256. With a 62-character
  * alphabet, for instance, byte values 0-255 map to indices 0-61 unevenly:
  * indices 0-47 each get hit by 4 byte values (0-255 = 4*64, and 256 = 4*62 +
  * 8 remainder), so the last few characters win the modulo lottery slightly
- * more often — small, but real, and exactly the kind of statistical tell
+ * more often: small, but real, and exactly the kind of statistical tell
  * that a rejection-sampling scheme costs almost nothing to close. The fix:
  * compute the largest multiple of `alphabet.length` that fits in a byte
- * (`limit`), and throw away — re-roll — any byte landing at or above it. The
+ * (`limit`), and throw away, re-roll, any byte landing at or above it. The
  * default 64-character alphabet was chosen precisely so 256 divides it
  * evenly and this branch never has to trigger; it only matters once a
  * caller supplies a custom alphabet.
@@ -147,7 +147,7 @@ function toBase32(value: bigint, digits: number): string {
 
 /**
  * ULID: a 48-bit millisecond timestamp (10 Crockford Base32 characters)
- * followed by 80 bits of randomness (16 more characters) — 26 characters
+ * followed by 80 bits of randomness (16 more characters), 26 characters
  * total. Like UUID v7, encoding the timestamp first makes IDs generated in
  * order sort as strings in that same order; unlike v7 it is not constrained
  * to the UUID's specific byte layout, which is why it reads as plain Base32
@@ -181,7 +181,7 @@ export interface UuidDecodeResult {
 
 function describeVariant(nibble: number): UuidVariant {
   // The variant lives in the top 1-3 bits of this nibble, not the whole
-  // thing — RFC 4122 §4.1.1 defines it as a variable-width prefix code.
+  // thing, RFC 4122 §4.1.1 defines it as a variable-width prefix code.
   if ((nibble & 0b1000) === 0) return 'NCS backward compatible'
   if ((nibble & 0b1100) === 0b1000) return 'RFC 4122 / RFC 9562'
   if ((nibble & 0b1110) === 0b1100) return 'Microsoft (reserved)'
@@ -204,7 +204,7 @@ function decodeV1Timestamp(hex: string): Date {
   return fromGregorian100ns(BigInt(`0x${timeHi}${timeMid}${timeLow}`))
 }
 
-/** v6 reorders the same 60-bit clock value into time_high(32) : time_mid(16) : time_low(12), so that — unlike v1 — the bytes sort chronologically. */
+/** v6 reorders the same 60-bit clock value into time_high(32) : time_mid(16) : time_low(12), so that, unlike v1, the bytes sort chronologically. */
 function decodeV6Timestamp(hex: string): Date {
   const timeHighA = hex.slice(0, 8)
   const timeHighB = hex.slice(8, 12)
@@ -225,7 +225,7 @@ export function decodeUuid(input: string): UuidDecodeResult {
   if (!/^[0-9a-fA-F]{32}$/.test(stripped)) {
     return {
       ok: false,
-      error: `"${trimmed}" is not a UUID — expected 32 hex characters, with or without hyphens or braces, found ${stripped.length} usable hex characters.`,
+      error: `"${trimmed}" is not a UUID, expected 32 hex characters, with or without hyphens or braces, found ${stripped.length} usable hex characters.`,
     }
   }
 

@@ -8,7 +8,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   size?: ButtonSize
-  /** Renders square. Requires `aria-label` — there is no visible text to read. */
+  /** Renders square. Requires `aria-label`. There is no visible text to read. */
   iconOnly?: boolean
   fullWidth?: boolean
   /** Toggle state. Sets `aria-pressed` as well as the visual treatment. */

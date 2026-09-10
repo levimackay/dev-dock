@@ -27,7 +27,7 @@ export function preprocessForDiff(text: string, options: CodeDiffPreprocessOptio
   return lines.join('\n')
 }
 
-/** A safe filename fragment for a patch header — no path traversal, no blank. */
+/** A safe filename fragment for a patch header, no path traversal, no blank. */
 export function sanitizeFileLabel(name: string, fallback: string): string {
   const trimmed = name.trim()
   return trimmed === '' ? fallback : trimmed.replace(/\s+/g, ' ')

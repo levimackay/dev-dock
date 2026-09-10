@@ -2,7 +2,7 @@ import type { LineDiffResult } from '@/lib/diff'
 
 /**
  * Percentage of lines that are unchanged, as a stand-in for "how similar are
- * these two texts". Rounded to one decimal place — the tenths digit is
+ * these two texts". Rounded to one decimal place, the tenths digit is
  * legible on a StatGrid readout without implying more precision than a
  * line-level metric actually has.
  */

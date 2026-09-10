@@ -3,7 +3,7 @@
  *
  * `navigator.clipboard` requires a secure context (https or localhost). Someone
  * running the built app off a file:// URL or a plain-http LAN address still
- * deserves a working copy button, hence the execCommand path — deprecated, but
+ * deserves a working copy button, hence the execCommand path, deprecated, but
  * the only thing that works there, and it costs eight lines.
  */
 export async function copyText(text: string): Promise<boolean> {

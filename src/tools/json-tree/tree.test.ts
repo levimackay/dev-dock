@@ -212,7 +212,7 @@ describe('containerPaths', () => {
     )
   })
 
-  it('is empty for a scalar document — there is nothing to expand', () => {
+  it('is empty for a scalar document. There is nothing to expand', () => {
     expect(containerPaths(42)).toEqual(new Set())
   })
 })

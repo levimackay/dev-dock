@@ -1,11 +1,11 @@
 /**
  * Locates each field of a raw cron expression by character offset, so the UI
- * can draw a label directly above the substring the user actually typed —
+ * can draw a label directly above the substring the user actually typed,
  * the "live field ruler" that is this tool's signature feature.
  *
  * The trick that makes this simple: both the ruler and the input below it are
- * rendered in the same monospace font, so a label only needs `left: ${n}ch` —
- * CSS's `ch` unit is exactly one monospace character wide — rather than any
+ * rendered in the same monospace font, so a label only needs `left: ${n}ch`,
+ * CSS's `ch` unit is exactly one monospace character wide, rather than any
  * JS-side pixel measurement of the rendered text.
  */
 
@@ -17,7 +17,7 @@ export interface FieldToken {
   text: string
 }
 
-/** Splits on whitespace runs of any width, keeping each token's real offset — so extra spaces between fields (or a leading one) do not shift the ruler off. */
+/** Splits on whitespace runs of any width, keeping each token's real offset, so extra spaces between fields (or a leading one) do not shift the ruler off. */
 export function tokenizeCronInput(raw: string): FieldToken[] {
   const tokens: FieldToken[] = []
   const pattern = /\S+/g

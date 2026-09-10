@@ -3,7 +3,7 @@
  *
  * DECODING IS NOT VERIFICATION. Splitting a token into header/payload and
  * base64url-decoding them tells you what the *token claims*, not whether it
- * is genuine — anyone can construct a JWT with any header and payload they
+ * is genuine: anyone can construct a JWT with any header and payload they
  * like; only a valid signature over the exact bytes proves it came from
  * someone holding the key. A token that merely decodes is not a credential
  * you should trust, and a token you did not issue should never be pasted
@@ -30,7 +30,7 @@ export interface JwtDecodeResult {
   signatureB64Url?: string
   /** The exact bytes that were (or should have been) signed: `header.payload`. */
   signingInput?: string
-  /** `alg: "none"` is a real, standardised JWS mode — and a classic auth bypass if a verifier honours it. */
+  /** `alg: "none"` is a real, standardised JWS mode, and a classic auth bypass if a verifier honours it. */
   algNone?: boolean
 }
 
@@ -40,7 +40,7 @@ export type HmacAlgorithm = (typeof HS_ALGORITHMS)[number]
 export function isHmacAlgorithm(alg: string | undefined): alg is HmacAlgorithm {
   // A manual comparison, not `HS_ALGORITHMS.includes(alg)`, because `includes`
   // on a `readonly HmacAlgorithm[]` requires its argument to already be a
-  // `HmacAlgorithm` — exactly the thing this function exists to establish —
+  // `HmacAlgorithm`, exactly the thing this function exists to establish,
   // so checking it that way would need a cast to silence the very question
   // being asked.
   return alg === 'HS256' || alg === 'HS384' || alg === 'HS512'
@@ -85,7 +85,7 @@ export function decodeJwt(token: string): JwtDecodeResult {
     }
   }
   // `segments` is still typed as `string[]` here, not a 3-tuple, even after
-  // the length check above — so indexed access is `string | undefined` under
+  // the length check above, so indexed access is `string | undefined` under
   // `noUncheckedIndexedAccess`. The `?? ''` fallbacks are dead code (length
   // is already known to be exactly 3) but they are what let this destructure
   // without a tuple cast.
@@ -101,7 +101,7 @@ export function decodeJwt(token: string): JwtDecodeResult {
     if (!B64URL_RE.test(seg)) {
       return {
         ok: false,
-        error: `The ${name} segment is not valid base64url — it contains a character outside A-Z, a-z, 0-9, "-", "_".`,
+        error: `The ${name} segment is not valid base64url, it contains a character outside A-Z, a-z, 0-9, "-", "_".`,
       }
     }
   }
@@ -118,7 +118,7 @@ export function decodeJwt(token: string): JwtDecodeResult {
   }
 
   // `JSON.parse` returns `any`, which is assignable to `JwtHeader` with no
-  // cast needed — `any` bypasses assignability checks in both directions.
+  // cast needed, `any` bypasses assignability checks in both directions.
   // That is a real TypeScript escape hatch, which is exactly why the shape
   // is never trusted beyond "some JSON value"; every field is still read
   // through an explicit `typeof` check wherever it matters (see the UI).
@@ -185,7 +185,7 @@ export interface ClaimTime {
   relative: string
 }
 
-/** `exp`/`nbf`/`iat` are Unix seconds per RFC 7519 §2 — not milliseconds, the universal off-by-1000x bug. */
+/** `exp`/`nbf`/`iat` are Unix seconds per RFC 7519 §2, not milliseconds, the universal off-by-1000x bug. */
 export function readClaimTime(value: unknown): ClaimTime | undefined {
   if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
   const ms = value * 1000
@@ -303,7 +303,7 @@ export function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
 /**
  * A real HS256-signed token, generated at build time against the documented
  * secret below so the Sample button demonstrates the whole tool, verification
- * included — not just decoding.
+ * included: not just decoding.
  *
  *   header:  {"alg":"HS256","typ":"JWT"}
  *   payload: {"sub":"1234567890","name":"Ada Lovelace","iss":"dev-dock",

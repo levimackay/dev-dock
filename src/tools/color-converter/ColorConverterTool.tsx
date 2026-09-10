@@ -78,14 +78,14 @@ export default function ColorConverterTool() {
               className={styles.swatchInput}
               aria-label="Pick a colour"
               // The native picker only understands opaque 6-digit hex, so
-              // alpha is dropped for this control specifically — every other
+              // alpha is dropped for this control specifically, every other
               // control in the tool keeps it.
               value={rgbToHex({ ...rgb, a: 1 })}
               onChange={(e) => setRgb({ ...(parseColor(e.target.value)?.rgb ?? rgb), a: rgb.a })}
             />
             <TextInput
               mono
-              aria-label="Colour value — hex, rgb(), hsl(), oklch(), or a CSS name"
+              aria-label="Colour value, hex, rgb(), hsl(), oklch(), or a CSS name"
               value={state.color}
               onChange={(e) => patch({ color: e.target.value })}
               placeholder="#3366ff, rgb(51 102 255), hsl(220 100% 60%), oklch(0.55 0.2 260), rebeccapurple…"
@@ -141,7 +141,7 @@ export default function ColorConverterTool() {
           </div>
           {outOfGamut && (
             <Callout tone="warn" title="This OKLCH value is outside sRGB">
-              The colour shown is clipped to the nearest displayable sRGB value — a monitor cannot
+              The colour shown is clipped to the nearest displayable sRGB value, a monitor cannot
               show the exact OKLCH number as written. Reduce chroma to bring it back in gamut.
             </Callout>
           )}
@@ -304,7 +304,7 @@ export default function ColorConverterTool() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-3)' }}>
             <span className={styles.ratioValue}>{verdict.ratio.toFixed(2)}:1</span>
             <span style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-xs)' }}>
-              "Large" text means 18.66px bold or 24px regular — everything else is "normal".
+              "Large" text means 18.66px bold or 24px regular, everything else is "normal".
             </span>
           </div>
 
@@ -337,16 +337,16 @@ export default function ColorConverterTool() {
 
         <Panel label="Tint / shade ramp" bodyClassName={styles.section}>
           <div className={styles.rampGroup}>
-            <span className={styles.rampGroupLabel}>OKLCH — perceptually even lightness steps</span>
+            <span className={styles.rampGroupLabel}>OKLCH, perceptually even lightness steps</span>
             <RampRow stops={ramp} />
           </div>
           <div className={styles.rampGroup}>
-            <span className={styles.rampGroupLabel}>Naive HSL lightness — for comparison</span>
+            <span className={styles.rampGroupLabel}>Naive HSL lightness, for comparison</span>
             <RampRow stops={naiveRamp} />
             <Callout tone="info">
               Same idea, walked in HSL lightness instead of OKLCH: notice the middle stops clump and
               jump in perceived brightness rather than stepping evenly, because HSL lightness is not
-              perceptually uniform — this is the actual case for building the ramp above in OKLCH
+              perceptually uniform. This is the actual case for building the ramp above in OKLCH
               rather than the more familiar space.
             </Callout>
           </div>
@@ -417,7 +417,7 @@ function ContrastBadge({ label, pass }: { label: string; pass: boolean }) {
 }
 
 /**
- * Each stop is a plain `<button>` rather than the shared `CopyButton` — that
+ * Each stop is a plain `<button>` rather than the shared `CopyButton`, that
  * component renders its own label text plus a copy glyph, which leaves no
  * room for the stop to also *be* the swatch. A toast stands in for the
  * button's own "Copied" state instead, which is exactly what toasts are for
@@ -455,7 +455,7 @@ function RampRow({ stops }: { stops: Array<{ stop: number; hex: string }> }) {
 /**
  * The naive counterpart to `buildRamp`: walks HSL lightness instead of OKLCH
  * lightness, using the same range and step count. Deliberately not exported
- * from color.ts — this exists only to be looked at next to the real ramp, not
+ * from color.ts: this exists only to be looked at next to the real ramp, not
  * to be reused, so it stays here as a demo rather than becoming library code
  * nobody asked for.
  */

@@ -16,7 +16,7 @@ export interface CommandPaletteProps {
  * The command palette, and with it the global search.
  *
  * Accessibility here is the interesting part. The visible focus never leaves
- * the text input — that is what makes type-then-arrow-then-Enter feel instant —
+ * the text input: that is what makes type-then-arrow-then-Enter feel instant,
  * so the listbox relationship has to be declared rather than performed:
  *
  *   - the input carries `role="combobox"`, `aria-expanded`, `aria-controls`,

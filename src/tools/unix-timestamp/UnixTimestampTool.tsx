@@ -36,7 +36,7 @@ interface State {
 const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 // A small curated fallback for browsers without `Intl.supportedValuesOf`
-// (Firefox before 113, Safari before 17). Full coverage isn't the point —
+// (Firefox before 113, Safari before 17). Full coverage isn't the point,
 // covering the zones someone actually reaches for is.
 const FALLBACK_ZONES = [
   'UTC',
@@ -286,7 +286,7 @@ export default function UnixTimestampTool() {
 
             {!state.input.trim() ? (
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
-                Type an epoch timestamp above — seconds, milliseconds, microseconds, or nanoseconds,
+                Type an epoch timestamp above, seconds, milliseconds, microseconds, or nanoseconds,
                 positive or negative. The unit is guessed from its magnitude; override it if the
                 guess is wrong.
               </p>
@@ -367,8 +367,8 @@ export default function UnixTimestampTool() {
 
             {!parsedFields ? (
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
-                Pick a date and time above — using your browser's own date/time control, interpreted
-                in the time zone you choose — to get its epoch value in every unit.
+                Pick a date and time above, using your browser's own date/time control, interpreted
+                in the time zone you choose, to get its epoch value in every unit.
               </p>
             ) : (
               <div

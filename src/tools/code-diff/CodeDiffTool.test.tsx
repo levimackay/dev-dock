@@ -7,7 +7,7 @@ import CodeDiffTool from './CodeDiffTool'
 // CSS `scroll-behavior` back to `auto` under prefers-reduced-motion, but that
 // cannot reach a `behavior` passed straight to `scrollIntoView`, so the
 // component has to check `matchMedia` itself before asking for a smooth
-// scroll — this locks that check in.
+// scroll, this locks that check in.
 describe('CodeDiffTool change navigation', () => {
   afterEach(() => {
     vi.restoreAllMocks()

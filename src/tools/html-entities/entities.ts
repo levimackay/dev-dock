@@ -5,7 +5,7 @@
  * return el.textContent`. It looks elegant and it is an XSS sink: assigning
  * to `innerHTML` PARSES the string as HTML, so `<img src=x onerror=alert(1)>`
  * runs its handler the moment it is assigned, entities or not. That the tool
- * only reads `.textContent` back afterwards does not help — the damage (script
+ * only reads `.textContent` back afterwards does not help, the damage (script
  * execution, in a "trusted" dev tool a user might paste secrets into) already
  * happened during assignment. The only safe way to decode entities is to
  * *not parse HTML at all*: walk the string, recognise `&name;` / `&#123;` /
@@ -27,7 +27,7 @@ const MINIMAL_ESCAPES: Record<string, string> = {
 /**
  * Named entities worth recognising both ways. This is deliberately a few
  * hundred common entries, not the ~2,200-entry HTML5 named-character-
- * reference table — the long tail (`&NotNestedGreaterGreater;` and friends)
+ * reference table: the long tail (`&NotNestedGreaterGreater;` and friends)
  * is real but essentially never appears outside a spec-compliance test, and
  * shipping it as a giant literal would defeat the point of a hand-reviewable
  * tool. Anything not in this table still round-trips correctly through the
@@ -170,7 +170,7 @@ for (const [name, char] of Object.entries(NAMED_ENTITIES)) {
   if (!(char in CHAR_TO_NAME)) CHAR_TO_NAME[char] = name
 }
 
-/** True for the ASCII printable range — everything else is "non-ASCII" for escape purposes. */
+/** True for the ASCII printable range, everything else is "non-ASCII" for escape purposes. */
 function isAscii(char: string): boolean {
   const code = char.codePointAt(0) ?? 0
   return code < 0x80
@@ -209,7 +209,7 @@ export function escapeHtml(text: string, mode: EscapeMode): string {
 }
 
 /**
- * Matches `&name;`, `&#123;`, and `&#x1F30D;` — the three reference forms
+ * Matches `&name;`, `&#123;`, and `&#x1F30D;`, the three reference forms
  * HTML actually defines. Unknown or malformed references are left untouched
  * rather than guessed at or dropped, which is both safer (nothing
  * disappears silently) and matches how a browser's text-content parser

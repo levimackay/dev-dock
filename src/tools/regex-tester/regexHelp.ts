@@ -3,8 +3,8 @@
  *
  * Both walk the pattern text as a small hand-rolled scanner rather than one
  * giant regex. A single "does this look like a token" regex is tempting, but
- * the constructs that matter here — character classes, named groups,
- * lookarounds, escapes — nest and overlap in ways that make a single
+ * the constructs that matter here, character classes, named groups,
+ * lookarounds, escapes, nest and overlap in ways that make a single
  * alternation regex either wrong on edge cases or unreadable. A loop with a
  * handful of `startsWith` checks is both easier to get right and easier to
  * extend with one more construct later.
@@ -46,7 +46,7 @@ function findClassEnd(pattern: string, start: number): number {
     if (ch === ']') return i + 1
     i++
   }
-  return pattern.length // unterminated — treat the rest of the string as the class
+  return pattern.length // unterminated, treat the rest of the string as the class
 }
 
 function describeClass(raw: string): string {
@@ -106,7 +106,7 @@ export function explainPattern(pattern: string): PatternToken[] {
       if (pattern.startsWith('(?:', i)) {
         tokens.push({
           token: '(?:',
-          meaning: 'Non-capturing group — groups without creating a numbered capture',
+          meaning: 'Non-capturing group, groups without creating a numbered capture',
         })
         i += 3
         continue
@@ -114,21 +114,20 @@ export function explainPattern(pattern: string): PatternToken[] {
       if (pattern.startsWith('(?=', i)) {
         tokens.push({
           token: '(?=',
-          meaning: 'Positive lookahead — must be followed by this, but it is not part of the match',
+          meaning: 'Positive lookahead, must be followed by this, but it is not part of the match',
         })
         i += 3
         continue
       }
       if (pattern.startsWith('(?!', i)) {
-        tokens.push({ token: '(?!', meaning: 'Negative lookahead — must NOT be followed by this' })
+        tokens.push({ token: '(?!', meaning: 'Negative lookahead, must NOT be followed by this' })
         i += 3
         continue
       }
       if (pattern.startsWith('(?<=', i)) {
         tokens.push({
           token: '(?<=',
-          meaning:
-            'Positive lookbehind — must be preceded by this, but it is not part of the match',
+          meaning: 'Positive lookbehind: must be preceded by this, but it is not part of the match',
         })
         i += 4
         continue
@@ -136,7 +135,7 @@ export function explainPattern(pattern: string): PatternToken[] {
       if (pattern.startsWith('(?<!', i)) {
         tokens.push({
           token: '(?<!',
-          meaning: 'Negative lookbehind — must NOT be preceded by this',
+          meaning: 'Negative lookbehind, must NOT be preceded by this',
         })
         i += 4
         continue
@@ -154,7 +153,7 @@ export function explainPattern(pattern: string): PatternToken[] {
       groupNumber++
       tokens.push({
         token: '(',
-        meaning: `Capturing group ${groupNumber} — remembers what it matches`,
+        meaning: `Capturing group ${groupNumber}, remembers what it matches`,
       })
       i++
       continue
@@ -168,7 +167,7 @@ export function explainPattern(pattern: string): PatternToken[] {
 
     if (ch === '|') {
       flushLiteral()
-      tokens.push({ token: '|', meaning: 'Alternation — matches whatever is on either side' })
+      tokens.push({ token: '|', meaning: 'Alternation, matches whatever is on either side' })
       i++
       continue
     }
@@ -237,7 +236,7 @@ export function explainPattern(pattern: string): PatternToken[] {
       }
       tokens.push({
         token: `\\${next}`,
-        meaning: `Escaped literal "${next}" — matches the character itself, not as a special one`,
+        meaning: `Escaped literal "${next}", matches the character itself, not as a special one`,
       })
       i += 2
       continue
@@ -333,7 +332,7 @@ const HAS_QUANTIFIER = /[*+]|\{\d+,?\d*\}/
 /**
  * Flags the classic exponential-backtracking shapes: a group that contains
  * its own quantified sub-pattern, itself repeated by an unbounded quantifier
- * — `(a+)+`, `(a*)*`, `(\w+)*`, and their `{2,}` spellings. This is a
+ *, `(a+)+`, `(a*)*`, `(\w+)*`, and their `{2,}` spellings. This is a
  * heuristic, not a full static analysis of the pattern's automaton: it will
  * miss more exotic ReDoS shapes (alternation-based ones in particular) and
  * can flag a group that is provably safe once you know its content can never

@@ -160,7 +160,7 @@ describe('convertText', () => {
 
   it('resets the alternating-case phase at each line when perLine is true', () => {
     // 3 letters on line 1 means line 2 would start mid-phase if it carried
-    // over — perLine=true instead restarts every line at lowercase.
+    // over, perLine=true instead restarts every line at lowercase.
     expect(convertText('abc\nde', 'alternating', true)).toBe('aBc\ndE')
   })
 

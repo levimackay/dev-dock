@@ -20,7 +20,7 @@ describe('md5', () => {
   })
 
   it('hashes input crossing a 64-byte block boundary', () => {
-    // 56+ bytes pushes the length-and-padding past one 64-byte block — the classic MD5 edge case.
+    // 56+ bytes pushes the length-and-padding past one 64-byte block, the classic MD5 edge case.
     const input = 'a'.repeat(63)
     expect(hex(md5(utf8(input)))).toBe('b06521f39153d618550606be297466d5')
   })

@@ -12,7 +12,7 @@ export interface DialogProps {
   /** Palette-style dialogs sit high; confirmations sit centred. */
   placement?: 'top' | 'center'
   width?: string
-  /** Hides the header entirely — for the command palette, which is its own UI. */
+  /** Hides the header entirely, for the command palette, which is its own UI. */
   bare?: boolean
   labelledBy?: string
   ariaLabel?: string

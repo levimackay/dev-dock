@@ -4,7 +4,7 @@
 
 The formatters, decoders, converters, and diff tools you reach for a dozen times
 a day, in one keyboard-driven workbench. No accounts, no uploads, no tracking,
-and — with a single labelled exception — no network requests at all.
+and, with a single labelled exception, no network requests at all.
 
 ```bash
 pnpm install
@@ -45,19 +45,19 @@ is nothing to sign into and nothing to send.
 
 It is built for the keyboard first.
 
-| Key                               | Does                                           |
-| --------------------------------- | ---------------------------------------------- |
-| <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> | Command palette — search every tool and action |
-| <kbd>/</kbd>                      | Same, from anywhere you are not typing         |
-| <kbd>?</kbd>                      | The full shortcut list                         |
-| <kbd>⌘B</kbd>                     | Show or hide the tool rail                     |
-| <kbd>⌘⇧L</kbd>                    | Cycle light, dark, and system themes           |
-| <kbd>⌘D</kbd>                     | Pin the current tool to the rail               |
-| <kbd>⌘⇧S</kbd>                    | Copy a share link that restores your input     |
-| <kbd>⌘⇧C</kbd>                    | Copy the current tool's output                 |
+| Key                               | Does                                          |
+| --------------------------------- | --------------------------------------------- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> | Command palette, search every tool and action |
+| <kbd>/</kbd>                      | Same, from anywhere you are not typing        |
+| <kbd>?</kbd>                      | The full shortcut list                        |
+| <kbd>⌘B</kbd>                     | Show or hide the tool rail                    |
+| <kbd>⌘⇧L</kbd>                    | Cycle light, dark, and system themes          |
+| <kbd>⌘D</kbd>                     | Pin the current tool to the rail              |
+| <kbd>⌘⇧S</kbd>                    | Copy a share link that restores your input    |
+| <kbd>⌘⇧C</kbd>                    | Copy the current tool's output                |
 
 Pinned tools, recent tools, split-pane positions, and your theme persist in
-`localStorage`. Tool _input_ never does — closing the tab loses it, which is the
+`localStorage`. Tool _input_ never does, closing the tab loses it, which is the
 right default for something people paste credentials into.
 
 ### Share links
@@ -65,7 +65,7 @@ right default for something people paste credentials into.
 <kbd>⌘⇧S</kbd> copies a URL that reproduces exactly what you were looking at.
 The payload lives in the URL **fragment** (`#s=…`), which browsers strip before
 sending a request, so it never reaches a server log, a proxy, or a `Referer`
-header. It is deflate-compressed and base64url-encoded — which is encoding, not
+header. It is deflate-compressed and base64url-encoded, which is encoding, not
 encryption. Anyone holding the link can read it, and the app says so when you
 copy one.
 
@@ -101,7 +101,7 @@ pnpm exec playwright install chromium
 ```
 src/
   app/          the shell: routing, rail, command palette, theming
-  components/   the shared UI vocabulary — 14 components, no more
+  components/   the shared UI vocabulary, 14 components, no more
   lib/          framework-free utilities and algorithms
   styles/       design tokens and the base stylesheet
   tools/
@@ -121,7 +121,7 @@ the way it did. `docs/TOOL-AUTHORING.md` is the contract every tool follows.
 
 That is the whole checklist. The rail, the home page, the command palette, and
 the 404 suggestions all read from the registry, so there is no second list to
-update. Read `src/tools/base64/` first — it is the reference implementation.
+update. Read `src/tools/base64/` first. It is the reference implementation.
 
 ## Deploying
 
@@ -136,13 +136,13 @@ The build output is a folder of static files. Any host will serve it.
 
 `deploy/` has ready-made configuration for each target:
 
-| Target                     | Files                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| Netlify / Cloudflare Pages | `deploy/_headers`, `deploy/_redirects` → copy into `public/`                             |
-| Vercel                     | `deploy/vercel.json` → copy to the repo root                                             |
-| Nginx                      | `deploy/nginx.conf`                                                                      |
-| Docker                     | `deploy/Dockerfile` — multi-stage, ships nginx with no Node in the runtime image         |
-| GitHub Pages               | `.github/workflows/pages.yml` — already wired, set `BASE_PATH` if serving from a subpath |
+| Target                     | Files                                                                                   |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| Netlify / Cloudflare Pages | `deploy/_headers`, `deploy/_redirects` → copy into `public/`                            |
+| Vercel                     | `deploy/vercel.json` → copy to the repo root                                            |
+| Nginx                      | `deploy/nginx.conf`                                                                     |
+| Docker                     | `deploy/Dockerfile`, multi-stage, ships nginx with no Node in the runtime image         |
+| GitHub Pages               | `.github/workflows/pages.yml`, already wired, set `BASE_PATH` if serving from a subpath |
 
 ```bash
 # Docker

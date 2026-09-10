@@ -2,7 +2,7 @@
  * Base64 encoding and decoding.
  *
  * `btoa`/`atob` are the platform's Base64 primitives, but they operate on
- * *binary strings* — one character per byte, code points 0-255. Handing them a
+ * *binary strings*: one character per byte, code points 0-255. Handing them a
  * string containing any non-Latin-1 character throws `InvalidCharacterError`,
  * which is why naive implementations break the first time someone pastes an
  * emoji or a Cyrillic name.

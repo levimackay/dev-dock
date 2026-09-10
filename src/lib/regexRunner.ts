@@ -5,7 +5,7 @@ import { executeRegex, type RegexRequest, type RegexResponse } from './regexType
  *
  * One long-lived worker is reused across keystrokes, because spinning one up
  * per character is measurable. When a run exceeds the timeout the worker is
- * terminated — the only way to stop a backtracking regex — and the next call
+ * terminated: the only way to stop a backtracking regex, and the next call
  * transparently starts a fresh one.
  *
  * Where `Worker` is unavailable (jsdom under test, or a locked-down embed) the
@@ -74,7 +74,7 @@ export function runRegex(
         id,
         ok: false,
         kind: 'timeout',
-        error: `The pattern did not finish within ${timeoutMs} ms and was stopped. This usually means catastrophic backtracking — look for nested quantifiers such as (a+)+ or (\\w*)*.`,
+        error: `The pattern did not finish within ${timeoutMs} ms and was stopped. This usually means catastrophic backtracking, look for nested quantifiers such as (a+)+ or (\\w*)*.`,
       })
     }, timeoutMs)
 

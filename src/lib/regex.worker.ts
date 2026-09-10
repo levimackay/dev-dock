@@ -5,7 +5,7 @@ import { executeRegex, type RegexRequest } from './regexTypes'
  *
  * This exists for one reason: **catastrophic backtracking**. A pattern like
  * `(a+)+$` against forty a's followed by a `!` takes exponential time, and
- * JavaScript's regex engine is not interruptible — there is no timeout option,
+ * JavaScript's regex engine is not interruptible. There is no timeout option,
  * no abort signal, and no way to ask it to stop. On the main thread that is a
  * frozen tab with no recovery.
  *

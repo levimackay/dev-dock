@@ -10,7 +10,7 @@ import type { ToolMeta } from '@/tools/types'
  * The identity half of the toolbar (name, tagline, pin, share) is owned by the
  * route, not by the tool, and reaches this component through context. The tool
  * only contributes its own `actions` and its body. That split is what makes the
- * header pixel-identical across 22 independently written tools — a tool
+ * header pixel-identical across 22 independently written tools, a tool
  * *cannot* accidentally render its title differently, because it never renders
  * its title at all.
  */

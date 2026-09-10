@@ -1,9 +1,9 @@
 /**
- * JSON pretty-printing, minifying, validating, and — the interesting part —
+ * JSON pretty-printing, minifying, validating, and, the interesting part,
  * turning a native `JSON.parse` failure into something a human can act on.
  *
  * `JSON.parse` gives you a message and, on modern V8, a byte offset. Older
- * engines give you even less. None of them tell you *why* — a trailing comma
+ * engines give you even less. None of them tell you *why*, a trailing comma
  * and a missing comma produce equally opaque messages. So `describeJsonError`
  * does not trust the engine's wording at all. It runs its own single-pass
  * scanner over the raw text looking for the shapes of the mistakes people
@@ -116,13 +116,13 @@ function byteLength(text: string): number {
  * How deep a document may be before this module refuses to walk it.
  *
  * `JSON.parse` will happily build a 200,000-level structure. Everything that
- * walks the result afterwards recurses, though — `JSON.stringify` included,
+ * walks the result afterwards recurses, though, `JSON.stringify` included,
  * which was a surprise and is worth knowing: V8 implements it recursively, so
  * `"[".repeat(10000) + "1" + "]".repeat(10000)`, twenty kilobytes of perfectly
  * valid JSON, throws RangeError on serialisation. The tool crashes on paste.
  *
  * Worse, both JSON tools hydrate from a share link before their first render,
- * so a link alone would do it with no interaction at all — which is exactly the
+ * so a link alone would do it with no interaction at all, which is exactly the
  * "whoever sends the user a link" case in the threat model.
  *
  * Real documents are shallow: a deeply nested API response is twenty levels.
@@ -152,7 +152,7 @@ export function sortKeysDeep(value: unknown, depth = 0): unknown {
  * Escapes every UTF-16 code unit above ASCII to `\uXXXX`. A surrogate pair
  * (an emoji, most CJK-adjacent astral characters) becomes two escapes, which
  * is standard practice and exactly what `JSON.stringify` would produce if you
- * asked it to — it just never offers to.
+ * asked it to: it just never offers to.
  */
 export function escapeNonAsciiText(text: string): string {
   let out = ''
@@ -239,7 +239,7 @@ function scanForKnownIssues(input: string): ScanIssue[] {
           issues.push({
             offset,
             headline: () =>
-              'Unescaped control character inside a string — most often a raw newline. Use \\n (and \\t, \\r, …) instead of an actual line break or tab in a quoted string.',
+              'Unescaped control character inside a string, most often a raw newline. Use \\n (and \\t, \\r, …) instead of an actual line break or tab in a quoted string.',
           })
         }
         i++
@@ -253,7 +253,7 @@ function scanForKnownIssues(input: string): ScanIssue[] {
       issues.push({
         offset,
         headline: () =>
-          'Single quotes are not valid JSON — object keys and string values need double quotes (").',
+          'Single quotes are not valid JSON, object keys and string values need double quotes (").',
       })
       // Skip the rest of this pseudo-string so its contents cannot trigger
       // a second, misleading issue below.
@@ -265,7 +265,7 @@ function scanForKnownIssues(input: string): ScanIssue[] {
 
     if (ch === '/' && input.charAt(i + 1) === '/') {
       const offset = i
-      issues.push({ offset, headline: () => 'JSON has no comments — remove this // line comment.' })
+      issues.push({ offset, headline: () => 'JSON has no comments, remove this // line comment.' })
       while (i < n && input.charAt(i) !== '\n') i++
       continue
     }
@@ -274,7 +274,7 @@ function scanForKnownIssues(input: string): ScanIssue[] {
       const offset = i
       issues.push({
         offset,
-        headline: () => 'JSON has no comments — remove this /* */ block comment.',
+        headline: () => 'JSON has no comments, remove this /* */ block comment.',
       })
       const close = input.indexOf('*/', i + 2)
       i = close === -1 ? n : close + 2
@@ -290,7 +290,7 @@ function scanForKnownIssues(input: string): ScanIssue[] {
         issues.push({
           offset,
           headline: () =>
-            `Trailing comma before the closing "${next}" — remove it, JSON has no trailing commas.`,
+            `Trailing comma before the closing "${next}", remove it, JSON has no trailing commas.`,
         })
       }
       i++
@@ -309,14 +309,13 @@ function scanForKnownIssues(input: string): ScanIssue[] {
         if (input.charAt(k) === ':') {
           issues.push({
             offset: start,
-            headline: () =>
-              `Unquoted key "${word}" — object keys must be wrapped in double quotes.`,
+            headline: () => `Unquoted key "${word}", object keys must be wrapped in double quotes.`,
           })
         } else if (word === 'NaN' || word === 'Infinity' || word === 'undefined') {
           issues.push({
             offset: start,
             headline: () =>
-              `"${word}" is not a valid JSON value — JSON has no NaN, Infinity, or undefined. Use null, or a quoted string.`,
+              `"${word}" is not a valid JSON value, JSON has no NaN, Infinity, or undefined. Use null, or a quoted string.`,
           })
         }
       }
@@ -329,7 +328,7 @@ function scanForKnownIssues(input: string): ScanIssue[] {
       issues.push({
         offset,
         headline: () =>
-          '"-Infinity" is not a valid JSON value — JSON has no Infinity. Use null, or a quoted string.',
+          '"-Infinity" is not a valid JSON value, JSON has no Infinity. Use null, or a quoted string.',
       })
       i += 9
       continue
@@ -376,7 +375,7 @@ function withLocation(headline: string, input: string, offset: number): string {
   return `${headline} (line ${line}, column ${column})\n\n${excerpt}`
 }
 
-/** Finds the earliest unmatched `{`/`[`/`"` — the shape of a truncated document. */
+/** Finds the earliest unmatched `{`/`[`/`"`, the shape of a truncated document. */
 function findTruncation(input: string): { offset: number; message: string } | undefined {
   const stack: Array<{ ch: string; offset: number }> = []
   let inString = false
@@ -403,14 +402,14 @@ function findTruncation(input: string): { offset: number; message: string } | un
   if (inString) {
     return {
       offset: stringStart,
-      message: 'Truncated input — this string is opened here but never closed.',
+      message: 'Truncated input, this string is opened here but never closed.',
     }
   }
   const last = stack.at(-1)
   if (last) {
     return {
       offset: last.offset,
-      message: `Truncated input — the "${last.ch}" opened here is never closed.`,
+      message: `Truncated input, the "${last.ch}" opened here is never closed.`,
     }
   }
   return undefined
@@ -424,7 +423,7 @@ function findTruncation(input: string): { offset: number; message: string } | un
  */
 function describeFromEngineMessage(input: string, message: string): string {
   // A document with an unclosed brace/bracket/string is truncated, full stop
-  // — that is a more useful diagnosis than whatever token the parser choked
+  //, that is a more useful diagnosis than whatever token the parser choked
   // on next (often "missing comma", which is technically true but not the
   // actual problem), so it takes priority over the position-based cases below.
   const truncation = findTruncation(input)
@@ -436,21 +435,21 @@ function describeFromEngineMessage(input: string, message: string): string {
   if (offset !== undefined) {
     if (/after property value/.test(message)) {
       return withLocation(
-        'Missing comma — a new property starts here without a "," after the previous one.',
+        'Missing comma, a new property starts here without a "," after the previous one.',
         input,
         offset,
       )
     }
     if (/after array element/.test(message)) {
       return withLocation(
-        'Missing comma — a new array element starts here without a "," after the previous one.',
+        'Missing comma, a new array element starts here without a "," after the previous one.',
         input,
         offset,
       )
     }
     if (/Unterminated string/.test(message)) {
       return withLocation(
-        'Truncated input — this string is opened here but never closed.',
+        'Truncated input, this string is opened here but never closed.',
         input,
         offset,
       )
@@ -458,10 +457,10 @@ function describeFromEngineMessage(input: string, message: string): string {
     return withLocation(cleanEngineMessage(message), input, offset)
   }
 
-  // No position at all — most commonly "Unexpected end of JSON input", which
+  // No position at all, most commonly "Unexpected end of JSON input", which
   // the truncation check above already handles. Anything left here has
   // neither a known shape nor a position to point at.
-  return `${cleanEngineMessage(message)} — could not pin down where; check the input is valid JSON.`
+  return `${cleanEngineMessage(message)}: could not pin down where; check the input is valid JSON.`
 }
 
 /** Strips the "in JSON" filler and any trailing position clause the engine adds. */

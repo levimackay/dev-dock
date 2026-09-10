@@ -6,7 +6,7 @@
  * `#ffffff`, and rotating hue in HSL changes apparent lightness dramatically
  * (compare HSL yellow at 50% lightness with HSL blue at 50%). OKLab, and its
  * cylindrical form OKLCH, is built so that equal numeric steps look like equal
- * perceptual steps — which is why the whole Dev Dock palette is authored in it.
+ * perceptual steps, which is why the whole Dev Dock palette is authored in it.
  *
  * The conversion chain, in both directions:
  *
@@ -322,7 +322,7 @@ export function parseColor(input: string): ParsedColor | null {
     }
   }
 
-  // oklch(L C H / a) — L may be a percentage.
+  // oklch(L C H / a), L may be a percentage.
   if (tokens.length < 3) return null
   const lRaw = tokens[0]!
   const l = lRaw.endsWith('%') ? Number(lRaw.slice(0, -1)) / 100 : Number(lRaw)
@@ -401,7 +401,7 @@ export function hslToRgb({ h, s, l, a }: Hsl): Rgb {
   }
 }
 
-/** sRGB transfer function (gamma) — the piecewise curve, not a plain 2.2 power. */
+/** sRGB transfer function (gamma), the piecewise curve, not a plain 2.2 power. */
 function srgbToLinear(channel: number): number {
   const c = channel / 255
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)

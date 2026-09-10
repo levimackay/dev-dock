@@ -37,7 +37,7 @@ describe('formatSql', () => {
   })
 
   it('changes output when the dialect changes', () => {
-    // Backtick-quoted identifiers are MySQL syntax and nothing else's —
+    // Backtick-quoted identifiers are MySQL syntax and nothing else's,
     // proof the dialect option actually reaches the parser, not just a
     // cosmetic setting.
     const query = 'SELECT `id` FROM `users`'

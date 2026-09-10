@@ -1,8 +1,8 @@
 /**
- * Unix timestamp conversion — the pure logic half of the tool.
+ * Unix timestamp conversion: the pure logic half of the tool.
  *
  * The interesting engineering problem here is precision. A nanosecond epoch
- * for "now" is around 1.76e18 — past `Number.MAX_SAFE_INTEGER` (9.007e15) —
+ * for "now" is around 1.76e18, past `Number.MAX_SAFE_INTEGER` (9.007e15),
  * so parsing it as a `number` before converting to milliseconds would already
  * have lost precision before any conversion happens. Everything below works
  * in `bigint` nanoseconds until the very last step, where it collapses down
@@ -23,7 +23,7 @@ export const UNITS: readonly TimestampUnit[] = [
  *
  * "Now" has a stable digit count in each unit: 10 digits in seconds, 13 in
  * milliseconds, 16 in microseconds, 19 in nanoseconds (and will stay that way
- * for centuries — the digit count only rolls over roughly once every ten times
+ * for centuries: the digit count only rolls over roughly once every ten times
  * the unit's magnitude). The boundaries below sit one digit past each unit's
  * "now" count, so a present-day value lands solidly inside its bucket rather
  * than on an edge.
@@ -111,7 +111,7 @@ export function toInstant(rawValue: string, unit: TimestampUnit): ToInstantResul
   if (ms > MAX_DATE_MS || ms < MIN_DATE_MS) {
     return {
       ok: false,
-      error: `This instant is outside what JS \`Date\` can represent (roughly year -271821 to 275760). It does not become "Invalid Date" here — it is simply too far from 1970 for any browser Date object to hold.`,
+      error: `This instant is outside what JS \`Date\` can represent (roughly year -271821 to 275760). It does not become "Invalid Date" here. It is simply too far from 1970 for any browser Date object to hold.`,
     }
   }
 
@@ -158,7 +158,7 @@ export function formatRelative(from: Date, to: Date): string {
   if (abs < 5000) return 'just now'
 
   // Walk the unit ladder from the top down, picking the largest unit that
-  // still rounds to at least 1 — the same approach `Intl.RelativeTimeFormat`
+  // still rounds to at least 1, the same approach `Intl.RelativeTimeFormat`
   // implementations use internally.
   let chosen = RELATIVE_UNITS[0]!
   for (const unit of RELATIVE_UNITS) {

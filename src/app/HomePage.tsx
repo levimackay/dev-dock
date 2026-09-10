@@ -32,7 +32,7 @@ export function HomePage() {
           </h1>
           <p className={styles.blurb}>
             The formatters, decoders, and converters you reach for a dozen times a day, in one
-            keyboard-driven workbench. Everything runs <strong>locally in your browser</strong> —
+            keyboard-driven workbench. Everything runs <strong>locally in your browser</strong>,
             there is no server to send your tokens, payloads, or logs to.
           </p>
         </header>

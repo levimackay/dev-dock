@@ -18,7 +18,7 @@ describe('share encoding', () => {
   })
 
   it('round-trips multi-byte text', async () => {
-    const state = { input: 'Ђорђе — 🇷🇸 日本語' }
+    const state = { input: 'Ђорђе, 🇷🇸 日本語' }
     const encoded = await encodeShareState(state)
     expect(await decodeShareState(encoded, isRecord)).toEqual(state)
   })

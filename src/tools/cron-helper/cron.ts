@@ -3,7 +3,7 @@
  *
  * Written by hand rather than pulled from npm (`cron-parser` + `cronstrue` is
  * ~60 KB) because the whole problem is 300 readable lines and the interesting
- * part — turning a field spec into English that is actually correct — is
+ * part: turning a field spec into English that is actually correct, is
  * exactly the sort of thing a library gets subtly wrong for your dialect.
  *
  * ## Supported syntax
@@ -22,7 +22,7 @@
  * two day fields, because Quartz users type it reflexively.
  *
  * Quartz-only extensions (`L`, `W`, `#`, and a year field) are *detected and
- * named* rather than silently mis-parsed — telling someone their expression is
+ * named* rather than silently mis-parsed, telling someone their expression is
  * Quartz-flavoured is far more useful than quietly scheduling the wrong thing.
  *
  * ## The day-of-month / day-of-week rule
@@ -382,7 +382,7 @@ export function nextRuns(
   // Bound the search by *time*, not by iteration count. An expression that can
   // never fire (0 0 30 2 *) skips a whole day per iteration, so an iteration
   // cap large enough for second-granularity expressions would let it walk
-  // thousands of years before giving up — which measured at a full second of
+  // thousands of years before giving up, which measured at a full second of
   // blocked main thread. A five-year horizon ends it in milliseconds.
   const horizon = from.getTime() + 5 * 366 * 24 * 60 * 60 * 1000
 

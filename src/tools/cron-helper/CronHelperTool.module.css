@@ -21,7 +21,7 @@
  * another and the whole row becomes unreadable.
  *
  * A column diagram cannot collide. Each field gets a cell sized to whichever
- * is wider — its label or its token — so alignment is guaranteed by layout
+ * is wider: its label or its token, so alignment is guaranteed by layout
  * rather than by arithmetic, and the connection between name and value is
  * clearer than a floating label ever was.
  */

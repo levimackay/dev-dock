@@ -36,7 +36,7 @@ interface State {
 
 const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-// See the Unix Timestamp tool's UI for the same guard — kept as an
+// See the Unix Timestamp tool's UI for the same guard, kept as an
 // independent copy here rather than a shared import, because a tool folder
 // never imports from another tool folder (see docs/ARCHITECTURE.md §2).
 const FALLBACK_ZONES = [
@@ -106,7 +106,7 @@ const isState = shapeValidator<State>({
   durationTo: 'string',
 })
 
-/** A labelled, copyable readout row — the same pattern the hash and unix-timestamp tools use. */
+/** A labelled, copyable readout row, the same pattern the hash and unix-timestamp tools use. */
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div
@@ -226,8 +226,8 @@ export default function DateTimeConverterTool() {
             {!state.input.trim() ? (
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
                 Type a date or time above in almost any common shape. A bare date like{' '}
-                <code>2026-03-15</code> is genuinely ambiguous — the toggle that appears will let
-                you say which midnight you meant.
+                <code>2026-03-15</code> is genuinely ambiguous, the toggle that appears will let you
+                say which midnight you meant.
               </p>
             ) : !parsed?.ok ? (
               <Callout tone="err" title="Cannot parse this input" live>
@@ -236,7 +236,7 @@ export default function DateTimeConverterTool() {
             ) : (
               <>
                 {parsed.dateOnly && (
-                  <Callout tone="info" title="This date has no time — which midnight did you mean?">
+                  <Callout tone="info" title="This date has no time, which midnight did you mean?">
                     <div
                       style={{
                         display: 'flex',

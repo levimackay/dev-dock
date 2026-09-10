@@ -49,7 +49,7 @@ before sending a request, so the payload never reaches:
 - the `Referer` header sent to any third party
 
 A query string would have leaked pasted secrets to whoever hosts the app. The
-payload is deflated and base64url-encoded — that is **encoding, not
+payload is deflated and base64url-encoded. That is **encoding, not
 encryption**, and the UI says so when a link is copied.
 
 The JWT decoder additionally **excludes the signing secret from share state**;
@@ -100,8 +100,8 @@ every `dangerouslySetInnerHTML`.
 
 ### Regular expressions run in a Web Worker
 
-User-supplied patterns can backtrack catastrophically — `(a+)+$` against a few
-dozen characters is exponential — and JavaScript's regex engine cannot be
+User-supplied patterns can backtrack catastrophically, `(a+)+$` against a few
+dozen characters is exponential, and JavaScript's regex engine cannot be
 interrupted. Running the match on the main thread means an unrecoverable frozen
 tab.
 
@@ -149,7 +149,7 @@ Silent truncation is treated as a bug.
 ### Storage
 
 `localStorage` holds preferences only: theme, pinned tool ids, recent tool ids,
-and split-pane ratios. Tool _input_ is never persisted — closing the tab loses
+and split-pane ratios. Tool _input_ is never persisted, closing the tab loses
 it, which is the correct default for a tool people paste credentials into.
 
 All keys are namespaced under `devdock:`, every read is validated against an
@@ -173,7 +173,7 @@ click or keystroke, and reads only when the user activates a paste control.
 
 Eight runtime dependencies: React, React DOM, React Router, `marked`,
 `dompurify`, `sql-formatter`, and two self-hosted font packages. Everything
-else — diff, cron, colour, hashing, fuzzy search, icons — is written in this
+else, diff, cron, colour, hashing, fuzzy search, icons, is written in this
 repository rather than installed, which is both fewer bytes and fewer people
 who can push code into the build.
 
@@ -198,11 +198,11 @@ Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
 Two of those need explaining:
 
-- **`script-src 'self' 'unsafe-inline'`** — the theme is applied by a small
+- **`script-src 'self' 'unsafe-inline'`**: the theme is applied by a small
   inline script in `index.html` before first paint, to avoid a white flash for
   dark-mode users. Removing `'unsafe-inline'` requires replacing that script
   with a nonce or hash injected at deploy time; if your host can do that, do it.
-- **`connect-src *`** — required by the HTTP Request Builder, which exists to
+- **`connect-src *`**: required by the HTTP Request Builder, which exists to
   call arbitrary endpoints. If you deploy Dev Dock without that tool, tighten
   this to `'self'`.
 

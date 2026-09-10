@@ -147,7 +147,7 @@ describe('OKLCH', () => {
 
   it('is perceptually even: equal lightness steps stay equal', () => {
     // The point of OKLCH. Two colours at the same L should have similar WCAG
-    // luminance regardless of hue — HSL fails this badly.
+    // luminance regardless of hue, HSL fails this badly.
     const yellow = oklchToRgb({ l: 0.7, c: 0.12, h: 100, a: 1 })
     const blue = oklchToRgb({ l: 0.7, c: 0.12, h: 260, a: 1 })
     const ratio = relativeLuminance(yellow) / relativeLuminance(blue)

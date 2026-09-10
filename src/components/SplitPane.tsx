@@ -111,7 +111,7 @@ export function SplitPane({
         {first}
       </div>
       {/* `separator` has two flavours in ARIA: a decorative rule, and a focusable
-          window splitter — the one carrying aria-valuenow, which is explicitly
+          window splitter, the one carrying aria-valuenow, which is explicitly
           interactive. The rule only models the first. */}
       <div
         role="separator"

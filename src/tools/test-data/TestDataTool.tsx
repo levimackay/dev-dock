@@ -79,7 +79,7 @@ const isState = shapeValidator<State>({
   interfaceName: 'string',
 })
 
-/** Untrusted — it round-trips through a share link. Anything that does not
+/** Untrusted: it round-trips through a share link. Anything that does not
  *  look like a field-schema array is dropped rather than half-trusted. */
 function parseFields(json: string): FieldSchema[] {
   try {
@@ -269,7 +269,7 @@ export default function TestDataTool() {
                   onChange={(e) => patch({ loremCount: Number(e.target.value) || 0 })}
                 />
               </Field>
-              <Field label="Seed" inline hint="Same seed, same output — every time.">
+              <Field label="Seed" inline hint="Same seed, same output, every time.">
                 <TextInput
                   mono
                   className={styles.optInputWide}
@@ -345,7 +345,7 @@ export default function TestDataTool() {
                 <Field
                   label="Seed"
                   inline
-                  hint="Same seed, same rows — a failing test that regenerates differently every run is not a failing test."
+                  hint="Same seed, same rows, a failing test that regenerates differently every run is not a failing test."
                 >
                   <TextInput
                     mono
@@ -383,7 +383,7 @@ export default function TestDataTool() {
               </div>
               {state.recordsCount > MAX_ROWS && (
                 <Callout tone="warn">
-                  Capped at {pluralize(MAX_ROWS, 'row')} to keep the tab responsive —{' '}
+                  Capped at {pluralize(MAX_ROWS, 'row')} to keep the tab responsive,{' '}
                   {pluralize(state.recordsCount, 'row')} was requested.
                 </Callout>
               )}
@@ -399,7 +399,7 @@ export default function TestDataTool() {
           {!output ? (
             <div style={{ padding: 'var(--sp-3)' }}>
               <Callout tone="info">
-                Nothing to generate yet — add a field or raise the count above.
+                Nothing to generate yet, add a field or raise the count above.
               </Callout>
             </div>
           ) : (

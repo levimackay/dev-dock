@@ -5,7 +5,7 @@ import { registerHotkey } from './hotkeys'
  * Binds a global hotkey for the life of the component.
  *
  * The handler is held in a ref so that an inline arrow function at the call
- * site does not tear down and re-register the binding on every render — a
+ * site does not tear down and re-register the binding on every render, a
  * subtle source of dropped keystrokes if the parent re-renders mid-press.
  */
 export function useHotkey(

@@ -1,7 +1,7 @@
 /**
  * Path parsing, querying, and searching over an already-parsed JSON value.
  *
- * Parsing lives in `json-formatter/json.ts` and is reused from there — this
+ * Parsing lives in `json-formatter/json.ts` and is reused from there, this
  * file only ever sees a value that already came out of `JSON.parse`
  * successfully. Its own interesting problem is the path language: a small,
  * forgiving grammar (`data.items[0].name`, `items[*].id`, `*.email`) that has
@@ -43,7 +43,7 @@ export function parsePath(rawPath: string): ParsedPath | ParseError {
   if (path === '') return { error: 'Empty path.' }
 
   // Accept a leading "$" or "$." the way JSONPath does, purely as a courtesy
-  // — everything after it is parsed the same way as a bare path.
+  //, everything after it is parsed the same way as a bare path.
   if (path.startsWith('$')) path = path.slice(1)
   if (path.startsWith('.')) path = path.slice(1)
   if (path === '') return { segments: [] }
@@ -64,7 +64,7 @@ export function parsePath(rawPath: string): ParsedPath | ParseError {
       } else if (/^\d+$/.test(inner)) {
         segments.push({ type: 'index', index: Number(inner) })
       } else {
-        return { error: `"[${inner}]" is not valid — use a number or "*" inside brackets.` }
+        return { error: `"[${inner}]" is not valid, use a number or "*" inside brackets.` }
       }
       i = close + 1
       if (path.charAt(i) === '.') i++
@@ -150,9 +150,9 @@ export function extendPath(base: string, key: string, isIndex: boolean): string 
 /**
  * Every container path down to `maxDepth`, for seeding the "expanded" set.
  * Depth 1 is the root itself, so `maxDepth: 2` (the default view) opens the
- * root and its immediate container children but nothing deeper — enough to
+ * root and its immediate container children but nothing deeper, enough to
  * get oriented in a big document without dumping the whole thing at once.
- * Called with no depth limit, this is also "expand all".
+ * Called with no depth limit. This is also "expand all".
  */
 export function containerPaths(value: JsonValue, maxDepth = Infinity): Set<string> {
   const paths = new Set<string>()

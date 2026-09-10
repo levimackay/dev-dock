@@ -9,11 +9,11 @@ import { pluralize } from '@/lib/format'
  * The rendering engine shared by Text Diff and Code Diff.
  *
  * The interesting problem here is not the diff itself (`src/lib/diff.ts`
- * already solved that) — it is turning a *flat* list of equal/delete/insert
+ * already solved that): it is turning a *flat* list of equal/delete/insert
  * lines into rows that read as a diff. Two things make that non-trivial:
  *
  * 1. **Pairing.** A line that was edited shows up as one `delete` line and
- *    one `insert` line next to each other, not as a single "changed" line —
+ *    one `insert` line next to each other, not as a single "changed" line,
  *    the line-level algorithm has no concept of "this became that". Side by
  *    side, a human expects the old and new version of the *same* line on one
  *    row, with only the words that actually changed highlighted. So a run of
@@ -25,7 +25,7 @@ import { pluralize } from '@/lib/format'
  * 2. **Collapsing.** A long run of unchanged lines is either shown in full,
  *    truncated to `context` lines at each end with a static "N lines hidden"
  *    separator (the traditional `diff -u` behaviour, used by Text Diff), or
- *    collapsed entirely behind a clickable toggle (used by Code Diff — the
+ *    collapsed entirely behind a clickable toggle (used by Code Diff, the
  *    thing that actually differentiates its reading experience from Text
  *    Diff's).
  *
@@ -35,7 +35,7 @@ import { pluralize } from '@/lib/format'
 
 export interface ChangeBlock {
   kind: 'change'
-  /** Lines in their original relative order — preserved for unified mode. */
+  /** Lines in their original relative order, preserved for unified mode. */
   lines: DiffLine[]
   /** Word-level highlight spans for lines that were paired with a counterpart. */
   wordsByLine: Map<DiffLine, WordSpan[]>

@@ -10,7 +10,7 @@ export interface ToolCategory {
 }
 
 export interface ToolMeta {
-  /** URL slug. Stable forever — these end up in bookmarks and shared links. */
+  /** URL slug. Stable forever, these end up in bookmarks and shared links. */
   id: string
   name: string
   /** Sentence-case tagline. Shown in the rail, palette, and index card. */

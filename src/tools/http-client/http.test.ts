@@ -192,7 +192,7 @@ describe('explainFetchFailure', () => {
     expect(msg).toMatch(/ftp:.*not something a browser/i)
   })
 
-  it('detects mixed content — https page, http target', () => {
+  it('detects mixed content: https page, http target', () => {
     const msg = explainFetchFailure(
       new TypeError('Failed to fetch'),
       'http://api.example.com',

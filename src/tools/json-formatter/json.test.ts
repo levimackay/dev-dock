@@ -3,7 +3,7 @@ import { describeJsonError, escapeNonAsciiText, processJson, sortKeysDeep } from
 
 const opts = { indent: '2' as const, sortKeys: false, escapeNonAscii: false }
 
-describe('processJson — pretty', () => {
+describe('processJson: pretty', () => {
   it('indents with the requested width', () => {
     const result = processJson('{"a":1,"b":[1,2]}', 'pretty', opts)
     expect(result.ok).toBe(true)
@@ -63,7 +63,7 @@ describe('processJson — pretty', () => {
   })
 })
 
-describe('processJson — minify', () => {
+describe('processJson: minify', () => {
   it('collapses whitespace', () => {
     const result = processJson('{\n  "a": 1,\n  "b": 2\n}', 'minify', opts)
     if (!result.ok) throw new Error('expected success')
@@ -71,7 +71,7 @@ describe('processJson — minify', () => {
   })
 })
 
-describe('processJson — validate', () => {
+describe('processJson: validate', () => {
   it('succeeds with stats and no rewritten output', () => {
     const result = processJson('{"a":1}', 'validate', opts)
     if (!result.ok) throw new Error('expected success')
@@ -85,7 +85,7 @@ describe('processJson — validate', () => {
   })
 })
 
-describe('describeJsonError — named causes', () => {
+describe('describeJsonError: named causes', () => {
   it('names a trailing comma in an object', () => {
     const msg = fail('{"a":1,}')
     expect(msg).toMatch(/Trailing comma/)
@@ -171,7 +171,7 @@ describe('describeJsonError — named causes', () => {
   })
 })
 
-describe('describeJsonError — direct calls', () => {
+describe('describeJsonError: direct calls', () => {
   it('handles a caught error that is not an Error instance', () => {
     expect(describeJsonError('{}', 'boom')).toMatch(/boom/)
   })

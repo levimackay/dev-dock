@@ -28,12 +28,12 @@ const anyObject = (value: unknown): value is Record<string, unknown> =>
  * Route entry point.
  *
  * The real work is in `ToolRoute`, which is keyed by tool id so that every
- * piece of per-tool state — most importantly the share-link hydration — is
+ * piece of per-tool state: most importantly the share-link hydration, is
  * recreated from scratch on navigation rather than carried across.
  *
  * That key is load-bearing. Without it, arriving at tool B via a share link
  * while tool A is open would find `ready` already true from A's mount, mount B
- * with its defaults, and only patch in the payload a tick later — clobbering
+ * with its defaults, and only patch in the payload a tick later, clobbering
  * anything typed in between. Remounting makes the race unrepresentable instead
  * of merely unlikely.
  */

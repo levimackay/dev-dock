@@ -17,7 +17,7 @@ import {
 
 const utcOptions: ParseOptions = { zone: 'UTC', dateOnlyAs: 'utc' }
 
-describe('parseFlexible — "now"', () => {
+describe('parseFlexible: "now"', () => {
   it('uses the injected clock rather than the real one', () => {
     const fixed = new Date('2026-05-01T00:00:00.000Z')
     const result = parseFlexible('now', { ...utcOptions, now: () => fixed })
@@ -31,7 +31,7 @@ describe('parseFlexible — "now"', () => {
   })
 })
 
-describe('parseFlexible — the date-only ambiguity', () => {
+describe('parseFlexible: the date-only ambiguity', () => {
   it('reads a bare date as UTC midnight when asked', () => {
     const result = parseFlexible('2026-03-15', { zone: 'America/New_York', dateOnlyAs: 'utc' })
     expect(result.ok).toBe(true)
@@ -52,7 +52,7 @@ describe('parseFlexible — the date-only ambiguity', () => {
   })
 })
 
-describe('parseFlexible — ISO 8601 date-time', () => {
+describe('parseFlexible: ISO 8601 date-time', () => {
   it('reads an offset-less date-time in the given zone', () => {
     const result = parseFlexible('2026-03-15T14:30:00', { zone: 'UTC', dateOnlyAs: 'utc' })
     expect(result.ok && result.date.toISOString()).toBe('2026-03-15T14:30:00.000Z')
@@ -91,7 +91,7 @@ describe('parseFlexible — ISO 8601 date-time', () => {
   })
 })
 
-describe('parseFlexible — RFC 2822', () => {
+describe('parseFlexible: RFC 2822', () => {
   it('parses a well-formed RFC 2822 string', () => {
     const result = parseFlexible('Mon, 15 Mar 2026 14:30:00 GMT', utcOptions)
     expect(result.ok).toBe(true)
@@ -105,7 +105,7 @@ describe('parseFlexible — RFC 2822', () => {
   })
 })
 
-describe('parseFlexible — epoch numbers', () => {
+describe('parseFlexible: epoch numbers', () => {
   it('treats a 10-digit number as seconds', () => {
     const result = parseFlexible('1700000000', utcOptions)
     expect(result.ok && result.date.getTime()).toBe(1_700_000_000_000)
@@ -118,7 +118,7 @@ describe('parseFlexible — epoch numbers', () => {
   })
 })
 
-describe('parseFlexible — failure modes', () => {
+describe('parseFlexible: failure modes', () => {
   it('rejects empty input', () => {
     expect(parseFlexible('', utcOptions).ok).toBe(false)
   })

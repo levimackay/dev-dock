@@ -40,7 +40,7 @@ export interface FieldProps {
  * wrong once per tool and impossible to notice by looking.
  *
  * So Field owns the id. It generates one, points the label at it, and clones
- * its single child to inject `id` and `aria-describedby` — plus `aria-invalid`
+ * its single child to inject `id` and `aria-describedby`, plus `aria-invalid`
  * when an error is showing. A caller that supplies its own `id` keeps it.
  *
  * The clone only happens for a lone element child. Anything else (a fragment, a
@@ -155,7 +155,7 @@ export interface SegmentedControlProps<T extends string> {
  *
  * It is built from real `role="radio"` buttons with roving `tabindex`, not from
  * styled checkboxes, so arrow keys move between options and only the group
- * takes one stop in the tab order — the behaviour a keyboard user expects from
+ * takes one stop in the tab order, the behaviour a keyboard user expects from
  * something that looks like this.
  */
 export function SegmentedControl<T extends string>({

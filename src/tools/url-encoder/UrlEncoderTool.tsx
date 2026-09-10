@@ -42,9 +42,9 @@ const isState = shapeValidator<State>({
 
 const MODE_HINTS: Record<UrlEncodeMode, string> = {
   component:
-    'encodeURIComponent — for a value going into a URL (a query param, a path segment). Escapes “& = ? #” so they can’t be mistaken for URL structure.',
-  full: 'encodeURI — for a string that is already a whole URL. Leaves “: / ? # & =” alone because those are structural, not content.',
-  form: 'application/x-www-form-urlencoded — what an HTML form actually sends. Like “component”, but a space becomes “+” instead of “%20”.',
+    'encodeURIComponent: for a value going into a URL (a query param, a path segment). Escapes “& = ? #” so they can’t be mistaken for URL structure.',
+  full: 'encodeURI, for a string that is already a whole URL. Leaves “: / ? # & =” alone because those are structural, not content.',
+  form: 'application/x-www-form-urlencoded, what an HTML form actually sends. Like “component”, but a space becomes “+” instead of “%20”.',
 }
 
 const SAMPLE_INPUT = 'https://example.com/search?q=coffee & cream/café?#ref'
@@ -173,7 +173,7 @@ export default function UrlEncoderTool() {
               softWrap
               placeholder={
                 state.direction === 'encode'
-                  ? 'Type or paste anything — a URL, a query value, a form field.'
+                  ? 'Type or paste anything, a URL, a query value, a form field.'
                   : 'Paste percent-encoded (or form-encoded) text.'
               }
             />

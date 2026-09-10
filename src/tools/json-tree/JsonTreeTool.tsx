@@ -46,7 +46,7 @@ const DEFAULT_EXPAND_DEPTH = 2
 // this count until "show all" is clicked for it specifically.
 const MAX_CHILDREN_PER_CONTAINER = 200
 // Hard ceiling across the whole tree, regardless of how many containers ask
-// for more — this is what keeps a 50 MB document from locking up the tab.
+// for more. This is what keeps a 50 MB document from locking up the tab.
 const MAX_TOTAL_ROWS = 5000
 
 const SAMPLE = `{
@@ -115,7 +115,7 @@ export default function JsonTreeTool() {
 
   // Moving focus to a row that required expanding an ancestor first (a
   // search-result jump) has to wait for that expansion to actually land in
-  // the DOM — a plain synchronous .focus() at click time would miss it. Once
+  // the DOM, a plain synchronous .focus() at click time would miss it. Once
   // React commits the newly expanded rows, this effect finds the element and
   // focuses it. Direct arrow-key navigation never touches this path because
   // its target row already exists, so it focuses synchronously instead.
@@ -128,7 +128,7 @@ export default function JsonTreeTool() {
       setFocusedPath(pendingFocus)
     }
     // Clearing the one-shot request after it has been honoured. It is a
-    // post-commit acknowledgement, not derived state — the DOM node this waits
+    // post-commit acknowledgement, not derived state, the DOM node this waits
     // for does not exist until React has painted the expanded ancestors.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPendingFocus(undefined)
@@ -136,7 +136,7 @@ export default function JsonTreeTool() {
 
   // A `useCallback` rather than a plain function so its identity is stable and
   // so the ref map is only touched when React invokes the callback after
-  // commit — never while rendering.
+  // commit, never while rendering.
   const registerRef = useCallback((path: string, el: HTMLDivElement | null) => {
     if (el) refs.current.set(path, el)
     else refs.current.delete(path)
@@ -347,7 +347,7 @@ interface Budget {
 /**
  * A plain recursive function rather than a nested component. `renderNode`
  * calls itself directly and returns JSX built entirely from host elements
- * (`div`, `button`) — none of that is a custom component, so React never
+ * (`div`, `button`), none of that is a custom component, so React never
  * defers any of this work. That means the shared `budget` counter can be
  * mutated in place as the recursion proceeds and read back once the whole
  * call finishes, with no risk of React interleaving another component's

@@ -33,14 +33,14 @@ const isState = shapeValidator<State>({
 
 const MODE_HINTS: Record<EscapeMode, string> = {
   minimal:
-    'Only “& < > " \'” — the characters that are structurally dangerous in HTML text or an attribute. Everything else, including accented letters and emoji, passes through unchanged.',
+    'Only “& < > " \'”, the characters that are structurally dangerous in HTML text or an attribute. Everything else, including accented letters and emoji, passes through unchanged.',
   named:
     'Uses a named entity (&eacute; not &#233;) wherever one exists in the common table. Falls back to the literal character otherwise.',
   numeric:
     'Every non-ASCII character becomes a numeric reference (&#xE9;), which is the safest choice for output that has to survive an unknown or legacy character encoding.',
 }
 
-const SAMPLE_ESCAPE = `<div class="card">Café “life” — 50% off & 🌍 shipping</div>`
+const SAMPLE_ESCAPE = `<div class="card">Café “life”, 50% off & 🌍 shipping</div>`
 const SAMPLE_UNESCAPE =
   '&lt;div&gt; Caf&eacute; &ldquo;life&rdquo; &mdash; 50&#37; off &amp; &#x1F30D; shipping &lt;/div&gt;'
 
@@ -169,7 +169,7 @@ export default function HtmlEntitiesTool() {
               >
                 {state.direction === 'escape'
                   ? 'Type in the left pane, or load the Sample.'
-                  : 'Paste HTML entities on the left. Decoding never parses markup — it only substitutes text, so it is safe on untrusted input.'}
+                  : 'Paste HTML entities on the left. Decoding never parses markup. It only substitutes text, so it is safe on untrusted input.'}
               </EmptyState>
             ) : (
               <CodeArea label="Result" value={output} readOnly softWrap />
@@ -182,7 +182,7 @@ export default function HtmlEntitiesTool() {
         <div style={{ padding: '0 var(--sp-3) var(--sp-3)' }}>
           <Callout tone="info" title="This is safe on untrusted input">
             Decoding walks the string and substitutes recognised <code>&amp;name;</code>,{' '}
-            <code>&amp;#123;</code>, and <code>&amp;#x7B;</code> references directly — it never
+            <code>&amp;#123;</code>, and <code>&amp;#x7B;</code> references directly. It never
             assigns to <code>innerHTML</code>, so nothing here is ever parsed as markup or executed.
           </Callout>
         </div>

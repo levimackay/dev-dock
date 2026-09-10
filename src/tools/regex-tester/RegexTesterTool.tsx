@@ -43,13 +43,13 @@ const isState = shapeValidator<State>({
 const FLAG_CHARS = ['g', 'i', 'm', 's', 'u', 'y', 'd'] as const
 
 const FLAG_LABELS: Record<(typeof FLAG_CHARS)[number], string> = {
-  g: 'Global — find every match, not just the first',
+  g: 'Global: find every match, not just the first',
   i: 'Case-insensitive',
-  m: 'Multiline — ^ and $ match at line breaks too',
-  s: 'Dotall — . also matches newlines',
-  u: 'Unicode — treat the pattern as a sequence of code points',
-  y: 'Sticky — match only starting at lastIndex',
-  d: 'Indices — include start/end offsets for capture groups',
+  m: 'Multiline: ^ and $ match at line breaks too',
+  s: 'Dotall: . also matches newlines',
+  u: 'Unicode: treat the pattern as a sequence of code points',
+  y: 'Sticky: match only starting at lastIndex',
+  d: 'Indices: include start/end offsets for capture groups',
 }
 
 const CHEATSHEET: Array<{ token: string; meaning: string }> = [
@@ -79,7 +79,7 @@ export default function RegexTesterTool() {
   const [showCheatsheet, setShowCheatsheet] = useState(false)
   const [showExplain, setShowExplain] = useState(false)
 
-  // Every keystroke would otherwise spawn a worker round trip — debouncing the
+  // Every keystroke would otherwise spawn a worker round trip, debouncing the
   // *request*, not the input, keeps typing responsive while capping how often
   // the actually expensive part (running the pattern) happens.
   const [debounced, setDebounced] = useState(state)
@@ -378,7 +378,7 @@ export default function RegexTesterTool() {
           {showExplain && (
             <ul className={styles.explainList}>
               {explanation.length === 0 ? (
-                <li className={styles.explainEmpty}>Nothing to explain — enter a pattern above.</li>
+                <li className={styles.explainEmpty}>Nothing to explain, enter a pattern above.</li>
               ) : (
                 explanation.map((t, i) => (
                   <li key={i} className={styles.explainRow}>
@@ -399,8 +399,8 @@ function FailureCallout({ response }: { response: Extract<RegexResponse, { ok: f
   if (response.kind === 'syntax') {
     return (
       <Callout tone="err" title="Invalid pattern" live>
-        {response.error} — check for unbalanced parentheses or brackets, or a quantifier with
-        nothing before it to repeat.
+        {response.error}, check for unbalanced parentheses or brackets, or a quantifier with nothing
+        before it to repeat.
       </Callout>
     )
   }

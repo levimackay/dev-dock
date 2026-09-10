@@ -23,7 +23,7 @@
 }
 
 /* Edit-only and Preview-only modes render one Panel instead of the usual
-   split pair — this mirrors shared/TwoPane.module.css's own `.panes` +
+   split pair, this mirrors shared/TwoPane.module.css's own `.panes` +
    `.paneInner` pairing so a single pane still fills the available height
    rather than sizing to its content. */
 .singlePane {
@@ -51,7 +51,7 @@
 }
 
 /*
- * The prose surface — the one place in the app that renders long-form text
+ * The prose surface: the one place in the app that renders long-form text
  * rather than data, so it gets a real typographic scale instead of the
  * mono/UI-sans split the rest of the app uses. Every value still comes from
  * tokens.css; only the *proportions* (heading scale, measure, line-height

@@ -153,8 +153,8 @@ export default function Base64Tool() {
                 value={state.variant}
                 onChange={(variant) => patch({ variant })}
                 options={[
-                  { value: 'standard', label: 'Standard', title: '+ and / — RFC 4648 §4' },
-                  { value: 'urlsafe', label: 'URL-safe', title: '- and _ — RFC 4648 §5' },
+                  { value: 'standard', label: 'Standard', title: '+ and /, RFC 4648 §4' },
+                  { value: 'urlsafe', label: 'URL-safe', title: '- and _, RFC 4648 §5' },
                 ]}
               />
             </OptionGroup>

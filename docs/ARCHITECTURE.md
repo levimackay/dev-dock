@@ -13,12 +13,12 @@ serve.
 
 That falls out of one observation. Every tool in the app is a pure function from
 text to text. Formatting JSON, decoding a JWT, diffing two files, computing a
-SHA-256 — none of it needs anything the browser does not already have. A backend
+SHA-256, none of it needs anything the browser does not already have. A backend
 would add a hosting bill, a deployment surface, a rate limit, an outage mode,
 and a privacy claim to defend, in exchange for capabilities the app does not
 use.
 
-The one tool that genuinely needs the network — the HTTP Request Builder —
+The one tool that genuinely needs the network, the HTTP Request Builder,
 uses the browser's own `fetch`, which means it inherits the browser's CORS
 rules. That is a real constraint (see §8) and the tool says so rather than
 pretending otherwise.
@@ -53,7 +53,7 @@ pretending otherwise.
 ```
 src/
   main.tsx            entry: providers, router, fonts, global CSS
-  app/                the shell — everything that is not a tool
+  app/                the shell, everything that is not a tool
     App.tsx           route table
     AppShell.tsx      header + rail + outlet, global hotkeys
     Rail.tsx          the tool list, pins, recents
@@ -61,7 +61,7 @@ src/
     ToolPage.tsx      route wrapper: share hydration, chrome, error boundary
     HomePage.tsx      the catalogue
     preferences.tsx   theme / pins / recents context
-  components/         the shared UI vocabulary — 14 components, no more
+  components/         the shared UI vocabulary, 14 components, no more
   lib/                framework-free utilities and algorithms
   styles/             tokens.css and base.css. Everything else is a CSS Module.
   tools/
@@ -73,7 +73,7 @@ src/
 ```
 
 The rule that keeps this navigable: **a tool folder never imports from another
-tool folder** (with one deliberate exception — the JSON tree viewer reuses the
+tool folder** (with one deliberate exception, the JSON tree viewer reuses the
 formatter's error describer rather than owning a second copy). Anything two
 tools need moves to `src/lib` or `src/components`.
 
@@ -94,7 +94,7 @@ parsed, or evaluated until you press Enter. This is the whole reason the
 metadata and the implementation live in different objects.
 
 Adding a tool is one registry entry plus one folder. There is no other list to
-update — the rail, the home page, the palette, and the 404 suggestions all read
+update, the rail, the home page, the palette, and the 404 suggestions all read
 from the same array.
 
 ## 4. State
@@ -119,8 +119,8 @@ Share button reads.
 
 The ordering matters and is easy to get wrong. `ToolPage` decodes the URL
 fragment **before** mounting the tool, and renders a skeleton until it knows the
-answer. The obvious alternative — mount with defaults, patch when the decode
-resolves — has a race: anything typed in the intervening tick gets clobbered.
+answer. The obvious alternative, mount with defaults, patch when the decode
+resolves, has a race: anything typed in the intervening tick gets clobbered.
 Blocking for one microtask is simpler and correct.
 
 ## 5. Styling
@@ -128,8 +128,8 @@ Blocking for one microtask is simpler and correct.
 Plain CSS with **CSS Modules**, which Vite compiles natively. No CSS-in-JS, no
 Tailwind.
 
-Tailwind was rejected deliberately. Its defaults — the spacing scale, the
-shadow ramp, the `rounded-lg` on everything — are precisely the look this app is
+Tailwind was rejected deliberately. Its defaults, the spacing scale, the
+shadow ramp, the `rounded-lg` on everything, are precisely the look this app is
 trying not to have, and utility strings make a design system harder to read, not
 easier. What the app needs is a small vocabulary of tokens that everything obeys,
 and that is what `src/styles/tokens.css` is.
@@ -159,7 +159,7 @@ frame with a work surface clamped inside it.
 - Radii are 2-5px. Nothing is pill-shaped except actual pills.
 - **Two type roles.** IBM Plex Sans carries language; IBM Plex Mono carries
   data, values, keycaps, and chrome labels. If a string is a number, a path, a
-  digest, or a machine's own output, it is mono. That single rule does most of
+  digest, or a machine's own output. It is mono. That single rule does most of
   the work of making the app look designed.
 - Density is high. This is an instrument panel; the value of the screen is how
   much of the problem fits on it.
@@ -171,17 +171,17 @@ frame with a work surface clamped inside it.
 Fourteen components, and tools are not permitted to invent a fifteenth without
 adding it here. The important ones:
 
-- **`Panel`** — the only container. Every region in every tool is one. This is
+- **`Panel`**: the only container. Every region in every tool is one. This is
   the single largest reason 22 independently written tools look like one product.
-- **`CodeArea`** — a plain `<textarea>` with a synced line-number gutter and
+- **`CodeArea`**: a plain `<textarea>` with a synced line-number gutter and
   tab-to-indent. Deliberately not CodeMirror or Monaco: those are 300 KB to
   1 MB for syntax colouring that none of these tools need to do their job.
-- **`ToolShell`** — the toolbar. The identity half (name, tagline, pin, share)
+- **`ToolShell`**: the toolbar. The identity half (name, tagline, pin, share)
   comes from route context; the tool contributes only its own actions. A tool
   _cannot_ render its title differently, because it never renders its title.
-- **`Dialog`** — a real focus trap: focus in on open, restored on close, Tab
+- **`Dialog`**: a real focus trap: focus in on open, restored on close, Tab
   wrapping, Escape, `inert` on the app root, scroll lock.
-- **`SplitPane`** — Pointer Events with capture (so a fast drag never detaches)
+- **`SplitPane`**: Pointer Events with capture (so a fast drag never detaches)
   and a keyboard-operable `role="separator"`.
 
 ## 7. The algorithms worth reading
@@ -189,12 +189,12 @@ adding it here. The important ones:
 Four pieces are written from scratch rather than installed. Each has a long
 comment at the top of its file explaining the method.
 
-| File                                 | What it is                                                                                                                                      |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/diff.ts`                    | Myers' O(ND) sequence alignment, with common prefix/suffix trimming and an edit-distance ceiling, plus line, word, and unified-patch wrappers.  |
-| `src/lib/fuzzy.ts`                   | Subsequence matching with a bonus structure (prefix, word boundary, camelCase, consecutive runs) that produces the ranking, not the matching.   |
-| `src/tools/cron-helper/cron.ts`      | A cron parser, English describer, and schedule projector — including the either/both day-field rule that most hand-rolled cron code gets wrong. |
-| `src/tools/color-converter/color.ts` | sRGB ↔ HSL ↔ OKLCH, WCAG contrast, gamut detection. The OKLCH chain is the interesting half.                                                    |
+| File                                 | What it is                                                                                                                                     |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/diff.ts`                    | Myers' O(ND) sequence alignment, with common prefix/suffix trimming and an edit-distance ceiling, plus line, word, and unified-patch wrappers. |
+| `src/lib/fuzzy.ts`                   | Subsequence matching with a bonus structure (prefix, word boundary, camelCase, consecutive runs) that produces the ranking, not the matching.  |
+| `src/tools/cron-helper/cron.ts`      | A cron parser, English describer, and schedule projector, including the either/both day-field rule that most hand-rolled cron code gets wrong. |
+| `src/tools/color-converter/color.ts` | sRGB ↔ HSL ↔ OKLCH, WCAG contrast, gamut detection. The OKLCH chain is the interesting half.                                                   |
 
 In each case the library alternative was 12-60 KB, and the thing being replaced
 is 150-300 readable lines. That trade only works because they are all
@@ -228,8 +228,8 @@ in the wiring rather than in a function: the focus trap, the palette's roving
 `aria-activedescendant`, the share round trip.
 
 **End-to-end (Playwright).** Run against the **production build**, not the dev
-server, because the failures worth catching — a lazy chunk that does not load, a
-minified worker, a base-path mistake — are invisible to the dev middleware.
+server, because the failures worth catching, a lazy chunk that does not load, a
+minified worker, a base-path mistake, are invisible to the dev middleware.
 Coverage is the critical paths: palette navigation, deep links, theme
 persistence, pinning, and the mobile drawer.
 

@@ -1,33 +1,33 @@
 /**
  * Word splitting and case conversion.
  *
- * `splitWords` is the whole tool — every conversion below is just "split,
+ * `splitWords` is the whole tool, every conversion below is just "split,
  * then rejoin with a different case and separator." Getting the split right
  * for camelCase/PascalCase boundaries, acronym runs, and digits is the
  * actual problem.
  *
  * The approach: first split on any run of non-alphanumeric characters (that
- * handles snake_case, kebab-case, dot.case, path/case, and plain spaces —
+ * handles snake_case, kebab-case, dot.case, path/case, and plain spaces,
  * whatever the separator, it disappears and leaves alphanumeric segments).
  * Then each segment is re-split with one token regex that finds camelCase
  * boundaries, acronym runs, and digit runs:
  *
  *     [A-Z]+(?=[A-Z][a-z])   an acronym run, but only up to the LAST
- *                            uppercase letter before a new word starts —
+ *                            uppercase letter before a new word starts,
  *                            "XMLHttpRequest" keeps "XML" together and lets
  *                            "Http" start at the letter that is followed by
  *                            lowercase, because that capital is the start of
  *                            the next real word, not part of the acronym.
- *   | [A-Z]?[a-z]+           an optional capital followed by lowercase —
+ *   | [A-Z]?[a-z]+           an optional capital followed by lowercase,
  *                            ordinary words and PascalCase/camelCase parts.
  *   | [A-Z]+                 a trailing acronym with no lowercase after it
  *                            ("ID", or the "FA" in "user2FA").
  *   | [0-9]+                 a run of digits.
  *
  * Digits are always their own token ("user2FA" -> "user", "2", "FA"), not
- * fused onto the run before or after them. The alternative — deciding that a
+ * fused onto the run before or after them. The alternative, deciding that a
  * digit "belongs" to the acronym that follows it, or the word that precedes
- * it — is genuinely ambiguous ("2FA" could be one token meaning two-factor
+ * it: is genuinely ambiguous ("2FA" could be one token meaning two-factor
  * auth, or "2" then "FA"); always splitting them out is at least consistent
  * and predictable, which matters more for a tool than guessing right on any
  * one input.
@@ -161,7 +161,7 @@ export function convertCase(input: string, id: CaseId): string {
  * as a list, or to the whole input as one unit when `perLine` is off. For the
  * two character-based conversions (alternating/inverse), `perLine` controls
  * whether the alternation phase resets at each line break or runs
- * continuously through the whole input — both are defensible; resetting per
+ * continuously through the whole input. Both are defensible; resetting per
  * line is what most "spongebob case" generators do, and is what `perLine`
  * chooses here.
  */
