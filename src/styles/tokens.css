@@ -1,0 +1,207 @@
+/*
+ * Dev Dock design tokens.
+ *
+ * The conceit is a machinist's workbench: a fixed steel frame with a work
+ * surface clamped inside it. Nothing floats. Regions are separated by hairline
+ * rules, never by shadow or rounded cards. Density is high, like an instrument
+ * panel, because the user is reading data, not being sold anything.
+ *
+ * Every colour is authored in oklch so that light and dark are the same hue
+ * ramp at different lightness, and so that contrast steps are perceptually even
+ * rather than merely numerically even (which is what sRGB hex ramps give you).
+ */
+
+:root {
+  /* ---- type ------------------------------------------------------------ */
+  --font-sans:
+    'IBM Plex Sans Variable', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  /* A 1.2 minor-third scale from a 13px base. Deliberately small and tight:
+     this is a tool, and the value of a tool screen is how much of the problem
+     fits on it. */
+  --text-2xs: 0.6875rem; /* 11px — mono chrome labels, keycaps */
+  --text-xs: 0.75rem; /* 12px — metadata, help text */
+  --text-sm: 0.8125rem; /* 13px — UI base */
+  --text-base: 0.875rem; /* 14px — editor + prose base */
+  --text-md: 1rem; /* 16px — tool titles */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.625rem; /* 26px — page titles */
+  --text-2xl: 2.25rem; /* 36px — empty-state display */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  --tracking-label: 0.08em;
+  --tracking-tight: -0.012em;
+  --tracking-display: -0.022em;
+
+  /* ---- space ----------------------------------------------------------- */
+  /* 4px base grid. Named by step, not by t-shirt size, so there is never a
+     debate about whether "lg" is bigger than "xl". */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* ---- frame ----------------------------------------------------------- */
+  --rail-w: 15.5rem;
+  --header-h: 3rem;
+  --toolbar-h: 2.75rem;
+  --radius-sm: 2px;
+  --radius: 3px;
+  --radius-lg: 5px;
+  --radius-pill: 999px;
+  --hairline: 1px;
+
+  /* ---- motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 90ms;
+  --dur: 140ms;
+  --dur-slow: 220ms;
+
+  --z-sticky: 10;
+  --z-drawer: 40;
+  --z-overlay: 50;
+  --z-toast: 60;
+}
+
+/* ---- light: warm paper ------------------------------------------------- */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: oklch(0.978 0.004 75);
+  --bg-sunken: oklch(0.949 0.005 75);
+  --bg-raised: oklch(1 0 0);
+  --bg-inset: oklch(0.962 0.005 75);
+  --bg-hover: oklch(0.934 0.006 75);
+  --bg-active: oklch(0.906 0.007 75);
+  --bg-selected: oklch(0.928 0.019 32);
+
+  --fg: oklch(0.24 0.009 65);
+  --fg-muted: oklch(0.47 0.008 65);
+  --fg-subtle: oklch(0.615 0.007 65);
+  --fg-onAccent: oklch(0.99 0.004 60);
+
+  --line: oklch(0.885 0.006 75);
+  --line-strong: oklch(0.81 0.008 75);
+  --line-faint: oklch(0.928 0.005 75);
+
+  --accent: oklch(0.555 0.184 32);
+  --accent-hover: oklch(0.495 0.185 32);
+  --accent-quiet: oklch(0.93 0.033 32);
+  --accent-line: oklch(0.79 0.09 32);
+
+  --ok: oklch(0.5 0.13 152);
+  --ok-quiet: oklch(0.935 0.038 152);
+  --warn: oklch(0.58 0.13 68);
+  --warn-quiet: oklch(0.945 0.05 78);
+  --err: oklch(0.52 0.2 26);
+  --err-quiet: oklch(0.945 0.032 26);
+  --info: oklch(0.5 0.13 245);
+  --info-quiet: oklch(0.94 0.03 245);
+
+  --focus: oklch(0.55 0.18 245);
+  --shadow-overlay: 0 16px 48px -12px oklch(0.24 0.02 65 / 0.28);
+}
+
+/* ---- dark: warm graphite ----------------------------------------------- */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: oklch(0.196 0.0055 65);
+  --bg-sunken: oklch(0.163 0.005 65);
+  --bg-raised: oklch(0.231 0.006 65);
+  --bg-inset: oklch(0.176 0.005 65);
+  --bg-hover: oklch(0.259 0.007 65);
+  --bg-active: oklch(0.293 0.008 65);
+  --bg-selected: oklch(0.288 0.032 32);
+
+  --fg: oklch(0.925 0.005 75);
+  --fg-muted: oklch(0.712 0.007 75);
+  --fg-subtle: oklch(0.565 0.008 75);
+  --fg-onAccent: oklch(0.16 0.02 40);
+
+  --line: oklch(0.303 0.007 65);
+  --line-strong: oklch(0.395 0.009 65);
+  --line-faint: oklch(0.253 0.006 65);
+
+  --accent: oklch(0.735 0.155 38);
+  --accent-hover: oklch(0.795 0.14 40);
+  --accent-quiet: oklch(0.288 0.045 34);
+  --accent-line: oklch(0.44 0.09 34);
+
+  --ok: oklch(0.775 0.15 155);
+  --ok-quiet: oklch(0.27 0.045 155);
+  --warn: oklch(0.83 0.14 82);
+  --warn-quiet: oklch(0.285 0.045 82);
+  --err: oklch(0.715 0.17 25);
+  --err-quiet: oklch(0.285 0.06 25);
+  --info: oklch(0.775 0.12 240);
+  --info-quiet: oklch(0.275 0.045 240);
+
+  --focus: oklch(0.78 0.13 240);
+  --shadow-overlay: 0 20px 60px -12px oklch(0 0 0 / 0.65);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+
+    --bg: oklch(0.196 0.0055 65);
+    --bg-sunken: oklch(0.163 0.005 65);
+    --bg-raised: oklch(0.231 0.006 65);
+    --bg-inset: oklch(0.176 0.005 65);
+    --bg-hover: oklch(0.259 0.007 65);
+    --bg-active: oklch(0.293 0.008 65);
+    --bg-selected: oklch(0.288 0.032 32);
+
+    --fg: oklch(0.925 0.005 75);
+    --fg-muted: oklch(0.712 0.007 75);
+    --fg-subtle: oklch(0.565 0.008 75);
+    --fg-onAccent: oklch(0.16 0.02 40);
+
+    --line: oklch(0.303 0.007 65);
+    --line-strong: oklch(0.395 0.009 65);
+    --line-faint: oklch(0.253 0.006 65);
+
+    --accent: oklch(0.735 0.155 38);
+    --accent-hover: oklch(0.795 0.14 40);
+    --accent-quiet: oklch(0.288 0.045 34);
+    --accent-line: oklch(0.44 0.09 34);
+
+    --ok: oklch(0.775 0.15 155);
+    --ok-quiet: oklch(0.27 0.045 155);
+    --warn: oklch(0.83 0.14 82);
+    --warn-quiet: oklch(0.285 0.045 82);
+    --err: oklch(0.715 0.17 25);
+    --err-quiet: oklch(0.285 0.06 25);
+    --info: oklch(0.775 0.12 240);
+    --info-quiet: oklch(0.275 0.045 240);
+
+    --focus: oklch(0.78 0.13 240);
+    --shadow-overlay: 0 20px 60px -12px oklch(0 0 0 / 0.65);
+  }
+}
+
+/* Syntax roles. One ramp, reused by the JSON tree, the diff viewer and the
+   token inspectors, so a "string" is the same colour everywhere in the app. */
+:root {
+  --syn-key: var(--info);
+  --syn-string: var(--ok);
+  --syn-number: var(--accent);
+  --syn-bool: var(--warn);
+  --syn-null: var(--fg-subtle);
+  --syn-punct: var(--fg-subtle);
+}

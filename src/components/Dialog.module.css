@@ -1,0 +1,72 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-4);
+  background: color-mix(in oklab, var(--bg-sunken) 72%, transparent);
+  backdrop-filter: blur(2px);
+  animation: fade var(--dur) var(--ease-out);
+}
+
+.top {
+  align-items: flex-start;
+  padding-top: 12vh;
+}
+
+.center {
+  align-items: center;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--dialog-w, 34rem);
+  max-height: min(80vh, 44rem);
+  background: var(--bg-raised);
+  border: var(--hairline) solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  overflow: hidden;
+  animation: rise var(--dur) var(--ease-out);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4);
+  border-bottom: var(--hairline) solid var(--line);
+  flex: none;
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+}
+
+.close {
+  margin-left: auto;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.995);
+  }
+}

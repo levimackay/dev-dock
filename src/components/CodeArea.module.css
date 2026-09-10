@@ -1,0 +1,79 @@
+.wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  background: var(--bg-raised);
+}
+
+.gutter {
+  flex: none;
+  padding: var(--sp-3) var(--sp-2) var(--sp-3) var(--sp-3);
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  color: var(--fg-subtle);
+  background: var(--bg-inset);
+  border-right: var(--hairline) solid var(--line-faint);
+  user-select: none;
+  overflow: hidden;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  width: 100%;
+  padding: var(--sp-3);
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  resize: none;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+  overflow-wrap: normal;
+}
+
+.wrapped {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.input::placeholder {
+  color: var(--fg-subtle);
+  opacity: 0.75;
+}
+
+.input:read-only {
+  color: var(--fg-muted);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+/* The focus ring belongs on the region, not the bare textarea, so it traces
+   the panel edge rather than cutting through the gutter. */
+.wrap:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.dropping::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-quiet);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  pointer-events: none;
+}

@@ -1,0 +1,51 @@
+.stack {
+  position: fixed;
+  bottom: var(--sp-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--sp-2);
+  pointer-events: none;
+  max-width: min(30rem, calc(100vw - var(--sp-8)));
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-raised);
+  border: var(--hairline) solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
+  font-size: var(--text-xs);
+  color: var(--fg);
+  animation: pop var(--dur) var(--ease-out);
+}
+
+.err {
+  border-left: 2px solid var(--err);
+}
+
+.ok {
+  border-left: 2px solid var(--ok);
+}
+
+.info {
+  border-left: 2px solid var(--accent);
+}
+
+.message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

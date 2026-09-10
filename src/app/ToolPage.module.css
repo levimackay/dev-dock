@@ -1,0 +1,50 @@
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.skelBar {
+  height: var(--toolbar-h);
+  border-bottom: var(--hairline) solid var(--line);
+  background: var(--bg-sunken);
+  flex: none;
+}
+
+.skelBody {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  min-height: 0;
+}
+
+.skelPane {
+  border: var(--hairline) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    100deg,
+    var(--bg-raised) 30%,
+    var(--bg-hover) 50%,
+    var(--bg-raised) 70%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@media (max-width: 52rem) {
+  .skelBody {
+    grid-template-columns: 1fr;
+  }
+}

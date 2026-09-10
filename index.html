@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dev Dock · developer utilities that stay in your browser</title>
+    <meta
+      name="description"
+      content="Twenty-two fast developer utilities — JSON, JWT, Base64, diff, regex, cron, hashing and more — running entirely in your browser. No accounts, no uploads, no tracking."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f8f6f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1b1a" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <meta property="og:title" content="Dev Dock" />
+    <meta
+      property="og:description"
+      content="Twenty-two developer utilities that run entirely in your browser."
+    />
+    <meta property="og:type" content="website" />
+
+    <!--
+      Sets the stored theme before first paint so a dark-mode user never sees a
+      white flash. It is inline because an external script would arrive too
+      late, and it is deliberately tiny and side-effect-free: it reads one key
+      and writes one attribute.
+    -->
+    <script>
+      ;(function () {
+        try {
+          var stored = JSON.parse(localStorage.getItem('devdock:theme') || '""')
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored)
+          }
+        } catch (e) {
+          /* storage blocked; fall back to the media query */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="font: 16px/1.5 system-ui; margin: 4rem auto; max-width: 40ch">
+        Dev Dock does all of its work in the browser, so it needs JavaScript enabled. Nothing is sent
+        to a server either way.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
