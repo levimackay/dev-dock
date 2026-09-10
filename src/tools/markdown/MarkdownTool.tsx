@@ -223,6 +223,7 @@ export default function MarkdownTool() {
           // comes from `renderMarkdown`, which runs every byte of it through
           // DOMPurify before it reaches this line, see markdown.ts for why
           // that is the only thing that makes this safe to do at all.
+          // eslint-disable-next-line no-restricted-syntax -- sanitized by DOMPurify.sanitize inside renderMarkdown
           <div className={styles.prose} dangerouslySetInnerHTML={{ __html: html }} />
         ) : (
           <div style={{ padding: 'var(--sp-6)', color: 'var(--fg-subtle)' }}>

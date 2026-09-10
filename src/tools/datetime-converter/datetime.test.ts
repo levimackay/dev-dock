@@ -313,3 +313,27 @@ describe('years below 100', () => {
     expect(result.ok && result.date.getUTCFullYear()).toBe(0)
   })
 })
+
+describe('RFC 2822 forms the spec actually pins down', () => {
+  it('accepts a four-digit year with a numeric offset', () => {
+    const result = parseFlexible('Mon, 15 Mar 2027 14:30:00 +0000', utcOptions)
+    expect(result.ok).toBe(true)
+  })
+
+  it('accepts GMT and UTC as zone names', () => {
+    expect(parseFlexible('15 Mar 2027 14:30:00 GMT', utcOptions).ok).toBe(true)
+    expect(parseFlexible('15 Mar 2027 14:30:00 UTC', utcOptions).ok).toBe(true)
+  })
+
+  it('refuses an obsolete named zone rather than guessing what the engine will do', () => {
+    const result = parseFlexible('Mon, 15 Mar 2027 14:30:00 EST', utcOptions)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/implementation-defined/)
+  })
+
+  it('refuses a two-digit year for the same reason', () => {
+    const result = parseFlexible('15 Mar 27 14:30:00 +0000', utcOptions)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/two-digit year/)
+  })
+})

@@ -52,10 +52,22 @@ export default tseslint.config(
       'no-restricted-syntax': [
         'error',
         {
-          selector:
-            'JSXAttribute[name.name="dangerouslySetInnerHTML"]:not([parent.parent.openingElement.attributes.0])',
+          // Unconditional on purpose. The first version of this rule tried to
+          // express "unless DOMPurify is called in the same module" with an
+          // esquery `:not()`, which cannot reason about other statements and,
+          // as written, matched nothing at all: for a JSXAttribute,
+          // `parent.parent.openingElement.attributes[0]` always exists, so the
+          // negation was universally false and the rule was inert while
+          // SECURITY.md claimed it as a control.
+          //
+          // Flagging every use and making the author argue for it in review is
+          // both what the surrounding comment intended and the only thing a
+          // selector can honestly do. There is exactly one use in this
+          // codebase, in the markdown preview, and it carries a disable comment
+          // pointing at the sanitizer.
+          selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
           message:
-            'dangerouslySetInnerHTML must be paired with a DOMPurify sanitize() call in the same module.',
+            'dangerouslySetInnerHTML is an XSS sink. It is permitted only immediately downstream of DOMPurify.sanitize, with an eslint-disable comment naming the sanitizer.',
         },
       ],
     },

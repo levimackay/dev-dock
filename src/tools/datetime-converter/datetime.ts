@@ -61,8 +61,16 @@ const ISO_DATETIME =
 const MAX_DATE_MS = 8_640_000_000_000_000
 
 const EPOCH_NUMBER = /^-?\d+(\.\d+)?$/
+/**
+ * The forms ECMA-262 pins down: a four-digit year and either a numeric offset
+ * or one of the universal zone names.
+ */
 const RFC2822 =
-  /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4}\s+\d{2}:\d{2}(?::\d{2})?\s+(?:[+-]\d{4}|UT|UTC|GMT|Z|[A-Z]{1,5})$/i
+  /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+(?:[+-]\d{4}|UT|UTC|GMT|Z)$/i
+
+/** The wider shape, matched only to explain why it is refused. */
+const RFC2822_LOOSE =
+  /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4}\s+\d{2}:\d{2}(?::\d{2})?\s+(?:[+-]\d{4}|[A-Z]{1,5})$/i
 
 const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] // Feb generous; validated separately
 
@@ -197,15 +205,30 @@ export function parseFlexible(input: string, options: ParseOptions): ParseResult
   }
 
   if (RFC2822.test(text)) {
-    // RFC 2822 always carries an explicit zone (a numeric offset or a named
-    // one), so unlike a bare ISO string it has no local-vs-UTC ambiguity,
-    // this is the one case where deferring to the platform parser is safe,
-    // precisely because the shape has already been verified.
+    // RFC 2822 carries an explicit zone, so unlike a bare ISO string it has no
+    // local-versus-UTC ambiguity, and this is the one branch that hands the
+    // text to `Date.parse`.
+    //
+    // "Safe" would be too strong, and an earlier version of this comment said
+    // it. Verifying the shape does not make the engine deterministic: ECMA-262
+    // leaves both obsolete named zones and two-digit years
+    // implementation-defined, so `Mon, 15 Mar 26 14:30:00 EST` may not mean the
+    // same instant in two browsers. The regex is therefore narrowed to the
+    // forms the spec pins down, and anything else is refused with a message
+    // rather than parsed into a number nobody can reproduce.
     const parsedMs = Date.parse(text)
     if (Number.isNaN(parsedMs)) {
       return { ok: false, error: `"${text}" looks like RFC 2822 but the date itself is not valid.` }
     }
     return { ok: true, date: new Date(parsedMs), dateOnly: false, format: 'rfc2822' }
+  }
+
+  if (RFC2822_LOOSE.test(text)) {
+    return {
+      ok: false,
+      error:
+        'That looks like RFC 2822, but it uses a two-digit year or an obsolete named zone such as EST or PDT. Those are implementation-defined, so different browsers can read them as different instants. Write the year in full and the zone as a numeric offset (+0000) or as GMT/UTC.',
+    }
   }
 
   if (EPOCH_NUMBER.test(text)) {

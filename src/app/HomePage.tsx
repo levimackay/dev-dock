@@ -9,6 +9,29 @@ import { cx } from '@/lib/cx'
 
 const NETWORK_TOOLS = TOOLS.filter((tool) => tool.network).length
 
+/**
+ * The headline reads better spelled out, and it has to stay true when a tool is
+ * added. Numbers past the table fall back to digits, which is the right answer
+ * anyway once a count gets long enough to spell.
+ */
+const NUMBER_WORDS: Record<number, string> = {
+  18: 'Eighteen',
+  19: 'Nineteen',
+  20: 'Twenty',
+  21: 'Twenty-one',
+  22: 'Twenty-two',
+  23: 'Twenty-three',
+  24: 'Twenty-four',
+  25: 'Twenty-five',
+  26: 'Twenty-six',
+  27: 'Twenty-seven',
+  28: 'Twenty-eight',
+  29: 'Twenty-nine',
+  30: 'Thirty',
+}
+
+const spellOut = (n: number): string => NUMBER_WORDS[n] ?? String(n)
+
 export function HomePage() {
   const { pinned, recents, isPinned } = usePreferences()
 
@@ -26,7 +49,7 @@ export function HomePage() {
       <div className={styles.inner}>
         <header className={styles.masthead}>
           <h1 className={styles.lede}>
-            Twenty-two tools.
+            {spellOut(TOOLS.length)} tools.
             <br />
             <span className={styles.ledeDim}>Nothing leaves the tab.</span>
           </h1>

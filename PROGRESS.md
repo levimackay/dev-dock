@@ -129,7 +129,7 @@ downgrade the rules and lose the signal, each false positive carries a
 
 ## Phase 5 — Tools complete
 
-All 22 implemented. 743 unit and integration tests, 68 end-to-end tests
+All 22 implemented. 743 unit and integration tests, 90 end-to-end tests
 (Playwright, against the production build, including axe scans of every tool in
 both themes).
 

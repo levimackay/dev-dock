@@ -95,8 +95,11 @@ parsing. It deliberately does **not** use the common
 `el.innerHTML = input; return el.textContent` trick, which parses attacker
 markup in the live document.
 
-ESLint fails the build on `eval`, `new Function`, `document.write`, and flags
-every `dangerouslySetInnerHTML`.
+ESLint fails the build on `eval`, `new Function`, `document.write`, and on
+every `dangerouslySetInnerHTML`. The last is unconditional: a lint selector
+cannot tell whether a sanitizer ran, so the rule refuses the attribute outright
+and the one legitimate use carries a disable comment naming the sanitizer. That
+makes each new use an argument someone has to write down in review.
 
 ### Regular expressions run in a Web Worker
 
@@ -134,15 +137,18 @@ Depth measurement was rewritten with an explicit stack so the depth can always
 be reported, and everything that must recurse refuses past the cap with a
 message.
 
-| Limit                                                | Where                                   |
-| ---------------------------------------------------- | --------------------------------------- |
-| Edit-distance ceiling, then a coarse whole-file diff | Text and code diff                      |
-| Regex execution timeout                              | Regex tester                            |
-| Match count cap                                      | Regex tester                            |
-| Rendered-node cap with a "show all" escape           | JSON tree                               |
-| File size cap                                        | Hash generator, Base64, any drop target |
-| Five-year search horizon                             | Cron next-run projection                |
-| Gutter line cap                                      | All editors                             |
+| Limit                                                | Where                    |
+| ---------------------------------------------------- | ------------------------ |
+| Edit-distance ceiling, then a coarse whole-file diff | Text and code diff       |
+| Regex execution timeout                              | Regex tester             |
+| Match count cap                                      | Regex tester             |
+| Rendered-node cap with a "show all" escape           | JSON tree                |
+| 64 MB file cap                                       | Hash generator           |
+| 8 MB file cap, picker and drop alike                 | Base64                   |
+| 5 MB default drop cap                                | Every other drop target  |
+| 256 KB encoded, 4 MB inflated                        | Inbound share links      |
+| Five-year search horizon                             | Cron next-run projection |
+| Gutter line cap, then an ellipsis                    | All editors              |
 
 Silent truncation is treated as a bug.
 
@@ -152,9 +158,9 @@ Silent truncation is treated as a bug.
 and split-pane ratios. Tool _input_ is never persisted, closing the tab loses
 it, which is the correct default for a tool people paste credentials into.
 
-All keys are namespaced under `devdock:`, every read is validated against an
-expected shape before use, and every read and write is wrapped because private
-browsing modes throw. "Clear all local data" is a first-class command in the
+All keys are namespaced under `devdock:`, every read passes a validator for the
+shape it expects before the value is used, and every read and write is wrapped
+because private browsing modes throw. "Clear all local data" is a first-class command in the
 palette.
 
 ### Downloads
@@ -166,8 +172,8 @@ allowlist makes that unreachable.
 
 ### Clipboard
 
-Reads are never automatic. The app writes to the clipboard only on an explicit
-click or keystroke, and reads only when the user activates a paste control.
+The app writes to the clipboard only on an explicit click or keystroke, and
+never reads from it at all.
 
 ### Supply chain
 
@@ -192,7 +198,8 @@ Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; 
 Referrer-Policy: no-referrer
 X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
-Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+Cross-Origin-Opener-Policy: same-origin
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 ```
 

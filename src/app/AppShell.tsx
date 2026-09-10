@@ -8,6 +8,7 @@ import { CommandPalette } from './CommandPalette'
 import { ShortcutsDialog } from './ShortcutsDialog'
 import { buildToolCommands, type Command } from './commands'
 import { usePreferences } from './preferences'
+import { TOOLS } from '@/tools/registry'
 import { Button } from '@/components/Button'
 import { Kbd } from '@/components/Kbd'
 import {
@@ -190,7 +191,7 @@ export function AppShell() {
 
         <button type="button" className={styles.searchTrigger} onClick={() => setPaletteOpen(true)}>
           <IconSearch size={14} />
-          <span className={styles.searchLabel}>Search 22 tools…</span>
+          <span className={styles.searchLabel}>Search {TOOLS.length} tools…</span>
           <Kbd combo="mod+k" quiet />
         </button>
 

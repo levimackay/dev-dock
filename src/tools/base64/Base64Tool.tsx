@@ -213,6 +213,7 @@ export default function Base64Tool() {
               onValueChange={(input) => patch({ input })}
               softWrap
               acceptDrop
+              maxDropBytes={MAX_FILE_BYTES}
               placeholder={
                 state.direction === 'encode'
                   ? 'Type or paste anything. UTF-8 is handled correctly, including emoji.'

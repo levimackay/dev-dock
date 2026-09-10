@@ -97,19 +97,23 @@ export const DEFAULT_NANOID_LENGTH = 21
 /**
  * Generates a NanoID: `length` characters drawn uniformly from `alphabet`.
  *
- * The naive approach: `alphabet[randomByte % alphabet.length]`, is biased
- * whenever `alphabet.length` does not evenly divide 256. With a 62-character
- * alphabet, for instance, byte values 0-255 map to indices 0-61 unevenly:
- * indices 0-47 each get hit by 4 byte values (0-255 = 4*64, and 256 = 4*62 +
- * 8 remainder), so the last few characters win the modulo lottery slightly
- * more often: small, but real, and exactly the kind of statistical tell
- * that a rejection-sampling scheme costs almost nothing to close. The fix:
- * compute the largest multiple of `alphabet.length` that fits in a byte
- * (`limit`), and throw away, re-roll, any byte landing at or above it. The
- * default 64-character alphabet was chosen precisely so 256 divides it
- * evenly and this branch never has to trigger; it only matters once a
- * caller supplies a custom alphabet.
+ * The naive approach, `alphabet[randomByte % alphabet.length]`, is biased
+ * whenever `alphabet.length` does not divide 256 evenly. Take a 62-character
+ * alphabet: 256 = 4×62 + 8, so indices 0 through 7 are each reachable from five
+ * byte values and indices 8 through 61 from only four. The first eight
+ * characters win the modulo lottery, about 25% more often than the rest. Small,
+ * real, and exactly the sort of statistical tell that rejection sampling closes
+ * for almost nothing.
+ *
+ * The fix is to compute the largest multiple of `alphabet.length` that fits in
+ * a byte (`limit`), and to throw away and re-roll any byte at or above it. The
+ * remaining values divide evenly, so every index is equally likely.
+ *
+ * The default 64-character alphabet was chosen so that 256 divides it exactly
+ * and the rejection branch never triggers; it only costs anything once a caller
+ * supplies an alphabet of their own.
  */
+
 /** Above this the rejection-sampling limit degenerates to zero. */
 export const MAX_NANOID_ALPHABET = 256
 

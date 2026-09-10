@@ -59,7 +59,7 @@ Real `diff -u` on the same pair emits `@@ -1,3 +1,4 @@` and stops after ` c`.
 unified diff must end with a newline. `git apply` reports `corrupt patch at
 line 8` before it even evaluates the content.
 
-**Defect 3 — no `\ No newline at end of file`.** For input *without* a trailing
+**Defect 3 — no `\ No newline at end of file`.** For input _without_ a trailing
 newline the body is byte-identical to `diff -u`'s, but the missing marker means
 git believes the file ends in `\n` and the context does not match.
 
@@ -77,6 +77,7 @@ patch") and `:158-166` ("Download .patch") both feed from
 does not do the one thing its extension promises.
 
 **Fix.** Three parts:
+
 1. Model the trailing newline explicitly. Either strip one trailing `''` in
    `diffLines` and carry a `noEol` flag per side, or have `toUnifiedDiff`
    detect `text.endsWith('\n')` and drop the phantom last line from both the
@@ -106,14 +107,14 @@ append-at-end, delete-at-end, empty→text (`@@ -0,0 +1,2 @@`), text→empty
 Introduced by the A1 fix. In the working-tree version:
 
 ```ts
-const leftBody  = leftEndsWithEol  && left  !== '' ? left.slice(0, -1)  : left
+const leftBody = leftEndsWithEol && left !== '' ? left.slice(0, -1) : left
 const rightBody = rightEndsWithEol && right !== '' ? right.slice(0, -1) : right
 const { lines } = diffLines(leftBody, rightBody, options)
 
 if (lines.every((line) => line.op === 'equal') && leftEndsWithEol === rightEndsWithEol) return ''
 ```
 
-When the *only* difference is the trailing newline, the two bodies are
+When the _only_ difference is the trailing newline, the two bodies are
 identical, so `lines.every(equal)` is true — but the second clause is false, so
 the early return is skipped. Execution falls through, `changedAt` is all
 `false`, zero hunks are built, and the function returns just the two file
@@ -138,7 +139,7 @@ So "someone added/removed the final newline" — a real change, and one people
 specifically open a diff tool to see — renders as a patch with no hunks.
 
 **Second-order inconsistency:** `code-diff` builds its side-by-side view from a
-*separate* `diffLines` call on the **unstripped** text
+_separate_ `diffLines` call on the **unstripped** text
 (`CodeDiffTool.tsx:83` region), and that call does see the change:
 
 ```
@@ -196,7 +197,6 @@ layer is not.
 > and the RFC 2822 branch already checks `Number.isNaN`. Original finding below
 > for the record.
 
-
 `src/tools/datetime-converter/datetime.ts:204-213`:
 
 ```ts
@@ -236,7 +236,6 @@ the ±8.64e15 ms range — see §D2 on why these two files should share code.
 >
 > No negative fields and no regressions. Original finding below for the record.
 
-
 `src/tools/datetime-converter/datetime.ts:420-428`. The borrow is a single `if`,
 not a loop, and borrows the length of the month before `end` — which can be
 shorter than the deficit.
@@ -266,7 +265,6 @@ to the month end, then take the plain day difference from there.
 > `src/lib`. Re-verified `0050-03-15`, `0004-02-29`, `0000-01-01`,
 > `0099-12-31`: all correct. **One input still wrong — §A5b.** Original
 > finding below for the record.
-
 
 `Date.UTC(50, 2, 15)` is 1950-03-15, not 0050-03-15. This is unguarded in six
 places:
@@ -304,13 +302,13 @@ by both tools.
 ### A5b. `utcFromCivil` is off by one day for `0000-02-29` — NEW, confirmed
 
 The working-tree helper (`src/lib/utcFromCivil.ts:26-31`) repairs the year
-*after* `Date.UTC` has already resolved the calendar:
+_after_ `Date.UTC` has already resolved the calendar:
 
 ```ts
 const timestamp = Date.UTC(year, monthIndex, day, hour, minute, second, ms)
 if (year >= 100 || year < 0 || Number.isNaN(timestamp)) return timestamp
 const date = new Date(timestamp)
-date.setUTCFullYear(year)     // ← too late if Date.UTC already rolled over
+date.setUTCFullYear(year) // ← too late if Date.UTC already rolled over
 return date.getTime()
 ```
 
@@ -330,14 +328,22 @@ disagree about whether that date exists.
 Year 0 is the only affected year: it is the only leap year in 0–99 whose
 +1900 counterpart is not one.
 
-**Fix.** Set the year *before* the calendar is resolved, using the three-argument
+**Fix.** Set the year _before_ the calendar is resolved, using the three-argument
 form:
 
 ```ts
-export function utcFromCivil(year, monthIndex, day, hour = 0, minute = 0, second = 0, ms = 0): number {
+export function utcFromCivil(
+  year,
+  monthIndex,
+  day,
+  hour = 0,
+  minute = 0,
+  second = 0,
+  ms = 0,
+): number {
   if (year >= 100 || year < 0) return Date.UTC(year, monthIndex, day, hour, minute, second, ms)
   const d = new Date(0)
-  d.setUTCFullYear(year, monthIndex, day)   // all three against the real year
+  d.setUTCFullYear(year, monthIndex, day) // all three against the real year
   d.setUTCHours(hour, minute, second, ms)
   return d.getTime()
 }
@@ -355,7 +361,7 @@ kind of case the file's own comment is proud of catching.
 `src/tools/cron-helper/cron.ts:198-202`:
 
 ```ts
-`… write two items instead, as in ${to}-${spec.max},${spec.min}-${from}.`
+;`… write two items instead, as in ${to}-${spec.max},${spec.min}-${from}.`
 ```
 
 `from` and `to` are swapped. Confirmed:
@@ -373,7 +379,7 @@ the tool tells them to write "all hours". Correct advice is
 This is the worst kind of error message: confidently wrong, in the one place a
 confused user is guaranteed to be reading.
 
-**Fix.** Swap the two interpolations. Add a test asserting the *content* of the
+**Fix.** Swap the two interpolations. Add a test asserting the _content_ of the
 suggestion, not just that an error was produced.
 
 ### A7. `describeCron` silently drops the seconds field — confirmed
@@ -451,7 +457,7 @@ Two failure modes:
 
 - `nanoidLength: 100000` → `randomBytes(100000)` →
   `crypto.getRandomValues` throws `QuotaExceededError: The requested length
-  exceeds 65,536 bytes` (confirmed). Thrown from a click handler, which React
+exceeds 65,536 bytes` (confirmed). Thrown from a click handler, which React
   error boundaries do **not** catch, so the button silently does nothing.
 - Below the quota but large (e.g. 60000 × count 1000) it just builds 60 MB of
   string on the main thread.
@@ -471,10 +477,10 @@ through it.
 
 Confirmed pairs:
 
-| foreground | background | displayed | badge |
-| --- | --- | --- | --- |
-| `rgb(15 120 213)` | `#ffffff` | `4.50:1` | AA normal **FAIL** |
-| `#959595` | `#ffffff` | `3.00:1` | AA large **FAIL** |
+| foreground        | background | displayed | badge              |
+| ----------------- | ---------- | --------- | ------------------ |
+| `rgb(15 120 213)` | `#ffffff`  | `4.50:1`  | AA normal **FAIL** |
+| `#959595`         | `#ffffff`  | `3.00:1`  | AA large **FAIL**  |
 
 A user reads "4.50:1" — the exact AA threshold — and is told it fails. There is
 no way to tell from the screen that the real value is 4.4990.
@@ -518,7 +524,7 @@ supplied. A hand-edited or version-drifted `devdock:split:*` value of `"x"` or
 `Math.max(0.18, "x")` is `NaN`, producing `--a: NaN%`, which is an invalid
 grid track and drops the whole declaration.
 
-`clamp` at `:150-152` does guard with `Number.isFinite` on the *commit* path,
+`clamp` at `:150-152` does guard with `Number.isFinite` on the _commit_ path,
 which is why this is low-impact in practice. It is still the one call site that
 falsifies SECURITY.md's "every read is validated against an expected shape
 before use" — see §B9.
@@ -611,7 +617,7 @@ exported.
 `src/tools/cron-helper/cron.ts:143`: `const wildcard = text === '*' || text === '?'`.
 
 Vixie cron (and the crontab(5) semantics most people have internalised) sets its
-`DOM_STAR`/`DOW_STAR` flags when the field *begins* with `*`, so `*/2` counts as
+`DOM_STAR`/`DOW_STAR` flags when the field _begins_ with `*`, so `*/2` counts as
 unrestricted for the either/both rule. Dev Dock counts it as restricted.
 
 **Input:** `0 0 */1 * MON`. Confirmed `daysOfMonth.wildcard === false`, so
@@ -669,7 +675,7 @@ arbitrary `Date`.
   land on the right integer at every week.
 - **`isDstAt`** (`datetime.ts:346-352`) is correct for both hemispheres and for
   negative-DST zones like Europe/Dublin. It misreports a zone that changed its
-  *standard* offset mid-year (Samoa 2011, Morocco), which the docstring does not
+  _standard_ offset mid-year (Samoa 2011, Morocco), which the docstring does not
   mention. One-line caveat, not a bug.
 - **`storage.ts`, `clipboard.ts`, `download.ts`** are all correctly wrapped and
   fail soft. `ToolPage`'s share-hydration ordering does what
@@ -697,7 +703,7 @@ selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]:not([parent.parent.
 ```
 
 For a `JSXAttribute`, `parent` is the `JSXOpeningElement` and `parent.parent` is
-the `JSXElement`. `JSXElement.openingElement.attributes[0]` therefore *always*
+the `JSXElement`. `JSXElement.openingElement.attributes[0]` therefore _always_
 exists whenever the attribute we just matched exists. The `:not()` is
 universally false and the rule is inert. Verified empirically: a probe file
 containing a bare `<div dangerouslySetInnerHTML={{__html: html}} />` with no
@@ -784,7 +790,7 @@ from the table and say the gutter degrades rather than truncates.
 > lottery slightly more often
 
 Counted directly: with `alphabet.length === 62`, indices **0–7** get 5 byte
-values each and indices **8–61** get 4. So it is the *first* eight characters
+values each and indices **8–61** get 4. So it is the _first_ eight characters
 that are over-represented, not the last few, and the "0-47 get 4" figure is
 wrong on both bounds. Two errors in one sentence, in a comment whose entire
 purpose is to teach modulo bias.
@@ -807,7 +813,7 @@ with a 62-character alphabet.
 The 148 count is correct (verified). The size claim is not. The keys dominate
 the source either way; the only difference is the value token: `0xf0f8ff` (8
 characters) versus `'#f0f8ff'` (9). That is 148 bytes saved, not 2.5 KB. The
-actual object as written is comfortably over 4 KB of source *with* the packed
+actual object as written is comfortably over 4 KB of source _with_ the packed
 form.
 
 "Parse faster" is likewise unmeasurable at 148 entries.
@@ -844,7 +850,7 @@ Three problems:
    a direct `as JwtHeader`.
 3. "every field is still read through an explicit `typeof` check" — falsified 34
    lines later by `:160`, `typeof header.alg`, which throws when `header` is
-   `null` (see §A2). The `typeof` guards the *field*, not the object.
+   `null` (see §A2). The `typeof` guards the _field_, not the object.
 
 TOOL-AUTHORING's style rule says "No `as` casts to silence the compiler; fix the
 type." This is one of exactly two places in `src/` that break it, and it wrote
@@ -906,7 +912,7 @@ clipboard" is both simpler and stronger.
 > implementations use internally.
 
 `Intl.RelativeTimeFormat` does no unit selection at all — you hand it a value
-*and* a unit (`format(-3, 'day')`). There is no internal ladder to imitate. The
+_and_ a unit (`format(-3, 'day')`). There is no internal ladder to imitate. The
 comment is confidently citing a spec that says nothing of the kind.
 
 Also, the loop picks the largest unit where `abs >= unit.ms`, which is "at least
@@ -1020,7 +1026,7 @@ to project"), which is far more useful than "unknown macro".
 
 "Now" is 10 digits in seconds and the seconds bucket is `count <= 10`. Same for
 13/milliseconds and 16/microseconds. Every present-day value sits exactly on the
-*top* edge of its bucket, not one digit inside it.
+_top_ edge of its bucket, not one digit inside it.
 
 The heuristic itself is fine and the ambiguity discussion below it is correct.
 Only the "one digit past / solidly inside" sentence is wrong.
@@ -1057,7 +1063,7 @@ the truth: "named zones and two-digit years fall back to the engine and may vary
 
 Two representative cases (not exhaustive — this is a category, not a list):
 
-- `src/lib/diff.test.ts` asserts the *shape* of `toUnifiedDiff`'s output. No
+- `src/lib/diff.test.ts` asserts the _shape_ of `toUnifiedDiff`'s output. No
   test asserts it is a valid patch, which is why §A1 shipped. A test named
   around "the format `git apply` reads" should exercise that claim.
 - `e2e/a11y.spec.ts` — the file docstring is the promise; see §B2.
@@ -1071,8 +1077,8 @@ Measured against `docs/TOOL-AUTHORING.md`.
 ### C1. Sample buttons (rule 7: "Every tool that can be demonstrated should have a Sample button in its toolbar")
 
 - **~~Missing entirely:~~ FIXED in `0bcd46a`.** `base64/Base64Tool.tsx` (Swap +
-  File only) — notable because TOOL-AUTHORING names Base64 as *the reference
-  implementation* new authors are told to read first — and
+  File only) — notable because TOOL-AUTHORING names Base64 as _the reference
+  implementation_ new authors are told to read first — and
   `unix-timestamp/UnixTimestampTool.tsx` (Clear only). Both now have a Sample
   button in the toolbar (`Base64Tool.tsx:122`, `UnixTimestampTool.tsx:194`).
 - **Present but not in the toolbar:** `regex-tester/RegexTesterTool.tsx:182-189`
@@ -1093,7 +1099,7 @@ Measured against `docs/TOOL-AUTHORING.md`.
   `base64/Base64Tool.tsx:178-186`, `html-entities/HtmlEntitiesTool.tsx:110-118`,
   `url-encoder/UrlEncoderTool.tsx:138-146`.
 - **Different semantics:** `uuid-generator/UuidGeneratorTool.tsx:129` is
-  `setIds([])` — alone among 19 Clears it clears the *output* and leaves every
+  `setIds([])` — alone among 19 Clears it clears the _output_ and leaves every
   input intact. `datetime-converter/DateTimeConverterTool.tsx:198` clears only
   `input`, leaving `durationFrom`/`durationTo`/`pinnedZones`, and is
   `disabled={!state.input}` so it can never clear them.
@@ -1251,7 +1257,7 @@ which is missing a Sample button and puts Clear in the wrong place.
 ## D. Duplication worth removing
 
 Only cases with genuinely repeated non-trivial logic. Things that merely look
-similar are listed at the end as explicitly *not* worth extracting.
+similar are listed at the end as explicitly _not_ worth extracting.
 
 ### D1. Base64 byte conversion, written four times
 
@@ -1260,12 +1266,14 @@ spread-argument limit) and the `=` re-padding are both easy to get subtly wrong,
 which is exactly why one copy should exist.
 
 `bytesToBase64`:
+
 - `src/tools/base64/base64.ts:37-44`
 - `src/tools/hash-generator/hash.ts:41-48` — byte-identical minus one comment
 - `src/lib/share.ts:31-39` — same loop plus the url-safe tail
 - ~~`src/tools/jwt-decoder/jwt.ts` `base64UrlEncodeBytes`~~ — removed in `e74ec83`
 
 `base64ToBytes`:
+
 - `src/tools/base64/base64.ts:46-51`
 - `src/tools/jwt-decoder/jwt.ts:52-59` (`base64UrlDecodeText`)
 - `src/tools/jwt-decoder/jwt.ts:61-68` (`base64UrlDecodeBytes`)
@@ -1288,7 +1296,6 @@ already mandates it.
 > (`datetime.ts:94-142`, `epoch.ts:210-266`), and the self-justifying comment at
 > `datetime.ts:127` is still there — now doubly odd, since the file two lines
 > above it imports a shared helper from `src/lib`. Finish the move.
-
 
 `src/tools/unix-timestamp/epoch.ts:208-264` and
 `src/tools/datetime-converter/datetime.ts:91-139` are the same two functions.
@@ -1352,9 +1359,9 @@ Structurally identical inline components, none of them promoted to
 `src/components`:
 
 - `unix-timestamp/UnixTimestampTool.tsx:108-147` — its own comment says
-  *"Matches the pattern used by the hash tool's digest list."*
-- `datetime-converter/DateTimeConverterTool.tsx:109-148` — *"the same pattern
-  the hash and unix-timestamp tools use."*
+  _"Matches the pattern used by the hash tool's digest list."_
+- `datetime-converter/DateTimeConverterTool.tsx:109-148` — _"the same pattern
+  the hash and unix-timestamp tools use."_
 - `uuid-generator/UuidGeneratorTool.tsx:345-383` (`DecodeRow`)
 - `hash-generator/HashGeneratorTool.tsx:255-302`
 - `cron-helper/CronHelperTool.tsx:163-197` and `:242-277`
@@ -1419,7 +1426,7 @@ Listed so the judgement is visible rather than implied:
   though somebody should decide which number is right.
 - **`FALLBACK_ZONES` + `listZones()`**, copy-pasted between
   `UnixTimestampTool.tsx:41-83` and `DateTimeConverterTool.tsx:42-84` with an
-  acknowledging comment. This one *is* worth moving, but it moves as part of D2.
+  acknowledging comment. This one _is_ worth moving, but it moves as part of D2.
 
 ---
 
@@ -1429,18 +1436,18 @@ Listed so the judgement is visible rather than implied:
 
 All twelve are gone or demoted to module-private:
 
-| Symbol | Was | Note |
-| --- | --- | --- |
-| `readClipboard` | `src/lib/clipboard.ts` | Removed. Also falsified a SECURITY.md sentence — §B10 still needs the doc edit |
-| `truncateMiddle` | `src/lib/format.ts` | Removed. Also had an unguarded `max <= 0` path |
-| `__clearHotkeys` | `src/lib/hotkeys.ts` | Removed |
-| `__resetRegexRunner` | `src/lib/regexRunner.ts` | Removed |
-| `isString`, `isBoolean`, `isRecord` | `src/lib/storage.ts` | Removed |
-| `OptionRow` | `src/components/Field.tsx` | Removed |
-| `IconPlay` | `src/components/Icon.tsx` | Removed |
-| `NAMED_COLORS` | `src/tools/color-converter/color.ts` | Removed |
-| `base64UrlEncodeBytes` | `src/tools/jwt-decoder/jwt.ts` | Removed |
-| `base64UrlDecodeBytes` | `src/tools/jwt-decoder/jwt.ts` | Demoted to private |
+| Symbol                              | Was                                  | Note                                                                           |
+| ----------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------ |
+| `readClipboard`                     | `src/lib/clipboard.ts`               | Removed. Also falsified a SECURITY.md sentence — §B10 still needs the doc edit |
+| `truncateMiddle`                    | `src/lib/format.ts`                  | Removed. Also had an unguarded `max <= 0` path                                 |
+| `__clearHotkeys`                    | `src/lib/hotkeys.ts`                 | Removed                                                                        |
+| `__resetRegexRunner`                | `src/lib/regexRunner.ts`             | Removed                                                                        |
+| `isString`, `isBoolean`, `isRecord` | `src/lib/storage.ts`                 | Removed                                                                        |
+| `OptionRow`                         | `src/components/Field.tsx`           | Removed                                                                        |
+| `IconPlay`                          | `src/components/Icon.tsx`            | Removed                                                                        |
+| `NAMED_COLORS`                      | `src/tools/color-converter/color.ts` | Removed                                                                        |
+| `base64UrlEncodeBytes`              | `src/tools/jwt-decoder/jwt.ts`       | Removed                                                                        |
+| `base64UrlDecodeBytes`              | `src/tools/jwt-decoder/jwt.ts`       | Demoted to private                                                             |
 
 **One observation survives the fix.** Two of those were `__`-prefixed "test
 seams" for tests that were never written. `hotkeys.ts` is 164 lines of
@@ -1475,16 +1482,16 @@ is a legitimate seam used by the same test — both correctly kept.
 
 Same pattern elsewhere, each stranding one CSS rule:
 
-| Prop | Declared | Dead branch | Dead CSS |
-| --- | --- | --- | --- |
-| `ToolShell.padded` | `ToolShell.tsx:41` | `:74` | `ToolShell.module.css:92` |
-| `Panel.flush` | `Panel.tsx:16` | `:47` | `Panel.module.css:12` |
-| `Button.fullWidth` | `Button.tsx:13` | `:42` | `Button.module.css:103` |
-| `SegmentedControl.fullWidth` | `Field.tsx:149` | `:185` | `Field.module.css:137,142` |
-| `Stat.wide` | `StatGrid.tsx:9` | `:26` | `StatGrid.module.css:45` |
-| `Dialog.labelledBy` | `Dialog.tsx:17` | `:161` left side always `undefined` | — |
+| Prop                         | Declared           | Dead branch                         | Dead CSS                   |
+| ---------------------------- | ------------------ | ----------------------------------- | -------------------------- |
+| `ToolShell.padded`           | `ToolShell.tsx:41` | `:74`                               | `ToolShell.module.css:92`  |
+| `Panel.flush`                | `Panel.tsx:16`     | `:47`                               | `Panel.module.css:12`      |
+| `Button.fullWidth`           | `Button.tsx:13`    | `:42`                               | `Button.module.css:103`    |
+| `SegmentedControl.fullWidth` | `Field.tsx:149`    | `:185`                              | `Field.module.css:137,142` |
+| `Stat.wide`                  | `StatGrid.tsx:9`   | `:26`                               | `StatGrid.module.css:45`   |
+| `Dialog.labelledBy`          | `Dialog.tsx:17`    | `:161` left side always `undefined` | —                          |
 
-`Panel.padded` and `Stat.accent` *are* used, so this is not "delete every
+`Panel.padded` and `Stat.accent` _are_ used, so this is not "delete every
 optional prop".
 
 This is the cleanest mechanical win in the review: seven props, seven branches
@@ -1493,14 +1500,14 @@ and six CSS rules removed in one pass, and it makes `ARCHITECTURE.md`'s
 
 ### E3. Unused CSS module classes
 
-| File:line | Class |
-| --- | --- |
-| `src/app/AppShell.module.css:27` | `.mark` |
-| `src/components/Callout.module.css:37` | `.mono` (the `.detail code` half of the same rule *is* used) |
-| `src/tools/http-client/HttpClientTool.module.css:97` | `.statusMeta` |
-| `src/tools/markdown/MarkdownTool.module.css:12` | `.toolbarDivider` |
-| `src/tools/shared/TwoPane.module.css:78` | `.issues` |
-| `src/tools/url-parser/UrlParserTool.module.css:149` | `.tableFoot` |
+| File:line                                            | Class                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| `src/app/AppShell.module.css:27`                     | `.mark`                                                      |
+| `src/components/Callout.module.css:37`               | `.mono` (the `.detail code` half of the same rule _is_ used) |
+| `src/tools/http-client/HttpClientTool.module.css:97` | `.statusMeta`                                                |
+| `src/tools/markdown/MarkdownTool.module.css:12`      | `.toolbarDivider`                                            |
+| `src/tools/shared/TwoPane.module.css:78`             | `.issues`                                                    |
+| `src/tools/url-parser/UrlParserTool.module.css:149`  | `.tableFoot`                                                 |
 
 Not dead, checked: `CodeDiffTool.module.css`'s `.tab2/.tab4/.tab8` are reached
 by computed access at `CodeDiffTool.tsx:315` (`styles[\`tab${state.tabWidth}\`]`).
@@ -1557,7 +1564,7 @@ question into the best answer.
 ### F3. "You wrote a modulo-bias rejection sampler. Which indices are biased?"
 
 §B5. The code is right; the comment answers the question wrongly. Anyone who
-asks this asks it *because* the comment is there.
+asks this asks it _because_ the comment is there.
 
 ### F4. Genuinely good and under-explained — worth a comment
 
@@ -1584,7 +1591,7 @@ asks this asks it *because* the comment is there.
 - **`SECURITY.md`'s `FORBID_ATTR: ['style']` paragraph.** DOMPurify sanitises
   markup, not CSS values, so `background:url(…)` survives its defaults and fires
   an outbound request. Correct, non-obvious, and it names why it matters for
-  *this* app's specific claim. This is the strongest security writing in the
+  _this_ app's specific claim. This is the strongest security writing in the
   repository and it is worth leading with.
 
 ### F5. Smaller "why did you do it this way?" items
@@ -1616,22 +1623,22 @@ asks this asks it *because* the comment is there.
 Fixes were landing in parallel with this review. Last re-verified against the
 working tree on top of `e74ec83`:
 
-| Finding | Status |
-| --- | --- |
-| §A1 patch output | **Fixed**, re-tested against `git apply --check` — but see §A1b |
-| §A1b trailing-newline-only patch | **Open, new**, introduced by the A1 fix |
-| §A3 Invalid Date into render | **Fixed**, re-verified |
-| §A4 negative duration days | **Fixed**, re-verified with a regression sweep |
-| §C1 Sample buttons | **Fixed** (`0bcd46a`) |
-| §E1 dead exports | **Fixed** (`e74ec83`) |
-| §A2 JWT `null` header crash | Open |
-| §A5 `Date.UTC` year 0-99 | **Fixed** via new `src/lib/utcFromCivil.ts` (also closes §D2's hoist) |
-| §A5b `0000-02-29` off by one day | **Open, new**, introduced by the A5 fix |
-| §A6 cron backwards-range advice | Open, re-confirmed |
-| §A7 cron drops seconds | Open, re-confirmed |
-| §A8 cron accepts `1-2-3` | Open, re-confirmed |
-| §A9 gradian hue | Open, re-confirmed (`hsl(100grad …)` → `null`) |
-| Everything else | Open, not re-checked since first confirmation |
+| Finding                          | Status                                                                |
+| -------------------------------- | --------------------------------------------------------------------- |
+| §A1 patch output                 | **Fixed**, re-tested against `git apply --check` — but see §A1b       |
+| §A1b trailing-newline-only patch | **Open, new**, introduced by the A1 fix                               |
+| §A3 Invalid Date into render     | **Fixed**, re-verified                                                |
+| §A4 negative duration days       | **Fixed**, re-verified with a regression sweep                        |
+| §C1 Sample buttons               | **Fixed** (`0bcd46a`)                                                 |
+| §E1 dead exports                 | **Fixed** (`e74ec83`)                                                 |
+| §A2 JWT `null` header crash      | Open                                                                  |
+| §A5 `Date.UTC` year 0-99         | **Fixed** via new `src/lib/utcFromCivil.ts` (also closes §D2's hoist) |
+| §A5b `0000-02-29` off by one day | **Open, new**, introduced by the A5 fix                               |
+| §A6 cron backwards-range advice  | Open, re-confirmed                                                    |
+| §A7 cron drops seconds           | Open, re-confirmed                                                    |
+| §A8 cron accepts `1-2-3`         | Open, re-confirmed                                                    |
+| §A9 gradian hue                  | Open, re-confirmed (`hsl(100grad …)` → `null`)                        |
+| Everything else                  | Open, not re-checked since first confirmation                         |
 
 **The working tree does not typecheck right now.** The three new A3 tests call
 `parseFlexible` with one argument:

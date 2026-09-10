@@ -2,17 +2,23 @@
  * Triggers a client-side file download from an in-memory string.
  *
  * The MIME type is forced to a benign one and the filename is sanitised,
- * because both are attacker-influenced in tools where the content came from a
- * pasted document. A `text/html` blob download that the user then opens is a
- * same-origin XSS vector, so nothing here ever emits an active type.
+ * because in a tool whose content came from a pasted document both are
+ * attacker-influenced.
+ *
+ * The threat is not same-origin XSS: a file opened from disk loads over
+ * `file://` with an opaque origin and cannot touch this app's storage or
+ * cookies. It is simpler than that. An HTML file the user saved from a tool
+ * they trust and then double-clicks opens as a live page with a plausible
+ * filename, and can phish for credentials or read other local files. Emitting
+ * only inert types makes that unreachable.
  */
-const SAFE_TYPES = new Set([
-  'text/plain',
-  'application/json',
-  'text/csv',
-  'text/markdown',
-  'application/xml',
-])
+/*
+ * Inert types only. `application/xml` was on this list and has been removed:
+ * an `<?xml-stylesheet?>` processing instruction runs XSLT, which browsers
+ * honour for locally opened files, so XML is the one entry that is arguably
+ * active. No caller used it.
+ */
+const SAFE_TYPES = new Set(['text/plain', 'application/json', 'text/csv', 'text/markdown'])
 
 export function downloadText(filename: string, contents: string, mime = 'text/plain'): void {
   const type = SAFE_TYPES.has(mime) ? mime : 'text/plain'

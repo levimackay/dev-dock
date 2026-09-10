@@ -16,6 +16,7 @@ import { TOOL_IDS } from './toolIds'
  */
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+const THEMES = ['light', 'dark'] as const
 
 async function scan(page: Page) {
   return (
@@ -39,6 +40,21 @@ async function scan(page: Page) {
  * the failure message names the rule and where it fired, which is the part
  * anyone actually reads.
  */
+/**
+ * Sets the theme the way a user would, through the stored preference, before
+ * anything renders.
+ *
+ * Writing `data-theme` with `page.evaluate` after load looks equivalent and is
+ * racy: the app's own effect writes the same attribute on mount, so a scan that
+ * starts between the two reads whichever won. Seeding storage and reloading
+ * makes the pre-paint script and React agree from the first frame.
+ */
+async function useTheme(page: Page, theme: 'light' | 'dark') {
+  await page.evaluate((t) => localStorage.setItem('devdock:theme', JSON.stringify(t)), theme)
+  await page.reload()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe(theme)
+}
+
 function summarise(results: Awaited<ReturnType<typeof scan>>) {
   return results.violations.map((violation) => ({
     id: violation.id,
@@ -49,21 +65,25 @@ function summarise(results: Awaited<ReturnType<typeof scan>>) {
 }
 
 test.describe('accessibility', () => {
-  for (const theme of ['light', 'dark'] as const) {
+  for (const theme of THEMES) {
     test(`home page has no violations in ${theme} mode`, async ({ page }) => {
       await page.goto('/')
       await page.getByRole('heading', { level: 1 }).waitFor()
-      await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
+      await useTheme(page, theme)
       expect(summarise(await scan(page))).toEqual([])
     })
   }
 
   for (const toolId of TOOL_IDS) {
-    test(`${toolId} has no violations`, async ({ page }) => {
-      await page.goto(`/t/${toolId}`)
-      await page.getByRole('heading', { level: 1 }).waitFor()
-      expect(summarise(await scan(page))).toEqual([])
-    })
+    for (const theme of THEMES) {
+      test(`${toolId} has no violations in ${theme} mode`, async ({ page }) => {
+        await page.goto(`/t/${toolId}`)
+        await page.getByRole('heading', { level: 1 }).waitFor()
+        await useTheme(page, theme)
+        await page.getByRole('heading', { level: 1 }).waitFor()
+        expect(summarise(await scan(page))).toEqual([])
+      })
+    }
   }
 
   test('the command palette has no violations while open', async ({ page }) => {

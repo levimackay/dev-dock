@@ -91,7 +91,7 @@ Computation runs on every keystroke. That is fine for anything linear on a few
 hundred kilobytes. It is _not_ fine for:
 
 - user-supplied regular expressions (catastrophic backtracking, must be run
-  with a timeout, see `src/lib/regexWorker.ts`)
+  with a timeout, see `src/lib/regexRunner.ts` and `src/lib/regex.worker.ts`)
 - quadratic diff on large inputs (cap the input, say so in the UI)
 - rendering a tree of 100k nodes (virtualise or collapse by default)
 

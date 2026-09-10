@@ -52,10 +52,15 @@ export interface ParsedColor {
 /**
  * The 148 CSS named colours, stored as packed 24-bit integers.
  *
- * A `{ name: '#rrggbb' }` object of 148 entries is about 4 KB of source; packed
- * numbers are under 1.5 KB and parse faster. The trade is that the table is not
- * readable at a glance, which for a lookup table nobody edits by hand is the
- * right way round.
+ * Not for size: the keys dominate either way, and `0xf0f8ff` saves one
+ * character over `'#f0f8ff'`, which is 148 bytes across the whole table.
+ *
+ * The reason is `nearestNamed`, which walks all 148 entries on every call and
+ * converts each to OKLCH. With a packed integer the channel extraction is three
+ * shifts and masks; with a hex string it is three `parseInt` calls on freshly
+ * allocated substrings, 444 of them per lookup. That is the trade, and the cost
+ * is a table nobody can read at a glance, which is the right way round for a
+ * lookup table nobody edits by hand.
  */
 const NAMED: Record<string, number> = {
   aliceblue: 0xf0f8ff,

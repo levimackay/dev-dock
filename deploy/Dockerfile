@@ -1,5 +1,9 @@
-# Two-stage build: node to compile, nginx to serve ~250 KB of static files.
-# The runtime image contains no node, no npm, and no source.
+# Two-stage build: node to compile, nginx to serve the static output. The
+# runtime image contains no node, no npm, and no source.
+#
+# `dist/` is about 1.4 MB uncompressed, most of it self-hosted font subsets that
+# a given visitor never downloads: the browser fetches only the unicode ranges
+# it needs, so a Latin-script reader pulls two of the sixteen.
 
 FROM node:22-alpine AS build
 WORKDIR /app

@@ -168,7 +168,9 @@ export function formatRelative(from: Date, to: Date): string {
   if (abs < 5000) return 'just now'
 
   // Walk the unit ladder from the top down, picking the largest unit the span
-  // reaches.
+  // reaches. `Intl.RelativeTimeFormat` is not used, and does no unit selection
+  // of its own: it takes a value *and* a unit. It would give localised output,
+  // which an English-only app does not need for eight lines of ladder.
   let index = 0
   for (const [i, unit] of RELATIVE_UNITS.entries()) {
     if (abs >= unit.ms) index = i

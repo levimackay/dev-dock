@@ -162,7 +162,16 @@ export const CodeArea = forwardRef<HTMLTextAreaElement, CodeAreaProps>(function 
       onDrop={acceptDrop ? (e) => void handleDrop(e) : undefined}
     >
       {lineNumbers && (
-        <div className={styles.gutter} ref={gutterRef} aria-hidden="true">
+        <div
+          className={styles.gutter}
+          ref={gutterRef}
+          aria-hidden="true"
+          title={
+            lineCount > MAX_GUTTER_LINES
+              ? `Line numbering stops at ${MAX_GUTTER_LINES.toLocaleString()}; this document has ${lineCount.toLocaleString()} lines.`
+              : undefined
+          }
+        >
           {buildGutter(lineCount)}
         </div>
       )}
@@ -200,9 +209,15 @@ function countLines(value: string): number {
 /** Capped so pasting a 500 k-line file cannot lock the main thread. */
 const MAX_GUTTER_LINES = 20000
 
+/**
+ * Beyond the cap the gutter stops counting and says so with an ellipsis, rather
+ * than silently continuing to look like a line number. Every other cap in the
+ * app is visible where it bites; this one used to just stop.
+ */
 function buildGutter(lines: number): string {
   const shown = Math.min(lines, MAX_GUTTER_LINES)
   let out = ''
   for (let i = 1; i <= shown; i++) out += `${i}\n`
+  if (lines > MAX_GUTTER_LINES) out += '…\n'
   return out
 }

@@ -21,8 +21,11 @@ JavaScript to pretty-print some JSON. Pasting a JWT into one is a small security
 incident.
 
 Dev Dock is the version where that is not true. Every transformation happens in
-the page. The bundle for the shell plus one tool is under 100 KB gzipped. There
-is nothing to sign into and nothing to send.
+the page. The shell is about 97 KB gzipped and CI fails the build if it passes
+130; each tool is a separate chunk that only downloads when you open it, and
+most are under 7 KB. The SQL formatter is the one heavy exception, at 74 KB,
+because formatting eleven SQL dialects is a real parser. There is nothing to
+sign into and nothing to send.
 
 ## The tools
 

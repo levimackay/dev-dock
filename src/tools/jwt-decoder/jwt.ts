@@ -116,16 +116,22 @@ export function decodeJwt(token: string): JwtDecodeResult {
     }
   }
 
-  // `JSON.parse` returns `any`, which is assignable to `JwtHeader` with no
-  // cast needed, `any` bypasses assignability checks in both directions.
-  // That is a real TypeScript escape hatch, which is exactly why the shape
-  // is never trusted beyond "some JSON value"; every field is still read
-  // through an explicit `typeof` check wherever it matters (see the UI).
-  let header: JwtHeader
+  // The parsed value is typed as `JwtHeader` here, and that type is a claim
+  // about what a well-formed token contains, not a fact about this string. The
+  // token came from a text box. Two things follow, and both are enforced below
+  // rather than assumed:
+  //
+  //   - the value may not be an object at all. `"null"`, `"[]"` and `"3"` are
+  //     all valid JSON, so `isPlainObject` runs before any field is read.
+  //   - individual fields may be any type or absent, so each is read through
+  //     its own `typeof` check at the point of use.
+  //
+  // The single `as` is the visible seam between "some JSON value" and "the
+  // shape the rest of this function talks about". Everything after it earns
+  // that shape by checking.
+  let parsedHeader: unknown
   try {
-    // Funnelled through `unknown` so the widening to JwtHeader is one visible,
-    // deliberate step rather than `any` leaking through the whole function.
-    header = JSON.parse(headerRaw) as JwtHeader
+    parsedHeader = JSON.parse(headerRaw)
   } catch {
     return {
       ok: false,
@@ -133,6 +139,19 @@ export function decodeJwt(token: string): JwtDecodeResult {
       headerRaw,
     }
   }
+
+  // `"null"`, `"[]"` and `"3"` are all valid JSON, so a segment can decode and
+  // parse and still not be a header. `bnVsbA.e30.x` is the shortest example:
+  // without this check, reading `.alg` off it later throws into render.
+  if (!isPlainObject(parsedHeader)) {
+    return {
+      ok: false,
+      error:
+        'The header decodes and parses, but it is not a JSON object. A JWT header must be an object such as {"alg":"HS256","typ":"JWT"}.',
+      headerRaw,
+    }
+  }
+  const header: JwtHeader = parsedHeader
 
   let payloadRaw: string
   try {
@@ -147,9 +166,9 @@ export function decodeJwt(token: string): JwtDecodeResult {
     }
   }
 
-  let payload: JwtPayload
+  let parsedPayload: unknown
   try {
-    payload = JSON.parse(payloadRaw) as JwtPayload
+    parsedPayload = JSON.parse(payloadRaw)
   } catch {
     return {
       ok: false,
@@ -160,19 +179,7 @@ export function decodeJwt(token: string): JwtDecodeResult {
     }
   }
 
-  // `"null"`, `"[]"` and `"3"` are all valid JSON, so a segment can decode and
-  // parse and still not be a header. `bnVsbA.e30.x` is the shortest example:
-  // without this check, reading `.alg` off it throws straight into render.
-  if (!isPlainObject(header)) {
-    return {
-      ok: false,
-      error:
-        'The header decodes and parses, but it is not a JSON object. A JWT header must be an object such as {"alg":"HS256","typ":"JWT"}.',
-      headerRaw,
-      payloadRaw,
-    }
-  }
-  if (!isPlainObject(payload)) {
+  if (!isPlainObject(parsedPayload)) {
     return {
       ok: false,
       error:
@@ -182,6 +189,7 @@ export function decodeJwt(token: string): JwtDecodeResult {
       payloadRaw,
     }
   }
+  const payload: JwtPayload = parsedPayload
 
   const algNone = typeof header.alg === 'string' && header.alg.toLowerCase() === 'none'
 
