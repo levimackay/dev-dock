@@ -241,3 +241,75 @@ describe('durationBetween', () => {
     expect(backward.days).toBe(forward.days)
   })
 })
+
+describe('inputs at the edge of what Date can hold', () => {
+  it('rejects a nanosecond epoch rather than reporting an Invalid Date as success', () => {
+    const result = parseFlexible('1700000000000000000', utcOptions)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/Unix Timestamp tool/)
+  })
+
+  it('still accepts a millisecond epoch at the top of the range', () => {
+    expect(parseFlexible('8640000000000000', utcOptions).ok).toBe(true)
+  })
+
+  it('rejects one millisecond past the top of the range', () => {
+    expect(parseFlexible('8640000000000001', utcOptions).ok).toBe(false)
+  })
+})
+
+describe('durationBetween borrowing across short months', () => {
+  const at = (iso: string) => new Date(iso)
+
+  it('never reports a negative day count', () => {
+    const pairs: Array<[string, string]> = [
+      ['2026-01-31T00:00:00Z', '2026-03-01T00:00:00Z'],
+      ['2026-01-30T00:00:00Z', '2026-03-01T00:00:00Z'],
+      ['2024-01-31T00:00:00Z', '2024-03-01T00:00:00Z'],
+      ['2026-08-31T00:00:00Z', '2026-10-01T00:00:00Z'],
+      ['2026-12-31T23:59:59Z', '2027-03-01T00:00:00Z'],
+    ]
+    for (const [from, to] of pairs) {
+      const d = durationBetween(at(from), at(to))
+      expect([d.years, d.months, d.days, d.hours, d.minutes, d.seconds].every((n) => n >= 0)).toBe(
+        true,
+      )
+    }
+  })
+
+  it('reports 31 January to 1 March as 29 days, not a clamped month', () => {
+    // Calendar arithmetic is genuinely ambiguous from the end of a long month:
+    // "31 January plus one month" is 28 February if you clamp and 3 March if
+    // you overflow, and the two conventions disagree about this span. Borrowing
+    // whole months only when a whole month fits sidesteps the question, and
+    // always yields a span that can be verified by counting days.
+    const d = durationBetween(at('2026-01-31T00:00:00Z'), at('2026-03-01T00:00:00Z'))
+    expect({ years: d.years, months: d.months, days: d.days }).toEqual({
+      years: 0,
+      months: 0,
+      days: 29,
+    })
+  })
+
+  it('reports a clean whole month as one month and no days', () => {
+    const d = durationBetween(at('2026-01-15T00:00:00Z'), at('2026-02-15T00:00:00Z'))
+    expect({ years: d.years, months: d.months, days: d.days }).toEqual({
+      years: 0,
+      months: 1,
+      days: 0,
+    })
+  })
+})
+
+describe('years below 100', () => {
+  it('reads a four-digit year literally, not remapped into the 1900s', () => {
+    const result = parseFlexible('0050-03-15', { ...utcOptions, dateOnlyAs: 'utc' })
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.date.toISOString()).toBe('0050-03-15T00:00:00.000Z')
+  })
+
+  it('reads year 0 literally', () => {
+    const result = parseFlexible('0000-01-01', { ...utcOptions, dateOnlyAs: 'utc' })
+    expect(result.ok && result.date.getUTCFullYear()).toBe(0)
+  })
+})

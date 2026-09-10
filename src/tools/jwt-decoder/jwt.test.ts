@@ -183,3 +183,25 @@ describe('constantTimeEqual', () => {
     expect(constantTimeEqual(new Uint8Array([1, 2, 3]), new Uint8Array([1, 2]))).toBe(false)
   })
 })
+
+describe('segments that parse as JSON but are not objects', () => {
+  // "bnVsbA" is base64url for the four characters `null`, which is valid JSON.
+  it('rejects a JSON null header instead of throwing on it', () => {
+    const result = decodeJwt('bnVsbA.e30.x')
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/not a JSON object/)
+  })
+
+  it('rejects an array header', () => {
+    // "W10" is base64url for `[]`.
+    const result = decodeJwt('W10.e30.x')
+    expect(result.ok).toBe(false)
+  })
+
+  it('rejects a JSON null payload', () => {
+    // eyJhbGciOiJIUzI1NiJ9 is {"alg":"HS256"}.
+    const result = decodeJwt('eyJhbGciOiJIUzI1NiJ9.bnVsbA.x')
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/payload/)
+  })
+})

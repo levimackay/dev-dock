@@ -9,6 +9,8 @@
  * to the millisecond resolution `Date` actually has.
  */
 
+import { utcFromCivil } from '@/lib/utcFromCivil'
+
 export type TimestampUnit = 'seconds' | 'milliseconds' | 'microseconds' | 'nanoseconds'
 
 export const UNITS: readonly TimestampUnit[] = [
@@ -217,7 +219,7 @@ function tzOffsetMs(instantMs: number, timeZone: string): number {
     second: '2-digit',
   }).formatToParts(new Date(instantMs))
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0')
-  const asIfUtc = Date.UTC(
+  const asIfUtc = utcFromCivil(
     get('year'),
     get('month') - 1,
     get('day'),
@@ -249,7 +251,7 @@ export interface WallTime {
  * which would otherwise leave the offset one hour off right at the edge.
  */
 export function zonedTimeToUtc(fields: WallTime, timeZone: string): Date {
-  const guess = Date.UTC(
+  const guess = utcFromCivil(
     fields.year,
     fields.month - 1,
     fields.day,

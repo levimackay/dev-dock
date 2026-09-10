@@ -24,6 +24,8 @@
  * ever handed to the `Date` constructor at all.
  */
 
+import { utcFromCivil } from '@/lib/utcFromCivil'
+
 /** How to interpret a bare date with no time component, e.g. "2026-03-15". */
 export type DateOnlyInterpretation = 'utc' | 'zone'
 
@@ -55,6 +57,9 @@ export type ParseResult = ParseSuccess | ParseFailure
 const ISO_DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/
 const ISO_DATETIME =
   /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?(Z|[+-]\d{2}:?\d{2})?$/i
+/** The widest instant a JS `Date` can hold, per the ECMAScript spec. */
+const MAX_DATE_MS = 8_640_000_000_000_000
+
 const EPOCH_NUMBER = /^-?\d+(\.\d+)?$/
 const RFC2822 =
   /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4}\s+\d{2}:\d{2}(?::\d{2})?\s+(?:[+-]\d{4}|UT|UTC|GMT|Z|[A-Z]{1,5})$/i
@@ -100,7 +105,7 @@ function tzOffsetMs(instantMs: number, timeZone: string): number {
     second: '2-digit',
   }).formatToParts(new Date(instantMs))
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0')
-  const asIfUtc = Date.UTC(
+  const asIfUtc = utcFromCivil(
     get('year'),
     get('month') - 1,
     get('day'),
@@ -123,7 +128,7 @@ interface CivilFields {
 
 /** Converts wall-clock civil fields, read in `timeZone`, to the UTC instant they name. Two passes to handle a DST edge. See the unix-timestamp tool's `epoch.ts` for the same technique, written independently because tool folders do not import each other. */
 function zonedTimeToUtc(fields: CivilFields, timeZone: string): Date {
-  const guess = Date.UTC(
+  const guess = utcFromCivil(
     fields.year,
     fields.month - 1,
     fields.day,
@@ -157,7 +162,7 @@ export function parseFlexible(input: string, options: ParseOptions): ParseResult
     if (invalid) return { ok: false, error: invalid }
     const date =
       options.dateOnlyAs === 'utc'
-        ? new Date(Date.UTC(year, month - 1, day))
+        ? new Date(utcFromCivil(year, month - 1, day))
         : zonedTimeToUtc({ year, month, day, hour: 0, minute: 0, second: 0, ms: 0 }, options.zone)
     return { ok: true, date, dateOnly: true, format: 'iso-date' }
   }
@@ -179,12 +184,14 @@ export function parseFlexible(input: string, options: ParseOptions): ParseResult
     if (!zone) {
       date = zonedTimeToUtc({ year, month, day, hour, minute, second, ms }, options.zone)
     } else if (/^z$/i.test(zone)) {
-      date = new Date(Date.UTC(year, month - 1, day, hour, minute, second, ms))
+      date = new Date(utcFromCivil(year, month - 1, day, hour, minute, second, ms))
     } else {
       const offsetMatch = /^([+-])(\d{2}):?(\d{2})$/.exec(zone)!
       const sign = offsetMatch[1] === '-' ? -1 : 1
       const offsetMin = sign * (Number(offsetMatch[2]) * 60 + Number(offsetMatch[3]))
-      date = new Date(Date.UTC(year, month - 1, day, hour, minute, second, ms) - offsetMin * 60_000)
+      date = new Date(
+        utcFromCivil(year, month - 1, day, hour, minute, second, ms) - offsetMin * 60_000,
+      )
     }
     return { ok: true, date, dateOnly: false, format: 'iso-datetime' }
   }
@@ -209,6 +216,16 @@ export function parseFlexible(input: string, options: ParseOptions): ParseResult
     const digits = text.replace(/^-/, '').split('.')[0]?.length ?? 0
     const value = Number(text)
     const ms = digits <= 10 ? value * 1000 : value
+    // A nanosecond epoch pasted here (1700000000000000000) is a plausible
+    // mistake and lands far outside what Date can hold. Without this the
+    // function reports success with an Invalid Date, and the first row that
+    // calls toISOString() throws in render.
+    if (!Number.isFinite(ms) || Math.abs(ms) > MAX_DATE_MS) {
+      return {
+        ok: false,
+        error: `${text} is outside the range a JavaScript Date can represent (±8,640,000,000,000,000 ms from 1970, roughly year -271821 to 275760). If that is a microsecond or nanosecond epoch, the Unix Timestamp tool converts those.`,
+      }
+    }
     return { ok: true, date: new Date(ms), dateOnly: false, format: 'epoch' }
   }
 
@@ -299,12 +316,12 @@ export function toIsoWeekDate(date: Date, timeZone: string): string {
   const m = get('month')
   const d = get('day')
 
-  const civil = new Date(Date.UTC(y, m - 1, d))
+  const civil = new Date(utcFromCivil(y, m - 1, d))
   const weekday = (civil.getUTCDay() + 6) % 7 // Monday = 0 .. Sunday = 6
   civil.setUTCDate(civil.getUTCDate() - weekday + 3) // move to this week's Thursday
   const isoYear = civil.getUTCFullYear()
 
-  const jan4 = new Date(Date.UTC(isoYear, 0, 4))
+  const jan4 = new Date(utcFromCivil(isoYear, 0, 4))
   const jan4Weekday = (jan4.getUTCDay() + 6) % 7
   const week1Monday = jan4.getTime() - jan4Weekday * 86_400_000
   const week = Math.round((civil.getTime() - week1Monday) / (7 * 86_400_000)) + 1
@@ -345,8 +362,8 @@ function formatOffset(offsetMinutes: number): string {
  */
 function isDstAt(date: Date, timeZone: string): boolean {
   const year = date.getUTCFullYear()
-  const jan = offsetMinutesAt(new Date(Date.UTC(year, 0, 1, 12)), timeZone)
-  const jul = offsetMinutesAt(new Date(Date.UTC(year, 6, 1, 12)), timeZone)
+  const jan = offsetMinutesAt(new Date(utcFromCivil(year, 0, 1, 12)), timeZone)
+  const jul = offsetMinutesAt(new Date(utcFromCivil(year, 6, 1, 12)), timeZone)
   const standard = Math.min(jan, jul)
   return offsetMinutesAt(date, timeZone) > standard
 }
@@ -417,14 +434,27 @@ export function durationBetween(from: Date, to: Date): DurationBreakdown {
     hours += 24
     days -= 1
   }
-  if (days < 0) {
-    // Borrow a month's worth of days from the month immediately before
-    // `end`'s own month, `daysInMonth` handles the month=0 → previous
-    // December wraparound the same way `Date` itself does.
-    const borrowYear = end.getUTCMonth() === 0 ? end.getUTCFullYear() - 1 : end.getUTCFullYear()
-    const borrowMonth = end.getUTCMonth() === 0 ? 12 : end.getUTCMonth()
-    days += daysInMonth(borrowYear, borrowMonth)
+  // Borrowing days has to be a loop, not a single step.
+  //
+  // The convention this settles on: borrow a whole month only when a whole
+  // month's worth of days is available. From 31 January to 1 March that leaves
+  // 0 months and 29 days rather than a clamped "1 month, 1 day", because
+  // "31 January plus one month" has no agreed answer (28 February if you clamp,
+  // 3 March if you overflow) and a span nobody can verify by counting is worse
+  // than a plain day count. One borrow takes the
+  // length of the month before `end`, and that month can be shorter than the
+  // deficit: 31 January to 1 March borrows February's 28 days and is still two
+  // days short, which used to surface in the UI as "1 month, -2 days".
+  let borrowFromMonth = end.getUTCMonth() // 0-11, the month before is this index
+  let borrowFromYear = end.getUTCFullYear()
+  while (days < 0) {
+    if (borrowFromMonth === 0) {
+      borrowFromMonth = 12
+      borrowFromYear -= 1
+    }
+    days += daysInMonth(borrowFromYear, borrowFromMonth)
     months -= 1
+    borrowFromMonth -= 1
   }
   if (months < 0) {
     months += 12

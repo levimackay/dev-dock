@@ -404,7 +404,8 @@ export function toUnifiedDiff(
       // both sides, so it needs the marker only once even if neither side ends
       // in a newline.
       const leftNeedsMarker = !leftEndsWithEol && index === lastLeftIndex && line.leftNo !== null
-      const rightNeedsMarker = !rightEndsWithEol && index === lastRightIndex && line.rightNo !== null
+      const rightNeedsMarker =
+        !rightEndsWithEol && index === lastRightIndex && line.rightNo !== null
       if (leftNeedsMarker || rightNeedsMarker) out.push('\\ No newline at end of file')
     }
   }

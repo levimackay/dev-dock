@@ -34,6 +34,9 @@ export interface JwtDecodeResult {
   algNone?: boolean
 }
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 export type HmacAlgorithm = 'HS256' | 'HS384' | 'HS512'
 
 // Built as a `Set<HmacAlgorithm>` for the literal check, then widened to
@@ -151,6 +154,29 @@ export function decodeJwt(token: string): JwtDecodeResult {
     return {
       ok: false,
       error: 'The payload decodes fine as base64url, but is not valid JSON.',
+      header,
+      headerRaw,
+      payloadRaw,
+    }
+  }
+
+  // `"null"`, `"[]"` and `"3"` are all valid JSON, so a segment can decode and
+  // parse and still not be a header. `bnVsbA.e30.x` is the shortest example:
+  // without this check, reading `.alg` off it throws straight into render.
+  if (!isPlainObject(header)) {
+    return {
+      ok: false,
+      error:
+        'The header decodes and parses, but it is not a JSON object. A JWT header must be an object such as {"alg":"HS256","typ":"JWT"}.',
+      headerRaw,
+      payloadRaw,
+    }
+  }
+  if (!isPlainObject(payload)) {
+    return {
+      ok: false,
+      error:
+        'The payload decodes and parses, but it is not a JSON object. A JWT payload must be an object of claims.',
       header,
       headerRaw,
       payloadRaw,

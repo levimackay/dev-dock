@@ -186,7 +186,16 @@ that is an array or a number is equally meaningless. Note the UI is already
 defensive (`JwtDecoderTool.tsx:73` and `:103` both guard) — only the logic
 layer is not.
 
-### A3. `parseFlexible` returns `ok: true` with an Invalid Date, and the render then throws — confirmed
+### A3. `parseFlexible` returns `ok: true` with an Invalid Date, and the render then throws — **FIXED in the working tree**
+
+> Re-verified: `parseFlexible('1700000000000000000', …)` now returns
+> `ok: false` with a message naming the ±8.64e15 ms range and pointing at the
+> Unix Timestamp tool. The guard is on the epoch branch only, which is correct
+> — the ISO branches cannot overflow, because `validateCivilFields` bounds the
+> fields and the year regex caps at 9999 (`Date.UTC(9999, 11, 31)` ≈ 2.5e14),
+> and the RFC 2822 branch already checks `Number.isNaN`. Original finding below
+> for the record.
+
 
 `src/tools/datetime-converter/datetime.ts:204-213`:
 
@@ -212,7 +221,21 @@ input; `datetime.ts` does not.
 { ok: false, error: ... }`. Reuse `epoch.ts`'s message, which already explains
 the ±8.64e15 ms range — see §D2 on why these two files should share code.
 
-### A4. `durationBetween` emits negative day counts — confirmed
+### A4. `durationBetween` emits negative day counts — **FIXED in the working tree**
+
+> Re-verified, including a regression sweep the fix did not have tests for:
+>
+> ```
+> 2026-01-31 → 2026-03-01   0y 0mo 29d      (was 0y 1mo -2d)
+> 2026-01-01 → 2027-03-15   1y 2mo 14d      ✓
+> 2026-03-31 → 2026-05-01   0y 1mo 0d       ✓
+> 2026-01-15 → 2026-02-14   0y 0mo 30d      ✓
+> 2026-01-15 → 2026-02-15   0y 1mo 0d       ✓
+> 2024-02-29 → 2025-02-28   0y 11mo 30d     ✓ (leap-day convention, not a bug)
+> ```
+>
+> No negative fields and no regressions. Original finding below for the record.
+
 
 `src/tools/datetime-converter/datetime.ts:420-428`. The borrow is a single `if`,
 not a loop, and borrows the length of the month before `end` — which can be
@@ -236,7 +259,14 @@ the user sees "1 month, -2 days".
 compute the day component by anchoring: add `years`/`months` to `start`, clamp
 to the month end, then take the plain day difference from there.
 
-### A5. `Date.UTC` maps years 0–99 to 1900–1999 — confirmed
+### A5. `Date.UTC` maps years 0–99 to 1900–1999 — **FIXED in the working tree, one residual (§A5b)**
+
+> Fixed well: a new `src/lib/utcFromCivil.ts` applied at all 12 call sites in
+> both tools, which also resolves the §D2 recommendation to hoist this to
+> `src/lib`. Re-verified `0050-03-15`, `0004-02-29`, `0000-01-01`,
+> `0099-12-31`: all correct. **One input still wrong — §A5b.** Original
+> finding below for the record.
+
 
 `Date.UTC(50, 2, 15)` is 1950-03-15, not 0050-03-15. This is unguarded in six
 places:
@@ -270,6 +300,55 @@ function utcOf(y: number, mo: number, d: number, h = 0, mi = 0, s = 0, ms = 0) {
 
 `setUTCFullYear` has no two-digit special case. One helper, in `src/lib`, shared
 by both tools.
+
+### A5b. `utcFromCivil` is off by one day for `0000-02-29` — NEW, confirmed
+
+The working-tree helper (`src/lib/utcFromCivil.ts:26-31`) repairs the year
+*after* `Date.UTC` has already resolved the calendar:
+
+```ts
+const timestamp = Date.UTC(year, monthIndex, day, hour, minute, second, ms)
+if (year >= 100 || year < 0 || Number.isNaN(timestamp)) return timestamp
+const date = new Date(timestamp)
+date.setUTCFullYear(year)     // ← too late if Date.UTC already rolled over
+return date.getTime()
+```
+
+`setUTCFullYear` cannot undo a day-rollover that has already happened. Year 0 is
+a leap year (divisible by 400); 1900 is not (divisible by 100, not 400). So:
+
+```
+Date.UTC(0, 1, 29)  →  1900-02-29 does not exist  →  1900-03-01
+setUTCFullYear(0)   →  0000-03-01                  ✗ should be 0000-02-29
+```
+
+**Input:** type `0000-02-29` into the DateTime Converter. Confirmed output
+`0000-03-01T00:00:00.000Z`. It passes `validateCivilFields`, because
+`isLeapYear(0)` correctly returns `true` — so the validator and the constructor
+disagree about whether that date exists.
+
+Year 0 is the only affected year: it is the only leap year in 0–99 whose
++1900 counterpart is not one.
+
+**Fix.** Set the year *before* the calendar is resolved, using the three-argument
+form:
+
+```ts
+export function utcFromCivil(year, monthIndex, day, hour = 0, minute = 0, second = 0, ms = 0): number {
+  if (year >= 100 || year < 0) return Date.UTC(year, monthIndex, day, hour, minute, second, ms)
+  const d = new Date(0)
+  d.setUTCFullYear(year, monthIndex, day)   // all three against the real year
+  d.setUTCHours(hour, minute, second, ms)
+  return d.getTime()
+}
+```
+
+Verified against `0000-02-29`, `0004-02-29`, `0050-03-15`, `0000-01-01`,
+`0099-12-31`, `0100-02-28`, `2026-03-15`: all correct.
+
+**Test to add:** `0000-02-29` specifically. It is the one input that separates
+"repair the year afterwards" from "set the year first", and it is exactly the
+kind of case the file's own comment is proud of catching.
 
 ### A6. Cron's backwards-range error names the wrong replacement — confirmed
 
@@ -764,7 +843,7 @@ Three problems:
 2. "Funnelled through `unknown`" — it is not. There is no `as unknown as`; it is
    a direct `as JwtHeader`.
 3. "every field is still read through an explicit `typeof` check" — falsified 34
-   lines later by `:163`, `typeof header.alg`, which throws when `header` is
+   lines later by `:160`, `typeof header.alg`, which throws when `header` is
    `null` (see §A2). The `typeof` guards the *field*, not the object.
 
 TOOL-AUTHORING's style rule says "No `as` casts to silence the compiler; fix the
@@ -991,10 +1070,11 @@ Measured against `docs/TOOL-AUTHORING.md`.
 
 ### C1. Sample buttons (rule 7: "Every tool that can be demonstrated should have a Sample button in its toolbar")
 
-- **Missing entirely:** `base64/Base64Tool.tsx:112-133` (Swap + File only) —
-  notable because TOOL-AUTHORING names Base64 as *the reference implementation*
-  new authors are told to read first; and
-  `unix-timestamp/UnixTimestampTool.tsx:179-189` (Clear only).
+- **~~Missing entirely:~~ FIXED in `0bcd46a`.** `base64/Base64Tool.tsx` (Swap +
+  File only) — notable because TOOL-AUTHORING names Base64 as *the reference
+  implementation* new authors are told to read first — and
+  `unix-timestamp/UnixTimestampTool.tsx` (Clear only). Both now have a Sample
+  button in the toolbar (`Base64Tool.tsx:122`, `UnixTimestampTool.tsx:194`).
 - **Present but not in the toolbar:** `regex-tester/RegexTesterTool.tsx:182-189`
   puts samples in a row inside the Pattern panel;
   `cron-helper/CronHelperTool.tsx:297-318` has a 22-button Presets panel that
@@ -1183,12 +1263,12 @@ which is exactly why one copy should exist.
 - `src/tools/base64/base64.ts:37-44`
 - `src/tools/hash-generator/hash.ts:41-48` — byte-identical minus one comment
 - `src/lib/share.ts:31-39` — same loop plus the url-safe tail
-- `src/tools/jwt-decoder/jwt.ts:68-72` — same, unchunked, and dead (§E1)
+- ~~`src/tools/jwt-decoder/jwt.ts` `base64UrlEncodeBytes`~~ — removed in `e74ec83`
 
 `base64ToBytes`:
 - `src/tools/base64/base64.ts:46-51`
-- `src/tools/jwt-decoder/jwt.ts:50-57` (`base64UrlDecodeText`)
-- `src/tools/jwt-decoder/jwt.ts:59-66` (`base64UrlDecodeBytes`)
+- `src/tools/jwt-decoder/jwt.ts:52-59` (`base64UrlDecodeText`)
+- `src/tools/jwt-decoder/jwt.ts:61-68` (`base64UrlDecodeBytes`)
 - `src/lib/share.ts:41-47` (`fromBase64Url`)
 
 The two in `jwt.ts` are duplicates **of each other inside one file**:
@@ -1229,9 +1309,9 @@ the comment points at it.
 ### D3. `formatRelative`, three implementations that give different answers
 
 ```
-src/tools/cron-helper/relative.ts:10-34    (target, from)  1000ms → 'now',       second..day
-src/tools/unix-timestamp/epoch.ts:153-171  (from, to)      5000ms → 'just now',  minute..year
-src/tools/jwt-decoder/jwt.ts:201-220       (targetMs, nowMs)  none → 'in a moment', second..day
+src/tools/cron-helper/relative.ts:10-34    (target, from)     1000ms → 'now',         second..day
+src/tools/unix-timestamp/epoch.ts:153-171  (from, to)         5000ms → 'just now',    minute..year
+src/tools/jwt-decoder/jwt.ts:197-216       (targetMs, nowMs)  none   → 'in a moment', second..day
 ```
 
 Three things wrong at once:
@@ -1337,29 +1417,34 @@ Listed so the judgement is visible rather than implied:
 
 ## E. Dead code, unused exports, unreachable branches
 
-### E1. Exports with zero references anywhere, including tests
+### E1. Exports with zero references anywhere, including tests — **FIXED in `e74ec83`**
 
-| File:line | Symbol | Note |
+All twelve are gone or demoted to module-private:
+
+| Symbol | Was | Note |
 | --- | --- | --- |
-| `src/lib/clipboard.ts:36` | `readClipboard` | Also falsifies a SECURITY.md sentence — §B10 |
-| `src/lib/format.ts:36` | `truncateMiddle` | Also has an unguarded `max <= 0` path |
-| `src/lib/hotkeys.ts:162` | `__clearHotkeys` | Doc says "Test seam" — **there is no `hotkeys.test.ts`** |
-| `src/lib/regexRunner.ts:87` | `__resetRegexRunner` | Same: "Test seam", but `regexTypes.test.ts` only tests `executeRegex` |
-| `src/lib/storage.ts:105` | `isString` | |
-| `src/lib/storage.ts:107` | `isBoolean` | |
-| `src/lib/storage.ts:109` | `isRecord` | `share.test.ts:10` declares its own local copy rather than importing this |
-| `src/components/Field.tsx:239` | `OptionRow` | Exported component, no call sites |
-| `src/components/Icon.tsx:140` | `IconPlay` | The only unused icon of 26 |
-| `src/tools/color-converter/color.ts:211` | `NAMED_COLORS` | `Object.keys(NAMED)` computed at module load, never read |
-| `src/tools/jwt-decoder/jwt.ts:68` | `base64UrlEncodeBytes` | Verification uses `crypto.subtle` + `constantTimeEqual` |
+| `readClipboard` | `src/lib/clipboard.ts` | Removed. Also falsified a SECURITY.md sentence — §B10 still needs the doc edit |
+| `truncateMiddle` | `src/lib/format.ts` | Removed. Also had an unguarded `max <= 0` path |
+| `__clearHotkeys` | `src/lib/hotkeys.ts` | Removed |
+| `__resetRegexRunner` | `src/lib/regexRunner.ts` | Removed |
+| `isString`, `isBoolean`, `isRecord` | `src/lib/storage.ts` | Removed |
+| `OptionRow` | `src/components/Field.tsx` | Removed |
+| `IconPlay` | `src/components/Icon.tsx` | Removed |
+| `NAMED_COLORS` | `src/tools/color-converter/color.ts` | Removed |
+| `base64UrlEncodeBytes` | `src/tools/jwt-decoder/jwt.ts` | Removed |
+| `base64UrlDecodeBytes` | `src/tools/jwt-decoder/jwt.ts` | Demoted to private |
 
-Two test seams that exist for tests that were never written is a small but real
-signal — they say the module was *intended* to be tested and then was not.
-`hotkeys.ts` in particular is 164 lines of key-matching logic with no unit test
-at all, in a repo whose stated testing strategy is "every `.ts` logic file".
+**One observation survives the fix.** Two of those were `__`-prefixed "test
+seams" for tests that were never written. `hotkeys.ts` is 164 lines of
+key-matching logic with **no unit test at all**, in a repo whose stated testing
+strategy (`ARCHITECTURE.md §9`) is "every `.ts` logic file". Deleting the seam
+removes the evidence but not the gap: `matchesHotkey` and the input-target
+exclusion logic at `hotkeys.ts:87` are exactly the kind of thing that breaks
+silently on a platform you did not test on. Worth a test file, not just a
+deletion.
 
-`storageAvailable` (`storage.ts:91`) is used only by `storage.test.ts:67`;
-`__resetStorageProbe` is a legitimate seam used by the same test — keep both.
+`storageAvailable` is still used only by `storage.test.ts`; `__resetStorageProbe`
+is a legitimate seam used by the same test — both correctly kept.
 
 **Not dead, checked:** `diffSequences`, `splitLines`, `fuzzyMatch`,
 `normalizeBase64`, `toHexDump`, `oklchToRgb`, `matchesDay`, `sortKeysDeep`,
@@ -1518,11 +1603,50 @@ asks this asks it *because* the comment is there.
 
 ---
 
+## Status at the time of writing
+
+Fixes were landing in parallel with this review. Last re-verified against the
+working tree on top of `e74ec83`:
+
+| Finding | Status |
+| --- | --- |
+| §A1 patch output | **Fixed**, re-tested against `git apply --check` — but see §A1b |
+| §A1b trailing-newline-only patch | **Open, new**, introduced by the A1 fix |
+| §A3 Invalid Date into render | **Fixed**, re-verified |
+| §A4 negative duration days | **Fixed**, re-verified with a regression sweep |
+| §C1 Sample buttons | **Fixed** (`0bcd46a`) |
+| §E1 dead exports | **Fixed** (`e74ec83`) |
+| §A2 JWT `null` header crash | Open |
+| §A5 `Date.UTC` year 0-99 | Open, re-confirmed (`0050-03-15` → `1950-03-15`) |
+| §A6 cron backwards-range advice | Open, re-confirmed |
+| §A7 cron drops seconds | Open, re-confirmed |
+| §A8 cron accepts `1-2-3` | Open, re-confirmed |
+| §A9 gradian hue | Open, re-confirmed (`hsl(100grad …)` → `null`) |
+| Everything else | Open, not re-checked since first confirmation |
+
+**The working tree does not typecheck right now.** The three new A3 tests call
+`parseFlexible` with one argument:
+
+```
+src/tools/datetime-converter/datetime.test.ts(247,20): error TS2554: Expected 2 arguments, but got 1.
+src/tools/datetime-converter/datetime.test.ts(253,12): error TS2554: …
+src/tools/datetime-converter/datetime.test.ts(257,12): error TS2554: …
+```
+
+`parseFlexible(input, options)` requires the `ParseOptions` second argument.
+`vitest` passes (767 tests, 37 files) because esbuild strips types without
+checking them; `npx tsc -b` fails, so `pnpm verify` and CI would too. Add
+`{ zone: 'UTC', dateOnlyAs: 'utc' }` to all three calls.
+
+This is worth noting beyond the immediate fix: it is the one seam where a green
+test run does not imply a green build, and it is why `verify` runs both.
+
 ## Suggested order of work
 
-1. **§A1** — the patch output. Highest impact, and it is the thing the project
-   is most likely to be judged on.
-2. **§A2, §A3** — two uncaught throws into the render path, both one guard.
+1. **§A1b** — finish the patch fix. §A1 is closed; the trailing-newline-only
+   case still emits a headers-only patch, and the pane view and the patch view
+   now disagree about whether anything changed.
+2. **§A2** — the remaining uncaught throw into the render path. One guard.
 3. **§B1** — a security control that does not run, asserted in SECURITY.md.
 4. **§C3** — give `shapeValidator` predicates. Closes §A10 structurally and
    hardens four other tools at once.

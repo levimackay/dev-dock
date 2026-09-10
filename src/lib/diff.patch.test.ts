@@ -21,7 +21,8 @@ import { toUnifiedDiff } from './diff'
 function applies(before: string, after: string): { ok: boolean; error?: string; result?: string } {
   const dir = mkdtempSync(join(tmpdir(), 'devdock-patch-'))
   try {
-    const git = (...args: string[]) => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' })
+    const git = (...args: string[]) =>
+      execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' })
     git('init', '--quiet')
     git('config', 'user.email', 'test@example.invalid')
     git('config', 'user.name', 'Test')
