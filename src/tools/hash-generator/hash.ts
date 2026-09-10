@@ -15,6 +15,10 @@
  * against a motivated attacker.
  */
 
+import { bytesToBase64 } from '@/lib/base64'
+
+export { bytesToBase64 }
+
 export type HashAlgorithm = 'MD5' | 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512' | 'CRC32'
 
 export const ALGORITHMS: HashAlgorithm[] = [
@@ -36,15 +40,6 @@ export function bytesToHex(bytes: Uint8Array, uppercase = false): string {
     out += hex
   }
   return uppercase ? out.toUpperCase() : out
-}
-
-export function bytesToBase64(bytes: Uint8Array): string {
-  let binary = ''
-  const CHUNK = 0x8000
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK))
-  }
-  return btoa(binary)
 }
 
 const SUBTLE_NAMES: Partial<Record<HashAlgorithm, string>> = {

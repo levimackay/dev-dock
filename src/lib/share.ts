@@ -22,6 +22,8 @@
  * anyone who has it, and the UI says so.
  */
 
+import { base64ToBytes, bytesToBase64 } from './base64'
+
 const V_DEFLATE = 'd'
 const V_PLAIN = 'p'
 
@@ -42,24 +44,6 @@ const MAX_INFLATED_BYTES = 4 * 1024 * 1024
 
 /** No legitimate link is close to this; anything longer is not worth decoding. */
 const MAX_ENCODED_CHARS = 256 * 1024
-
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = ''
-  // Chunked to stay under the argument-count limit on large payloads.
-  const CHUNK = 0x8000
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK))
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
-  const padded = text.replace(/-/g, '+').replace(/_/g, '/')
-  const binary = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4))
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  return bytes
-}
 
 /**
  * Pushes bytes through a (de)compression stream using the raw writer/reader
@@ -118,12 +102,12 @@ const hasCompression = () =>
 export async function encodeShareState(state: unknown): Promise<string> {
   const json = JSON.stringify(state)
   const bytes = new TextEncoder().encode(json)
-  if (!hasCompression()) return V_PLAIN + toBase64Url(bytes)
+  if (!hasCompression()) return V_PLAIN + bytesToBase64(bytes, true)
   try {
     const deflated = await pipe(bytes, new CompressionStream('deflate-raw'))
-    return V_DEFLATE + toBase64Url(deflated)
+    return V_DEFLATE + bytesToBase64(deflated, true)
   } catch {
-    return V_PLAIN + toBase64Url(bytes)
+    return V_PLAIN + bytesToBase64(bytes, true)
   }
 }
 
@@ -138,7 +122,7 @@ export async function decodeShareState<T>(
   const version = encoded[0]
   const body = encoded.slice(1)
   try {
-    let bytes = fromBase64Url(body)
+    let bytes = base64ToBytes(body)
     if (version === V_DEFLATE) {
       if (!hasCompression()) return null
       bytes = await pipe(bytes, new DecompressionStream('deflate-raw'))

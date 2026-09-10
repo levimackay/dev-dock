@@ -12,6 +12,8 @@
  * *is* worth testing, and lives here, is everything around it.
  */
 
+import { byteLength } from '@/lib/format'
+
 // -------------------------------------------------------------- request shape
 
 export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'] as const
@@ -242,7 +244,7 @@ export async function sendHttpRequest(input: SendRequestInput): Promise<SendRequ
       bodyText,
       contentType: response.headers.get('content-type'),
       timeMs,
-      sizeBytes: new TextEncoder().encode(bodyText).length,
+      sizeBytes: byteLength(bodyText),
     }
   } catch (error) {
     return { ok: false, timeMs: performance.now() - start, error }

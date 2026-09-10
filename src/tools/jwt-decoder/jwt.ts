@@ -12,6 +12,9 @@
  * session token leaking into browser history or a share link.
  */
 
+import { base64ToBytes } from '@/lib/base64'
+import { formatRelative as sharedFormatRelative } from '@/lib/relativeTime'
+
 export interface JwtHeader {
   alg?: string
   typ?: string
@@ -51,23 +54,16 @@ export function isHmacAlgorithm(alg: string | undefined): alg is HmacAlgorithm {
   return alg !== undefined && HS_ALGORITHMS.has(alg)
 }
 
-/** Decodes base64url (no padding, `-`/`_` alphabet) to a UTF-8 string. Throws on invalid input. */
+/**
+ * Decodes a base64url segment to a UTF-8 string. Throws on invalid base64url
+ * (`InvalidCharacterError`) and on invalid UTF-8 (`fatal: true`), which the
+ * caller turns into two different messages.
+ *
+ * There used to be a second function beside this one, decoding the same segment
+ * to bytes with a byte-identical loop. This is that function plus a decode.
+ */
 function base64UrlDecodeText(segment: string): string {
-  const standard = segment.replace(/-/g, '+').replace(/_/g, '/')
-  const padded = standard + '='.repeat((4 - (standard.length % 4)) % 4)
-  const binary = atob(padded) // throws InvalidCharacterError on bad base64url
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  return new TextDecoder('utf-8', { fatal: true }).decode(bytes) // throws on invalid UTF-8
-}
-
-function base64UrlDecodeBytes(segment: string): Uint8Array {
-  const standard = segment.replace(/-/g, '+').replace(/_/g, '/')
-  const padded = standard + '='.repeat((4 - (standard.length % 4)) % 4)
-  const binary = atob(padded)
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  return bytes
+  return new TextDecoder('utf-8', { fatal: true }).decode(base64ToBytes(segment))
 }
 
 const B64URL_RE = /^[A-Za-z0-9_-]*$/
@@ -228,25 +224,16 @@ export function readClaimTime(value: unknown): ClaimTime | undefined {
   }
 }
 
+/**
+ * A relative phrase for a claim time.
+ *
+ * Delegates to `src/lib/relativeTime`, and keeps this tool's `(target, now)`
+ * order because every call site reads "when the claim fires, relative to now".
+ * The near window is a second rather than five: for a token, "expired just now"
+ * and "expires in 3 seconds" are different situations.
+ */
 export function formatRelative(targetMs: number, nowMs: number): string {
-  const diffSeconds = Math.round((targetMs - nowMs) / 1000)
-  const future = diffSeconds >= 0
-  const abs = Math.abs(diffSeconds)
-
-  const units: Array<[number, string]> = [
-    [86400, 'day'],
-    [3600, 'hour'],
-    [60, 'minute'],
-    [1, 'second'],
-  ]
-  for (const [secs, label] of units) {
-    if (abs >= secs || secs === 1) {
-      const n = Math.max(1, Math.round(abs / secs))
-      const plural = n === 1 ? label : `${label}s`
-      return future ? `in ${n} ${plural}` : `${n} ${plural} ago`
-    }
-  }
-  return future ? 'in a moment' : 'just now'
+  return sharedFormatRelative(nowMs, targetMs, { nearMs: 1000, nowLabel: 'now', maxUnit: 'day' })
 }
 
 /** Expiry state used to colour the exp/nbf stats. `now` is injectable for tests. */
@@ -291,7 +278,7 @@ export async function verifyHmacSignature(
 
   let expected: Uint8Array
   try {
-    expected = base64UrlDecodeBytes(signatureB64Url)
+    expected = base64ToBytes(signatureB64Url)
   } catch {
     return { ok: false, error: 'The signature segment is not valid base64url.' }
   }

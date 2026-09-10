@@ -25,6 +25,7 @@
  */
 
 import { utcFromCivil } from '@/lib/utcFromCivil'
+import { tzOffsetMs, zonedTimeToUtc } from '@/lib/zonedTime'
 
 /** How to interpret a bare date with no time component, e.g. "2026-03-15". */
 export type DateOnlyInterpretation = 'utc' | 'zone'
@@ -98,57 +99,6 @@ function validateCivilFields(
   if (mi > 59) return `Minute ${mi} is not valid, expected 0-59.`
   if (s > 59) return `Second ${s} is not valid, expected 0-59.`
   return undefined
-}
-
-/** The offset (in ms) that `timeZone` has from UTC at `instantMs`: local = UTC + offset. */
-function tzOffsetMs(instantMs: number, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(new Date(instantMs))
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0')
-  const asIfUtc = utcFromCivil(
-    get('year'),
-    get('month') - 1,
-    get('day'),
-    get('hour'),
-    get('minute'),
-    get('second'),
-  )
-  return asIfUtc - instantMs
-}
-
-interface CivilFields {
-  year: number
-  month: number
-  day: number
-  hour: number
-  minute: number
-  second: number
-  ms: number
-}
-
-/** Converts wall-clock civil fields, read in `timeZone`, to the UTC instant they name. Two passes to handle a DST edge. See the unix-timestamp tool's `epoch.ts` for the same technique, written independently because tool folders do not import each other. */
-function zonedTimeToUtc(fields: CivilFields, timeZone: string): Date {
-  const guess = utcFromCivil(
-    fields.year,
-    fields.month - 1,
-    fields.day,
-    fields.hour,
-    fields.minute,
-    fields.second,
-    fields.ms,
-  )
-  const offset1 = tzOffsetMs(guess, timeZone)
-  const once = guess - offset1
-  const offset2 = tzOffsetMs(once, timeZone)
-  return new Date(guess - offset2)
 }
 
 export function parseFlexible(input: string, options: ParseOptions): ParseResult {

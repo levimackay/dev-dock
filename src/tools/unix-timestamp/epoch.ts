@@ -9,7 +9,8 @@
  * to the millisecond resolution `Date` actually has.
  */
 
-import { utcFromCivil } from '@/lib/utcFromCivil'
+import { zonedTimeToUtc as sharedZonedTimeToUtc } from '@/lib/zonedTime'
+import { formatRelative as sharedFormatRelative } from '@/lib/relativeTime'
 
 export type TimestampUnit = 'seconds' | 'milliseconds' | 'microseconds' | 'nanoseconds'
 
@@ -150,46 +151,21 @@ export function fromDate(date: Date): EpochValues | null {
   }
 }
 
-const RELATIVE_UNITS: Array<{ ms: number; singular: string }> = [
-  { ms: 1000, singular: 'second' },
-  { ms: 60_000, singular: 'minute' },
-  { ms: 3_600_000, singular: 'hour' },
-  { ms: 86_400_000, singular: 'day' },
-  { ms: 2_629_800_000, singular: 'month' }, // 30.4375 days: the Gregorian mean month
-  { ms: 31_557_600_000, singular: 'year' }, // 365.25 days: the Gregorian mean year
-]
-
-/** A human phrase for how `from` relates to `to`: "3 hours ago", "in 2 days". */
-export function formatRelative(from: Date, to: Date): string {
-  const diffMs = to.getTime() - from.getTime()
-  const future = diffMs < 0
-  const abs = Math.abs(diffMs)
-
-  if (abs < 5000) return 'just now'
-
-  // Walk the unit ladder from the top down, picking the largest unit the span
-  // reaches. `Intl.RelativeTimeFormat` is not used, and does no unit selection
-  // of its own: it takes a value *and* a unit. It would give localised output,
-  // which an English-only app does not need for eight lines of ladder.
-  let index = 0
-  for (const [i, unit] of RELATIVE_UNITS.entries()) {
-    if (abs >= unit.ms) index = i
-    else break
-  }
-  let chosen = RELATIVE_UNITS[index]!
-  let count = Math.round(abs / chosen.ms)
-
-  // Then check the rounding did not push the count into the next unit. 59.6
-  // seconds selects "second" because it is under a minute, and rounds to 60,
-  // so the ladder has to be walked once more after rounding or the tool says
-  // "60 seconds ago", "60 minutes ago", "24 hours ago".
-  const next = RELATIVE_UNITS[index + 1]
-  if (next && count * chosen.ms >= next.ms) {
-    chosen = next
-    count = Math.round(abs / chosen.ms)
-  }
-  const noun = `${count} ${chosen.singular}${count === 1 ? '' : 's'}`
-  return future ? `in ${noun}` : `${noun} ago`
+/**
+ * A relative phrase for the instant currently being converted.
+ *
+ * `(target, from)`, matching the other two tools that show a relative time. The
+ * previous version named its parameters `(from, to)` and then computed
+ * `future = diff < 0`, which inverted the meaning back again: the names said
+ * one thing, the arithmetic did another, and every call site passed the target
+ * first regardless. Two of the three copies disagreed about the order and
+ * nothing caught it, because both take two `Date`s.
+ *
+ * The full unit ladder is right for this tool: a timestamp can be decades out,
+ * and "in 15 years" beats "in 5,478 days".
+ */
+export function formatRelative(target: Date, from: Date): string {
+  return sharedFormatRelative(from.getTime(), target.getTime())
 }
 
 /** RFC 2822 / RFC 1123 style: "Mon, 09 Sep 2026 20:30:00 GMT". `toUTCString` already emits exactly this. */
@@ -226,30 +202,6 @@ export function formatInZone(date: Date, timeZone: string): string {
   }).format(date)
 }
 
-/** The offset (in ms) that `timeZone` has from UTC at `instantMs`: local = UTC + offset. */
-function tzOffsetMs(instantMs: number, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(new Date(instantMs))
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0')
-  const asIfUtc = utcFromCivil(
-    get('year'),
-    get('month') - 1,
-    get('day'),
-    get('hour'),
-    get('minute'),
-    get('second'),
-  )
-  return asIfUtc - instantMs
-}
-
 export interface WallTime {
   year: number
   month: number // 1-12
@@ -260,29 +212,17 @@ export interface WallTime {
 }
 
 /**
- * Converts wall-clock fields (as typed into a `datetime-local` input),
- * interpreted in `timeZone`, to the UTC instant they represent.
+ * Converts wall-clock fields, as typed into a `datetime-local` input and read
+ * in `timeZone`, to the UTC instant they name.
  *
- * There is no `Date` constructor that takes an arbitrary zone, so this uses
- * the standard technique (the same one date-fns-tz and Luxon use): treat the
- * fields as if they were UTC to get a first guess, ask `Intl` what offset the
- * target zone actually has at that guess, and correct for it. A second pass
- * catches the rare case where the correction itself crosses a DST transition,
- * which would otherwise leave the offset one hour off right at the edge.
+ * A thin wrapper: `WallTime` is this tool's own shape, carrying no
+ * milliseconds because the native control does not offer them. The technique,
+ * and the DST edge it has to handle, live in `src/lib/zonedTime.ts`, which the
+ * date/time converter shares. They used to be separate copies, and a bug in
+ * this code had to be found and fixed in both.
  */
 export function zonedTimeToUtc(fields: WallTime, timeZone: string): Date {
-  const guess = utcFromCivil(
-    fields.year,
-    fields.month - 1,
-    fields.day,
-    fields.hour,
-    fields.minute,
-    fields.second,
-  )
-  const offset1 = tzOffsetMs(guess, timeZone)
-  const once = guess - offset1
-  const offset2 = tzOffsetMs(once, timeZone)
-  return new Date(guess - offset2)
+  return sharedZonedTimeToUtc({ ...fields, ms: 0 }, timeZone)
 }
 
 /** Parses the exact string a native `<input type="datetime-local">` produces. */

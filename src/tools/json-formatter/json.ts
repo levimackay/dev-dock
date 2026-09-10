@@ -16,6 +16,8 @@
  * and actually name the mistake instead of paraphrasing "Unexpected token".
  */
 
+import { byteLength } from '@/lib/format'
+
 export type IndentOption = '2' | '4' | 'tab'
 export type JsonMode = 'pretty' | 'minify' | 'validate'
 
@@ -106,10 +108,6 @@ export function processJson(input: string, mode: JsonMode, options: JsonFormatOp
     output,
     stats: { ...stats, bytesBefore, bytesAfter: byteLength(output) },
   }
-}
-
-function byteLength(text: string): number {
-  return new TextEncoder().encode(text).length
 }
 
 /**

@@ -14,6 +14,10 @@
  * and the exact inverse on the way back. Everything below is built on that.
  */
 
+import { base64ToBytes, bytesToBase64 } from '@/lib/base64'
+
+export { bytesToBase64 }
+
 export type Base64Variant = 'standard' | 'urlsafe'
 
 export interface EncodeOptions {
@@ -33,22 +37,6 @@ export interface DecodeResult {
 }
 
 const MIME_WIDTH = 76
-
-export function bytesToBase64(bytes: Uint8Array): string {
-  let binary = ''
-  const CHUNK = 0x8000 // stay under the spread-argument limit
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK))
-  }
-  return btoa(binary)
-}
-
-function base64ToBytes(base64: string): Uint8Array {
-  const binary = atob(base64)
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  return bytes
-}
 
 export function encodeBase64(text: string, options: EncodeOptions): string {
   if (text === '') return ''
