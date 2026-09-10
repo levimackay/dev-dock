@@ -5,13 +5,9 @@ name: Deploy to GitHub Pages
 # starts running the attacker's code on the next run. The trailing comment
 # records the human-readable version, and Dependabot updates SHA pins in place.
 
-# Deliberately manual. Enabling Pages is a publishing decision, and this
-# workflow fails on every push until the repository has Pages turned on with
-# "GitHub Actions" as the source. Once it is on, add back:
-#
-#   push:
-#     branches: [main]
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
