@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { DIALECTS, formatSql, isSqlDialect } from './sql'
 
-const base = { dialect: 'sql' as const, keywordCase: 'upper' as const, indentWidth: 2, linesBetweenQueries: 1, minify: false }
+const base = {
+  dialect: 'sql' as const,
+  keywordCase: 'upper' as const,
+  indentWidth: 2,
+  linesBetweenQueries: 1,
+  minify: false,
+}
 
 describe('formatSql', () => {
   it('formats a known-messy query', () => {

@@ -15,8 +15,7 @@ export type ThemeChoice = 'light' | 'dark' | 'system'
 
 const MAX_RECENTS = 8
 
-const isTheme = (v: unknown): v is ThemeChoice =>
-  v === 'light' || v === 'dark' || v === 'system'
+const isTheme = (v: unknown): v is ThemeChoice => v === 'light' || v === 'dark' || v === 'system'
 
 interface Preferences {
   theme: ThemeChoice
@@ -115,7 +114,17 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       clearRecents,
       resetEverything,
     }),
-    [theme, setTheme, resolvedTheme, pinned, togglePin, recents, noteVisit, clearRecents, resetEverything],
+    [
+      theme,
+      setTheme,
+      resolvedTheme,
+      pinned,
+      togglePin,
+      recents,
+      noteVisit,
+      clearRecents,
+      resetEverything,
+    ],
   )
 
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>

@@ -15,7 +15,14 @@ export interface EmptyStateProps {
   className?: string
 }
 
-export function EmptyState({ title, children, actions, mark, compact, className }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  children,
+  actions,
+  mark,
+  compact,
+  className,
+}: EmptyStateProps) {
   return (
     <div className={cx(styles.empty, compact && styles.compact, className)}>
       {mark && <div className={styles.mark}>{mark}</div>}

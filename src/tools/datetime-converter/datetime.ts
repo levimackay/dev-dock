@@ -71,7 +71,14 @@ function daysInMonth(year: number, month1to12: number): number {
 }
 
 /** Validates calendar fields so `13` for a month or `31` for April fails loudly instead of silently rolling over into the next month, which is what `Date.UTC` would otherwise do. */
-function validateCivilFields(y: number, mo: number, d: number, h: number, mi: number, s: number): string | undefined {
+function validateCivilFields(
+  y: number,
+  mo: number,
+  d: number,
+  h: number,
+  mi: number,
+  s: number,
+): string | undefined {
   if (mo < 1 || mo > 12) return `Month ${mo} is not valid — expected 1-12.`
   if (d < 1 || d > daysInMonth(y, mo)) return `${y}-${String(mo).padStart(2, '0')} has no day ${d}.`
   if (h > 23) return `Hour ${h} is not valid — expected 0-23.`
@@ -93,7 +100,14 @@ function tzOffsetMs(instantMs: number, timeZone: string): number {
     second: '2-digit',
   }).formatToParts(new Date(instantMs))
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0')
-  const asIfUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+  const asIfUtc = Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    get('hour'),
+    get('minute'),
+    get('second'),
+  )
   return asIfUtc - instantMs
 }
 
@@ -109,7 +123,15 @@ interface CivilFields {
 
 /** Converts wall-clock civil fields, read in `timeZone`, to the UTC instant they name. Two passes to handle a DST edge. See the unix-timestamp tool's `epoch.ts` for the same technique, written independently because tool folders do not import each other. */
 function zonedTimeToUtc(fields: CivilFields, timeZone: string): Date {
-  const guess = Date.UTC(fields.year, fields.month - 1, fields.day, fields.hour, fields.minute, fields.second, fields.ms)
+  const guess = Date.UTC(
+    fields.year,
+    fields.month - 1,
+    fields.day,
+    fields.hour,
+    fields.minute,
+    fields.second,
+    fields.ms,
+  )
   const offset1 = tzOffsetMs(guess, timeZone)
   const once = guess - offset1
   const offset2 = tzOffsetMs(once, timeZone)

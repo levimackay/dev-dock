@@ -55,9 +55,11 @@ export function fuzzyMatch(haystack: string, query: string): FuzzyResult | null 
   const exact = lowerHay.indexOf(lowerQuery)
   if (exact !== -1) {
     const indices = Array.from({ length: query.length }, (_, i) => exact + i)
-    const base = exact === 0 ? SCORE_START * 2 : isBoundary(haystack, exact) ? SCORE_BOUNDARY * 2 : 0
+    const base =
+      exact === 0 ? SCORE_START * 2 : isBoundary(haystack, exact) ? SCORE_BOUNDARY * 2 : 0
     return {
-      score: base + query.length * (SCORE_MATCH + SCORE_CONSECUTIVE) + haystack.length * PENALTY_LENGTH,
+      score:
+        base + query.length * (SCORE_MATCH + SCORE_CONSECUTIVE) + haystack.length * PENALTY_LENGTH,
       indices,
     }
   }

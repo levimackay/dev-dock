@@ -32,13 +32,24 @@ describe('tokenizeCronInput', () => {
 describe('labelCronTokens', () => {
   it('labels a five-field expression', () => {
     const labelled = labelCronTokens(tokenizeCronInput('0 9 * * 1-5'))
-    expect(labelled.map((t) => t.field)).toEqual(['minute', 'hour', 'day of month', 'month', 'day of week'])
+    expect(labelled.map((t) => t.field)).toEqual([
+      'minute',
+      'hour',
+      'day of month',
+      'month',
+      'day of week',
+    ])
   })
 
   it('labels a six-field expression with a leading seconds column', () => {
     const labelled = labelCronTokens(tokenizeCronInput('30 0 9 * * *'))
     expect(labelled.map((t) => t.field)).toEqual([
-      'second', 'minute', 'hour', 'day of month', 'month', 'day of week',
+      'second',
+      'minute',
+      'hour',
+      'day of month',
+      'month',
+      'day of week',
     ])
     expect(labelled[0]!.text).toBe('30')
   })

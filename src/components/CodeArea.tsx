@@ -13,8 +13,10 @@ import {
 import styles from './CodeArea.module.css'
 import { cx } from '@/lib/cx'
 
-export interface CodeAreaProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'value'> {
+export interface CodeAreaProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  'onChange' | 'value'
+> {
   value: string
   onValueChange?: (value: string) => void
   /** Shows a synced line-number gutter. Off for prose, on for code. */

@@ -206,7 +206,15 @@ describe('durationBetween', () => {
     const from = new Date('1970-01-01T00:00:00Z')
     const to = new Date('1970-01-02T01:01:01Z')
     const d = durationBetween(from, to)
-    expect(d).toMatchObject({ years: 0, months: 0, days: 1, hours: 1, minutes: 1, seconds: 1, negative: false })
+    expect(d).toMatchObject({
+      years: 0,
+      months: 0,
+      days: 1,
+      hours: 1,
+      minutes: 1,
+      seconds: 1,
+      negative: false,
+    })
     expect(d.totalDays).toBe(1)
   })
 

@@ -24,7 +24,12 @@ const doc: JsonValue = {
 
 describe('parsePath', () => {
   it('parses a dotted path', () => {
-    expect(parsePath('data.count')).toEqual({ segments: [{ type: 'key', key: 'data' }, { type: 'key', key: 'count' }] })
+    expect(parsePath('data.count')).toEqual({
+      segments: [
+        { type: 'key', key: 'data' },
+        { type: 'key', key: 'count' },
+      ],
+    })
   })
 
   it('parses bracket indices', () => {
@@ -50,7 +55,9 @@ describe('parsePath', () => {
   })
 
   it('parses a bare "*" segment', () => {
-    expect(parsePath('*.name')).toEqual({ segments: [{ type: 'wildcard' }, { type: 'key', key: 'name' }] })
+    expect(parsePath('*.name')).toEqual({
+      segments: [{ type: 'wildcard' }, { type: 'key', key: 'name' }],
+    })
   })
 
   it('strips a leading "$." the way JSONPath writes it', () => {
@@ -81,7 +88,10 @@ describe('queryPath', () => {
 
   it('resolves through an array index', () => {
     const result = queryPath(doc, 'data.items[1].name')
-    expect(result).toEqual({ ok: true, matches: [{ path: '$.data.items[1].name', value: 'second' }] })
+    expect(result).toEqual({
+      ok: true,
+      matches: [{ path: '$.data.items[1].name', value: 'second' }],
+    })
   })
 
   it('fans out over a wildcard array index', () => {
@@ -153,7 +163,11 @@ describe('searchTree', () => {
 
   it('matches on a scalar value substring, case-insensitively', () => {
     const { matches } = searchTree(doc, 'FIRST')
-    expect(matches).toContainEqual({ path: '$.data.items[0].name', value: 'first', matchedOn: 'value' })
+    expect(matches).toContainEqual({
+      path: '$.data.items[0].name',
+      value: 'first',
+      matchedOn: 'value',
+    })
   })
 
   it('matches "null" against a null value', () => {
@@ -186,7 +200,15 @@ describe('containerPaths', () => {
   it('reaches every container with no depth limit ("expand all")', () => {
     const paths = containerPaths(doc)
     expect(paths).toEqual(
-      new Set(['$', '$.data', '$.data.items', '$.data.items[0]', '$.data.items[0].tags', '$.data.items[1]', '$.data.items[1].tags']),
+      new Set([
+        '$',
+        '$.data',
+        '$.data.items',
+        '$.data.items[0]',
+        '$.data.items[0].tags',
+        '$.data.items[1]',
+        '$.data.items[1].tags',
+      ]),
     )
   })
 

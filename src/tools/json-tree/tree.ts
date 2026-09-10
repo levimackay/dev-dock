@@ -27,7 +27,8 @@ export function childEntries(value: JsonValue): Array<{ key: string; value: Json
 
 /* -------------------------------------------------------------- parsing */
 
-type PathSegment = { type: 'key'; key: string } | { type: 'index'; index: number } | { type: 'wildcard' }
+type PathSegment =
+  { type: 'key'; key: string } | { type: 'index'; index: number } | { type: 'wildcard' }
 
 interface ParsedPath {
   segments: PathSegment[]

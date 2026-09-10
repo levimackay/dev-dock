@@ -61,7 +61,14 @@ export default function SqlFormatterTool() {
         linesBetweenQueries: state.linesBetweenQueries,
         minify: state.minify,
       }),
-    [state.input, state.dialect, state.keywordCase, state.indentWidth, state.linesBetweenQueries, state.minify],
+    [
+      state.input,
+      state.dialect,
+      state.keywordCase,
+      state.indentWidth,
+      state.linesBetweenQueries,
+      state.minify,
+    ],
   )
 
   return (
@@ -80,7 +87,12 @@ export default function SqlFormatterTool() {
             <IconDownload size={13} />
             Download
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => patch({ input: '' })} disabled={!state.input}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: '' })}
+            disabled={!state.input}
+          >
             <IconTrash size={13} />
             Clear
           </Button>
@@ -144,7 +156,11 @@ export default function SqlFormatterTool() {
         </OptionGroup>
 
         <OptionGroup>
-          <Checkbox label="Minify" checked={state.minify} onChange={(e) => patch({ minify: e.target.checked })} />
+          <Checkbox
+            label="Minify"
+            checked={state.minify}
+            onChange={(e) => patch({ minify: e.target.checked })}
+          />
         </OptionGroup>
 
         <OptionSpacer />
@@ -153,7 +169,10 @@ export default function SqlFormatterTool() {
       <TwoPane
         storageKey="sql-formatter"
         input={
-          <Panel label="SQL" status={state.input ? pluralize(state.input.length, 'char') : undefined}>
+          <Panel
+            label="SQL"
+            status={state.input ? pluralize(state.input.length, 'char') : undefined}
+          >
             <CodeArea
               label="SQL to format"
               value={state.input}
@@ -168,9 +187,14 @@ export default function SqlFormatterTool() {
           <Panel
             label="Formatted"
             tone={result.ok ? 'default' : 'err'}
-            status={result.ok && result.output ? pluralize(result.output.length, 'char') : undefined}
+            status={
+              result.ok && result.output ? pluralize(result.output.length, 'char') : undefined
+            }
             actions={
-              <CopyButton value={result.ok ? result.output : ''} disabled={!result.ok || !result.output} />
+              <CopyButton
+                value={result.ok ? result.output : ''}
+                disabled={!result.ok || !result.output}
+              />
             }
           >
             {!result.ok ? (
@@ -184,7 +208,13 @@ export default function SqlFormatterTool() {
                 Paste a SQL query on the left, drop a .sql file onto it, or load the sample.
               </EmptyState>
             ) : (
-              <CodeArea label="Result" value={result.output} readOnly lineNumbers={!state.minify} softWrap={state.minify} />
+              <CodeArea
+                label="Result"
+                value={result.output}
+                readOnly
+                lineNumbers={!state.minify}
+                softWrap={state.minify}
+              />
             )}
           </Panel>
         }

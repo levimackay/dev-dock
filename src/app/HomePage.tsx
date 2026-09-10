@@ -70,13 +70,19 @@ export function HomePage() {
         {CATEGORIES.map((category) => {
           const tools = toolsInCategory(category.id)
           return (
-            <section className={styles.category} key={category.id} aria-labelledby={`cat-${category.id}`}>
+            <section
+              className={styles.category}
+              key={category.id}
+              aria-labelledby={`cat-${category.id}`}
+            >
               <div className={styles.categoryHead}>
                 <h2 className={styles.categoryName} id={`cat-${category.id}`}>
                   {category.label}
                 </h2>
                 <p className={styles.categoryBlurb}>{category.blurb}</p>
-                <span className={styles.categoryCount}>{String(tools.length).padStart(2, '0')}</span>
+                <span className={styles.categoryCount}>
+                  {String(tools.length).padStart(2, '0')}
+                </span>
               </div>
               <div className={styles.entries}>
                 {tools.map((tool) => (

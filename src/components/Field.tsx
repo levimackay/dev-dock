@@ -62,7 +62,9 @@ export function Field({ label, hint, error, inline, htmlFor, className, children
           id: (only.props as { id?: string }).id ?? id,
           'aria-describedby':
             (only.props as { 'aria-describedby'?: string })['aria-describedby'] ?? describedBy,
-          'aria-invalid': error ? true : (only.props as { 'aria-invalid'?: boolean })['aria-invalid'],
+          'aria-invalid': error
+            ? true
+            : (only.props as { 'aria-invalid'?: boolean })['aria-invalid'],
         })
       : children
 

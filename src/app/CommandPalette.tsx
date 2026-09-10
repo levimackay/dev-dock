@@ -122,7 +122,13 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
           search to browse everything.
         </p>
       ) : (
-        <ul className={styles.results} id={listId} role="listbox" aria-label="Results" ref={listRef}>
+        <ul
+          className={styles.results}
+          id={listId}
+          role="listbox"
+          aria-label="Results"
+          ref={listRef}
+        >
           {results.map((result, index) => {
             const showSection = startsSection[index]
             return (

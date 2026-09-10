@@ -100,22 +100,22 @@ error boundary so a bug in one tool cannot take down the app.
 Unbounded input is a denial-of-service against the user's own tab. Caps are
 applied and **stated in the UI** wherever they bite:
 
-| Limit | Where |
-| --- | --- |
-| Edit-distance ceiling, then a coarse whole-file diff | Text and code diff |
-| Regex execution timeout | Regex tester |
-| Match count cap | Regex tester |
-| Rendered-node cap with a "show all" escape | JSON tree |
-| File size cap | Hash generator, Base64, any drop target |
-| Five-year search horizon | Cron next-run projection |
-| Gutter line cap | All editors |
+| Limit                                                | Where                                   |
+| ---------------------------------------------------- | --------------------------------------- |
+| Edit-distance ceiling, then a coarse whole-file diff | Text and code diff                      |
+| Regex execution timeout                              | Regex tester                            |
+| Match count cap                                      | Regex tester                            |
+| Rendered-node cap with a "show all" escape           | JSON tree                               |
+| File size cap                                        | Hash generator, Base64, any drop target |
+| Five-year search horizon                             | Cron next-run projection                |
+| Gutter line cap                                      | All editors                             |
 
 Silent truncation is treated as a bug.
 
 ### Storage
 
 `localStorage` holds preferences only: theme, pinned tool ids, recent tool ids,
-and split-pane ratios. Tool *input* is never persisted — closing the tab loses
+and split-pane ratios. Tool _input_ is never persisted — closing the tab loses
 it, which is the correct default for a tool people paste credentials into.
 
 All keys are namespaced under `devdock:`, every read is validated against an

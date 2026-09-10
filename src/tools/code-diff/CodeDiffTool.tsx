@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ToolShell } from '@/components/ToolShell'
 import { Panel } from '@/components/Panel'
 import { CodeArea } from '@/components/CodeArea'
@@ -75,10 +75,7 @@ export default function CodeDiffTool() {
     [state.left, state.right, state.ignoreTrailingWhitespace, state.ignoreBlankLines],
   )
 
-  const result = useMemo(
-    () => diffLines(preprocessed.left, preprocessed.right),
-    [preprocessed],
-  )
+  const result = useMemo(() => diffLines(preprocessed.left, preprocessed.right), [preprocessed])
 
   const patchText = useMemo(() => {
     const leftName = `a/${sanitizeFileLabel(state.leftName, 'original')}`
@@ -89,9 +86,14 @@ export default function CodeDiffTool() {
   const [changeGroups, setChangeGroups] = useState<ChangeGroupInfo[]>([])
   const [changeIndex, setChangeIndex] = useState(0)
   // A fresh diff can shrink the group count out from under a stale index.
-  useEffect(() => {
+  // Clamped during render for the same reason DiffView resets its expansion
+  // set there: an effect would render one frame pointing at a change that no
+  // longer exists.
+  const [lastGroups, setLastGroups] = useState(changeGroups)
+  if (lastGroups !== changeGroups) {
+    setLastGroups(changeGroups)
     setChangeIndex((i) => (changeGroups.length === 0 ? 0 : Math.min(i, changeGroups.length - 1)))
-  }, [changeGroups])
+  }
 
   const goToChange = (delta: number) => {
     if (changeGroups.length === 0) return
@@ -116,13 +118,24 @@ export default function CodeDiffTool() {
     <ToolShell
       actions={
         <>
-          <Button size="sm" variant="ghost" onClick={() => patch({ left: SAMPLE_LEFT, right: SAMPLE_RIGHT })}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ left: SAMPLE_LEFT, right: SAMPLE_RIGHT })}
+          >
             Sample
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => patch({ left: state.right, right: state.left, leftName: state.rightName, rightName: state.leftName })}
+            onClick={() =>
+              patch({
+                left: state.right,
+                right: state.left,
+                leftName: state.rightName,
+                rightName: state.leftName,
+              })
+            }
             disabled={!hasInput}
           >
             <IconArrowSwap size={13} />
@@ -144,7 +157,12 @@ export default function CodeDiffTool() {
             <IconDownload size={13} />
             Download .patch
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => patch({ left: '', right: '' })} disabled={!hasInput}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ left: '', right: '' })}
+            disabled={!hasInput}
+          >
             <IconTrash size={13} />
             Clear
           </Button>
@@ -209,11 +227,18 @@ export default function CodeDiffTool() {
         <OptionSpacer />
         {hasChanges && (
           <OptionGroup label="Change">
-            <Button size="sm" variant="ghost" onClick={() => goToChange(-1)} title="Previous change (P)">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => goToChange(-1)}
+              title="Previous change (P)"
+            >
               ‹ Prev
             </Button>
             <span className={styles.changeCount}>
-              {changeGroups.length === 0 ? '0 of 0' : `${changeIndex + 1} of ${changeGroups.length}`}
+              {changeGroups.length === 0
+                ? '0 of 0'
+                : `${changeIndex + 1} of ${changeGroups.length}`}
             </span>
             <Button size="sm" variant="ghost" onClick={() => goToChange(1)} title="Next change (N)">
               Next ›
@@ -230,7 +255,10 @@ export default function CodeDiffTool() {
           labelFirst="left source"
           labelSecond="right source"
           input={
-            <Panel label={state.leftName || 'Left'} status={pluralize(splitLineCount(state.left), 'line')}>
+            <Panel
+              label={state.leftName || 'Left'}
+              status={pluralize(splitLineCount(state.left), 'line')}
+            >
               <CodeArea
                 label="Left source"
                 value={state.left}
@@ -242,7 +270,10 @@ export default function CodeDiffTool() {
             </Panel>
           }
           output={
-            <Panel label={state.rightName || 'Right'} status={pluralize(splitLineCount(state.right), 'line')}>
+            <Panel
+              label={state.rightName || 'Right'}
+              status={pluralize(splitLineCount(state.right), 'line')}
+            >
               <CodeArea
                 label="Right source"
                 value={state.right}

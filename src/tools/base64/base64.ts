@@ -141,7 +141,9 @@ export function toHexDump(bytes: Uint8Array, maxBytes = 4096): string {
   for (let offset = 0; offset < shown.length; offset += 16) {
     const row = shown.subarray(offset, offset + 16)
     const hex = [...row].map((b) => b.toString(16).padStart(2, '0')).join(' ')
-    const ascii = [...row].map((b) => (b >= 0x20 && b <= 0x7e ? String.fromCharCode(b) : '.')).join('')
+    const ascii = [...row]
+      .map((b) => (b >= 0x20 && b <= 0x7e ? String.fromCharCode(b) : '.'))
+      .join('')
     lines.push(`${offset.toString(16).padStart(8, '0')}  ${hex.padEnd(47)}  |${ascii}|`)
   }
 

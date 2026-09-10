@@ -73,10 +73,14 @@ export default function JsonFormatterTool() {
     [state.input, state.mode, state.indent, state.sortKeys, state.escapeNonAscii],
   )
 
-  useHotkey('mod+shift+backspace', (e) => {
-    e.preventDefault()
-    patch({ input: '' })
-  }, { allowInInput: true })
+  useHotkey(
+    'mod+shift+backspace',
+    (e) => {
+      e.preventDefault()
+      patch({ input: '' })
+    },
+    { allowInInput: true },
+  )
 
   const stats: Stat[] | undefined =
     result.ok && state.input.trim() !== ''
@@ -103,13 +107,20 @@ export default function JsonFormatterTool() {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => downloadText('data.json', result.ok ? result.output : '', 'application/json')}
+            onClick={() =>
+              downloadText('data.json', result.ok ? result.output : '', 'application/json')
+            }
             disabled={!result.ok || !result.output}
           >
             <IconDownload size={13} />
             Download
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => patch({ input: '' })} disabled={!state.input}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: '' })}
+            disabled={!state.input}
+          >
             <IconTrash size={13} />
             Clear
           </Button>
@@ -186,26 +197,35 @@ export default function JsonFormatterTool() {
         }
         output={
           <Panel
-            label={state.mode === 'validate' ? 'Result' : state.mode === 'minify' ? 'Minified' : 'Formatted'}
+            label={
+              state.mode === 'validate'
+                ? 'Result'
+                : state.mode === 'minify'
+                  ? 'Minified'
+                  : 'Formatted'
+            }
             tone={result.ok ? 'default' : 'err'}
-            status={result.ok && result.output ? pluralize(result.output.length, 'char') : undefined}
+            status={
+              result.ok && result.output ? pluralize(result.output.length, 'char') : undefined
+            }
             actions={
-              <CopyButton value={result.ok ? result.output : ''} disabled={!result.ok || !result.output} />
+              <CopyButton
+                value={result.ok ? result.output : ''}
+                disabled={!result.ok || !result.output}
+              />
             }
             footer={stats && <StatGrid stats={stats} />}
           >
             {!result.ok ? (
               <div style={{ padding: 'var(--sp-3)' }}>
                 <Callout tone="err" title="Cannot parse this JSON" live>
-                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap', font: 'inherit' }}>{result.error}</pre>
+                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap', font: 'inherit' }}>
+                    {result.error}
+                  </pre>
                 </Callout>
               </div>
             ) : !state.input ? (
-              <EmptyState
-                compact
-                title="Nothing to format yet"
-                mark={<IconLayers size={24} />}
-              >
+              <EmptyState compact title="Nothing to format yet" mark={<IconLayers size={24} />}>
                 Paste JSON on the left, drop a .json file onto it, or load the sample.
               </EmptyState>
             ) : state.mode === 'validate' ? (

@@ -22,7 +22,7 @@ new one.
 
 2. **Tests cover behaviour, not lines.** Every exported function gets tests for
    the happy path, the empty input, and at least two ways real input goes wrong.
-   Error *messages* are part of the contract — assert on them.
+   Error _messages_ are part of the contract — assert on them.
 
 3. **Never crash on user input.** All input is untrusted. `JSON.parse`,
    `new RegExp`, `new URL`, `atob`, and `new Date` all throw. Catch, and return
@@ -88,7 +88,7 @@ export default function ThingTool() {
 ## Performance
 
 Computation runs on every keystroke. That is fine for anything linear on a few
-hundred kilobytes. It is *not* fine for:
+hundred kilobytes. It is _not_ fine for:
 
 - user-supplied regular expressions (catastrophic backtracking — must be run
   with a timeout, see `src/lib/regexWorker.ts`)
@@ -99,7 +99,7 @@ When you cap something, tell the user in the UI. Silent truncation is a bug.
 
 ## Style
 
-- Comments explain *why*, and are worth writing when the reason is not obvious
+- Comments explain _why_, and are worth writing when the reason is not obvious
   from the code. Do not narrate what the next line does.
 - No `any`. No `as` casts to silence the compiler; fix the type.
 - Prefer a boring 20-line function to a clever 6-line one.

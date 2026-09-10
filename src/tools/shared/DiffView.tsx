@@ -88,8 +88,14 @@ export function buildBlocks(lines: DiffLine[]): Block[] {
       const right = inserts[p]
       if (left && right) {
         const words = diffWords(left.text, right.text)
-        wordsByLine.set(left, words.filter((w) => w.op !== 'insert'))
-        wordsByLine.set(right, words.filter((w) => w.op !== 'delete'))
+        wordsByLine.set(
+          left,
+          words.filter((w) => w.op !== 'insert'),
+        )
+        wordsByLine.set(
+          right,
+          words.filter((w) => w.op !== 'delete'),
+        )
       }
       pairs.push({ left, right })
     }
@@ -154,7 +160,14 @@ export function DiffView({
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
 
   // A fresh diff invalidates whichever collapsed runs the user had opened.
-  useEffect(() => setExpanded(new Set()), [blocks])
+  // Adjusted during render rather than in an effect: an effect would paint the
+  // previous diff's expansion state for one frame and cascade a second render
+  // on every keystroke.
+  const [lastBlocks, setLastBlocks] = useState(blocks)
+  if (lastBlocks !== blocks) {
+    setLastBlocks(blocks)
+    setExpanded(new Set())
+  }
 
   const changeGroups = useMemo(() => {
     let n = 0
@@ -182,7 +195,11 @@ export function DiffView({
 
   return (
     <div
-      className={cx(styles.view, mode === 'unified' ? styles.unified : styles.sideBySide, className)}
+      className={cx(
+        styles.view,
+        mode === 'unified' ? styles.unified : styles.sideBySide,
+        className,
+      )}
       role="group"
       aria-label={`Diff between ${leftLabel} and ${rightLabel}, ${mode === 'unified' ? 'unified' : 'side by side'} view`}
     >
@@ -233,7 +250,13 @@ function EqualRows({
   const { lines } = block
 
   if (!collapse || lines.length <= collapse.threshold) {
-    return <>{lines.map((line, i) => <PlainRow key={i} line={line} mode={mode} />)}</>
+    return (
+      <>
+        {lines.map((line, i) => (
+          <PlainRow key={i} line={line} mode={mode} />
+        ))}
+      </>
+    )
   }
 
   if (collapse.interactive) {
@@ -252,7 +275,13 @@ function EqualRows({
 
   const ctx = collapse.context
   if (lines.length <= ctx * 2) {
-    return <>{lines.map((line, i) => <PlainRow key={i} line={line} mode={mode} />)}</>
+    return (
+      <>
+        {lines.map((line, i) => (
+          <PlainRow key={i} line={line} mode={mode} />
+        ))}
+      </>
+    )
   }
   const head = lines.slice(0, ctx)
   const tail = ctx > 0 ? lines.slice(lines.length - ctx) : []
@@ -264,7 +293,9 @@ function EqualRows({
         <PlainRow key={`h${i}`} line={line} mode={mode} />
       ))}
       <div className={cx(styles.row, styles.separator)}>
-        <span className={styles.separatorLabel}>⋯ {pluralize(hidden, 'unchanged line')} hidden ⋯</span>
+        <span className={styles.separatorLabel}>
+          ⋯ {pluralize(hidden, 'unchanged line')} hidden ⋯
+        </span>
       </div>
       {tail.map((line, i) => (
         <PlainRow key={`t${i}`} line={line} mode={mode} />
@@ -292,7 +323,10 @@ function CollapseToggle({
         onClick={onClick}
         aria-expanded={expanded}
       >
-        <IconChevronRight size={12} className={cx(styles.chevron, expanded && styles.chevronOpen)} />
+        <IconChevronRight
+          size={12}
+          className={cx(styles.chevron, expanded && styles.chevronOpen)}
+        />
         {expanded ? 'Collapse' : pluralize(count, 'unchanged line')}
       </button>
     </div>
@@ -312,25 +346,48 @@ function PlainRow({ line, mode }: { line: DiffLine; mode: 'side-by-side' | 'unif
   }
   return (
     <div className={styles.row}>
-      <Side line={line} words={undefined} />
-      <Side line={line} words={undefined} />
+      <Side line={line} words={undefined} lineNo={line.leftNo} />
+      <Side line={line} words={undefined} lineNo={line.rightNo} />
     </div>
   )
 }
 
-function Side({ line, words }: { line: DiffLine | undefined; words: WordSpan[] | undefined }) {
+/**
+ * `lineNo` is passed in rather than read off `line` here on purpose: for an
+ * unchanged row the *same* `DiffLine` is rendered on both sides, and it
+ * carries both a `leftNo` and a `rightNo` that generally differ once the two
+ * documents have diverged earlier on. Picking "whichever number exists" from
+ * inside this component would silently show the left number on both sides.
+ */
+function Side({
+  line,
+  words,
+  lineNo,
+}: {
+  line: DiffLine | undefined
+  words: WordSpan[] | undefined
+  lineNo: number | null
+}) {
   if (!line) return <span className={cx(styles.side, styles.sideEmpty)} />
-  const tone = line.op === 'insert' ? styles.sideAdded : line.op === 'delete' ? styles.sideRemoved : undefined
-  const no = line.leftNo ?? line.rightNo
+  const tone =
+    line.op === 'insert' ? styles.sideAdded : line.op === 'delete' ? styles.sideRemoved : undefined
   return (
     <span className={cx(styles.side, tone)}>
-      <span className={styles.gutter}>{no ?? ''}</span>
+      <span className={styles.gutter}>{lineNo ?? ''}</span>
       <span className={styles.text}>{renderWords(line.text, words)}</span>
     </span>
   )
 }
 
-function ChangeRows({ block, mode, id }: { block: ChangeBlock; mode: 'side-by-side' | 'unified'; id: string }) {
+function ChangeRows({
+  block,
+  mode,
+  id,
+}: {
+  block: ChangeBlock
+  mode: 'side-by-side' | 'unified'
+  id: string
+}) {
   if (mode === 'unified') {
     return (
       <div id={id}>
@@ -346,7 +403,9 @@ function ChangeRows({ block, mode, id }: { block: ChangeBlock; mode: 'side-by-si
             <span className={styles.gutter}>{line.leftNo ?? ''}</span>
             <span className={styles.gutter}>{line.rightNo ?? ''}</span>
             <span className={styles.marker}>{line.op === 'insert' ? '+' : '-'}</span>
-            <span className={styles.text}>{renderWords(line.text, block.wordsByLine.get(line))}</span>
+            <span className={styles.text}>
+              {renderWords(line.text, block.wordsByLine.get(line))}
+            </span>
           </div>
         ))}
       </div>
@@ -357,8 +416,16 @@ function ChangeRows({ block, mode, id }: { block: ChangeBlock; mode: 'side-by-si
     <div id={id}>
       {block.pairs.map((pair, i) => (
         <div key={i} className={cx(styles.row, styles.rowChanged)}>
-          <Side line={pair.left} words={pair.left ? block.wordsByLine.get(pair.left) : undefined} />
-          <Side line={pair.right} words={pair.right ? block.wordsByLine.get(pair.right) : undefined} />
+          <Side
+            line={pair.left}
+            words={pair.left ? block.wordsByLine.get(pair.left) : undefined}
+            lineNo={pair.left?.leftNo ?? null}
+          />
+          <Side
+            line={pair.right}
+            words={pair.right ? block.wordsByLine.get(pair.right) : undefined}
+            lineNo={pair.right?.rightNo ?? null}
+          />
         </div>
       ))}
     </div>

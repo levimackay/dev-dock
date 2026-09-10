@@ -104,12 +104,7 @@ export function SplitPane({
   return (
     <div
       ref={containerRef}
-      className={cx(
-        styles.split,
-        styles[direction],
-        responsive && styles.responsive,
-        className,
-      )}
+      className={cx(styles.split, styles[direction], responsive && styles.responsive, className)}
       style={{ '--a': `${percent}%`, '--b': `${100 - percent}%` } as React.CSSProperties}
     >
       <div className={styles.pane} id={`${id}-a`}>

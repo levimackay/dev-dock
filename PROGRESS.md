@@ -12,17 +12,17 @@ machine. Greenfield.
 
 ## Phase 1 — Architecture decisions
 
-| Decision | Choice | Reasoning |
-| --- | --- | --- |
-| Runtime shape | Static SPA, no backend | Every tool is a pure function over text. A server would add an attack surface, a hosting bill, and a privacy claim to defend, in exchange for nothing. The one tool that needs the network (HTTP builder) uses the browser's own `fetch`. |
-| Build | Vite 7 + React 19 + TypeScript 5.9 | Vite's per-route chunking is what makes 22 lazy tools cheap. React because the tools are stateful editors, not documents. |
-| Routing | `react-router-dom` v7 | Shareable URLs are a hard requirement, and nested layout routes give the persistent shell for free. A hand-rolled router would be ~40 lines that grow. |
-| Styling | Plain CSS + CSS Modules | Vite compiles Modules natively, so scoping costs zero dependencies. Tailwind was rejected on purpose: its defaults are exactly the generic look this app is trying not to have, and utility soup makes the design system harder to read, not easier. |
-| Design tokens | CSS custom properties in `oklch` | One hue ramp for both themes, perceptually even contrast steps, and theme switching without a re-render. |
-| State | React state + a thin `localStorage` layer | There is no shared server state to cache and no cross-page store to normalise. Redux/Zustand would be ceremony. |
-| Search / palette | Hand-written fuzzy matcher (`src/lib/fuzzy.ts`) | Ranking 22 short strings is a scoring problem, not an indexing problem. Fuse.js is 12 KB to solve the easy half and none of the ordering. |
-| Icons | Hand-drawn SVG set | An icon library is a visual tell and 40 KB for eighteen glyphs. |
-| Type | IBM Plex Sans + IBM Plex Mono, self-hosted | Designed for technical products; self-hosting means zero third-party font requests, which the privacy claim depends on. |
+| Decision         | Choice                                          | Reasoning                                                                                                                                                                                                                                            |
+| ---------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime shape    | Static SPA, no backend                          | Every tool is a pure function over text. A server would add an attack surface, a hosting bill, and a privacy claim to defend, in exchange for nothing. The one tool that needs the network (HTTP builder) uses the browser's own `fetch`.            |
+| Build            | Vite 7 + React 19 + TypeScript 5.9              | Vite's per-route chunking is what makes 22 lazy tools cheap. React because the tools are stateful editors, not documents.                                                                                                                            |
+| Routing          | `react-router-dom` v7                           | Shareable URLs are a hard requirement, and nested layout routes give the persistent shell for free. A hand-rolled router would be ~40 lines that grow.                                                                                               |
+| Styling          | Plain CSS + CSS Modules                         | Vite compiles Modules natively, so scoping costs zero dependencies. Tailwind was rejected on purpose: its defaults are exactly the generic look this app is trying not to have, and utility soup makes the design system harder to read, not easier. |
+| Design tokens    | CSS custom properties in `oklch`                | One hue ramp for both themes, perceptually even contrast steps, and theme switching without a re-render.                                                                                                                                             |
+| State            | React state + a thin `localStorage` layer       | There is no shared server state to cache and no cross-page store to normalise. Redux/Zustand would be ceremony.                                                                                                                                      |
+| Search / palette | Hand-written fuzzy matcher (`src/lib/fuzzy.ts`) | Ranking 22 short strings is a scoring problem, not an indexing problem. Fuse.js is 12 KB to solve the easy half and none of the ordering.                                                                                                            |
+| Icons            | Hand-drawn SVG set                              | An icon library is a visual tell and 40 KB for eighteen glyphs.                                                                                                                                                                                      |
+| Type             | IBM Plex Sans + IBM Plex Mono, self-hosted      | Designed for technical products; self-hosting means zero third-party font requests, which the privacy claim depends on.                                                                                                                              |
 
 ### Two decisions worth their own paragraph
 
@@ -68,12 +68,12 @@ which produced noise without catching a real defect in this codebase.
 Four non-trivial pieces written rather than installed, each with a design
 comment at the top of the file and a test suite that pins the behaviour:
 
-| Module | Tests | Replaces |
-| --- | --- | --- |
-| `src/lib/diff.ts` — Myers O(ND) with prefix/suffix trimming and an edit-distance ceiling | 28 | `diff` (~30 KB) |
-| `src/lib/regex*` — user patterns in a Web Worker with a hard timeout | 11 | nothing; there is no library for this |
-| `src/tools/cron-helper/cron.ts` — parse, describe, project | 44 | `cron-parser` + `cronstrue` (~60 KB) |
-| `src/tools/color-converter/color.ts` — sRGB ↔ HSL ↔ OKLCH, WCAG, gamut | 39 | `culori` (~40 KB) |
+| Module                                                                                   | Tests | Replaces                              |
+| ---------------------------------------------------------------------------------------- | ----- | ------------------------------------- |
+| `src/lib/diff.ts` — Myers O(ND) with prefix/suffix trimming and an edit-distance ceiling | 28    | `diff` (~30 KB)                       |
+| `src/lib/regex*` — user patterns in a Web Worker with a hard timeout                     | 11    | nothing; there is no library for this |
+| `src/tools/cron-helper/cron.ts` — parse, describe, project                               | 44    | `cron-parser` + `cronstrue` (~60 KB)  |
+| `src/tools/color-converter/color.ts` — sRGB ↔ HSL ↔ OKLCH, WCAG, gamut                   | 39    | `culori` (~40 KB)                     |
 
 Two real bugs were caught by writing the tests first:
 

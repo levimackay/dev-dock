@@ -1,6 +1,6 @@
 # Architecture
 
-This document explains how Dev Dock is put together and, more usefully, *why*
+This document explains how Dev Dock is put together and, more usefully, _why_
 each decision went the way it did. It is written to be read start to finish.
 
 ---
@@ -101,11 +101,11 @@ from the same array.
 
 There are exactly three kinds of state, and each has one home.
 
-| Kind | Where it lives | Why |
-| --- | --- | --- |
-| Tool input and options | `useShareState` inside the tool | It is per-tool and short-lived. It is also the thing a share link encodes. |
-| Preferences (theme, pins, recents) | `PreferencesProvider` + `localStorage` | Global, tiny, and must survive a reload. |
-| Everything else | plain `useState` | It is not shared and not persisted. |
+| Kind                               | Where it lives                         | Why                                                                        |
+| ---------------------------------- | -------------------------------------- | -------------------------------------------------------------------------- |
+| Tool input and options             | `useShareState` inside the tool        | It is per-tool and short-lived. It is also the thing a share link encodes. |
+| Preferences (theme, pins, recents) | `PreferencesProvider` + `localStorage` | Global, tiny, and must survive a reload.                                   |
+| Everything else                    | plain `useState`                       | It is not shared and not persisted.                                        |
 
 No Redux, no Zustand, no React Query. There is no server state to cache, no
 normalised entity graph, and no cross-page store. A global state library here
@@ -178,7 +178,7 @@ adding it here. The important ones:
   1 MB for syntax colouring that none of these tools need to do their job.
 - **`ToolShell`** — the toolbar. The identity half (name, tagline, pin, share)
   comes from route context; the tool contributes only its own actions. A tool
-  *cannot* render its title differently, because it never renders its title.
+  _cannot_ render its title differently, because it never renders its title.
 - **`Dialog`** — a real focus trap: focus in on open, restored on close, Tab
   wrapping, Escape, `inert` on the app root, scroll lock.
 - **`SplitPane`** — Pointer Events with capture (so a fast drag never detaches)
@@ -189,12 +189,12 @@ adding it here. The important ones:
 Four pieces are written from scratch rather than installed. Each has a long
 comment at the top of its file explaining the method.
 
-| File | What it is |
-| --- | --- |
-| `src/lib/diff.ts` | Myers' O(ND) sequence alignment, with common prefix/suffix trimming and an edit-distance ceiling, plus line, word, and unified-patch wrappers. |
-| `src/lib/fuzzy.ts` | Subsequence matching with a bonus structure (prefix, word boundary, camelCase, consecutive runs) that produces the ranking, not the matching. |
-| `src/tools/cron-helper/cron.ts` | A cron parser, English describer, and schedule projector — including the either/both day-field rule that most hand-rolled cron code gets wrong. |
-| `src/tools/color-converter/color.ts` | sRGB ↔ HSL ↔ OKLCH, WCAG contrast, gamut detection. The OKLCH chain is the interesting half. |
+| File                                 | What it is                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/diff.ts`                    | Myers' O(ND) sequence alignment, with common prefix/suffix trimming and an edit-distance ceiling, plus line, word, and unified-patch wrappers.  |
+| `src/lib/fuzzy.ts`                   | Subsequence matching with a bonus structure (prefix, word boundary, camelCase, consecutive runs) that produces the ranking, not the matching.   |
+| `src/tools/cron-helper/cron.ts`      | A cron parser, English describer, and schedule projector — including the either/both day-field rule that most hand-rolled cron code gets wrong. |
+| `src/tools/color-converter/color.ts` | sRGB ↔ HSL ↔ OKLCH, WCAG contrast, gamut detection. The OKLCH chain is the interesting half.                                                    |
 
 In each case the library alternative was 12-60 KB, and the thing being replaced
 is 150-300 readable lines. That trade only works because they are all
@@ -220,7 +220,7 @@ Markdown parser, which is why `marked` is a dependency.
 Three layers, each testing something the others cannot.
 
 **Unit (vitest, jsdom).** Every `.ts` logic file. These are the bulk of the
-suite and they run in about a second. Error *messages* are asserted, because a
+suite and they run in about a second. Error _messages_ are asserted, because a
 message is the contract between the tool and a confused user.
 
 **Component (vitest + Testing Library).** The shell pieces where behaviour lives

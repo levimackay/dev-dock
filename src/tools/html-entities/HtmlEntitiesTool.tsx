@@ -32,20 +32,26 @@ const isState = shapeValidator<State>({
 })
 
 const MODE_HINTS: Record<EscapeMode, string> = {
-  minimal: 'Only “& < > " \'” — the characters that are structurally dangerous in HTML text or an attribute. Everything else, including accented letters and emoji, passes through unchanged.',
-  named: 'Uses a named entity (&eacute; not &#233;) wherever one exists in the common table. Falls back to the literal character otherwise.',
-  numeric: 'Every non-ASCII character becomes a numeric reference (&#xE9;), which is the safest choice for output that has to survive an unknown or legacy character encoding.',
+  minimal:
+    'Only “& < > " \'” — the characters that are structurally dangerous in HTML text or an attribute. Everything else, including accented letters and emoji, passes through unchanged.',
+  named:
+    'Uses a named entity (&eacute; not &#233;) wherever one exists in the common table. Falls back to the literal character otherwise.',
+  numeric:
+    'Every non-ASCII character becomes a numeric reference (&#xE9;), which is the safest choice for output that has to survive an unknown or legacy character encoding.',
 }
 
 const SAMPLE_ESCAPE = `<div class="card">Café “life” — 50% off & 🌍 shipping</div>`
-const SAMPLE_UNESCAPE = '&lt;div&gt; Caf&eacute; &ldquo;life&rdquo; &mdash; 50&#37; off &amp; &#x1F30D; shipping &lt;/div&gt;'
+const SAMPLE_UNESCAPE =
+  '&lt;div&gt; Caf&eacute; &ldquo;life&rdquo; &mdash; 50&#37; off &amp; &#x1F30D; shipping &lt;/div&gt;'
 
 export default function HtmlEntitiesTool() {
   const [state, setState] = useShareState<State>(DEFAULTS, isState)
   const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
 
   const output = useMemo(() => {
-    return state.direction === 'escape' ? escapeHtml(state.input, state.mode) : unescapeHtml(state.input)
+    return state.direction === 'escape'
+      ? escapeHtml(state.input, state.mode)
+      : unescapeHtml(state.input)
   }, [state])
 
   /** Escaping then unescaping the output puts the user where they expect to be. */
@@ -54,11 +60,7 @@ export default function HtmlEntitiesTool() {
   }
 
   const loadSample = () => {
-    patch(
-      state.direction === 'escape'
-        ? { input: SAMPLE_ESCAPE }
-        : { input: SAMPLE_UNESCAPE },
-    )
+    patch(state.direction === 'escape' ? { input: SAMPLE_ESCAPE } : { input: SAMPLE_UNESCAPE })
   }
 
   return (
@@ -105,7 +107,12 @@ export default function HtmlEntitiesTool() {
 
         <OptionSpacer />
 
-        <Button size="sm" variant="ghost" onClick={() => patch({ input: '' })} disabled={!state.input}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => patch({ input: '' })}
+          disabled={!state.input}
+        >
           <IconTrash size={13} />
           Clear
         </Button>
@@ -155,7 +162,9 @@ export default function HtmlEntitiesTool() {
             {!state.input ? (
               <EmptyState
                 compact
-                title={state.direction === 'escape' ? 'Nothing to escape yet' : 'Nothing to unescape yet'}
+                title={
+                  state.direction === 'escape' ? 'Nothing to escape yet' : 'Nothing to unescape yet'
+                }
                 mark={<IconLayers size={24} />}
               >
                 {state.direction === 'escape'
@@ -173,8 +182,8 @@ export default function HtmlEntitiesTool() {
         <div style={{ padding: '0 var(--sp-3) var(--sp-3)' }}>
           <Callout tone="info" title="This is safe on untrusted input">
             Decoding walks the string and substitutes recognised <code>&amp;name;</code>,{' '}
-            <code>&amp;#123;</code>, and <code>&amp;#x7B;</code> references directly — it never assigns to{' '}
-            <code>innerHTML</code>, so nothing here is ever parsed as markup or executed.
+            <code>&amp;#123;</code>, and <code>&amp;#x7B;</code> references directly — it never
+            assigns to <code>innerHTML</code>, so nothing here is ever parsed as markup or executed.
           </Callout>
         </div>
       )}

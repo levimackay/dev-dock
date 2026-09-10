@@ -82,7 +82,8 @@ export function explainPattern(pattern: string): PatternToken[] {
     if (literal === '') return
     tokens.push({
       token: literal,
-      meaning: literal.length === 1 ? `Literal character "${literal}"` : `Literal text "${literal}"`,
+      meaning:
+        literal.length === 1 ? `Literal character "${literal}"` : `Literal text "${literal}"`,
     })
     literal = ''
   }
@@ -103,12 +104,18 @@ export function explainPattern(pattern: string): PatternToken[] {
     if (ch === '(') {
       flushLiteral()
       if (pattern.startsWith('(?:', i)) {
-        tokens.push({ token: '(?:', meaning: 'Non-capturing group — groups without creating a numbered capture' })
+        tokens.push({
+          token: '(?:',
+          meaning: 'Non-capturing group — groups without creating a numbered capture',
+        })
         i += 3
         continue
       }
       if (pattern.startsWith('(?=', i)) {
-        tokens.push({ token: '(?=', meaning: 'Positive lookahead — must be followed by this, but it is not part of the match' })
+        tokens.push({
+          token: '(?=',
+          meaning: 'Positive lookahead — must be followed by this, but it is not part of the match',
+        })
         i += 3
         continue
       }
@@ -118,24 +125,37 @@ export function explainPattern(pattern: string): PatternToken[] {
         continue
       }
       if (pattern.startsWith('(?<=', i)) {
-        tokens.push({ token: '(?<=', meaning: 'Positive lookbehind — must be preceded by this, but it is not part of the match' })
+        tokens.push({
+          token: '(?<=',
+          meaning:
+            'Positive lookbehind — must be preceded by this, but it is not part of the match',
+        })
         i += 4
         continue
       }
       if (pattern.startsWith('(?<!', i)) {
-        tokens.push({ token: '(?<!', meaning: 'Negative lookbehind — must NOT be preceded by this' })
+        tokens.push({
+          token: '(?<!',
+          meaning: 'Negative lookbehind — must NOT be preceded by this',
+        })
         i += 4
         continue
       }
       const named = /^\(\?<([A-Za-z_$][A-Za-z0-9_$]*)>/.exec(pattern.slice(i))
       if (named) {
         groupNumber++
-        tokens.push({ token: named[0]!, meaning: `Named capturing group ${groupNumber}, "${named[1]!}"` })
-        i += named[0]!.length
+        tokens.push({
+          token: named[0],
+          meaning: `Named capturing group ${groupNumber}, "${named[1]!}"`,
+        })
+        i += named[0].length
         continue
       }
       groupNumber++
-      tokens.push({ token: '(', meaning: `Capturing group ${groupNumber} — remembers what it matches` })
+      tokens.push({
+        token: '(',
+        meaning: `Capturing group ${groupNumber} — remembers what it matches`,
+      })
       i++
       continue
     }
@@ -166,7 +186,10 @@ export function explainPattern(pattern: string): PatternToken[] {
     }
     if (ch === '.') {
       flushLiteral()
-      tokens.push({ token: '.', meaning: 'Any character except line terminators (any character at all with the s flag)' })
+      tokens.push({
+        token: '.',
+        meaning: 'Any character except line terminators (any character at all with the s flag)',
+      })
       i++
       continue
     }
@@ -177,7 +200,7 @@ export function explainPattern(pattern: string): PatternToken[] {
 
       if (/^[1-9]$/.test(next)) {
         const numMatch = /^[1-9][0-9]*/.exec(pattern.slice(i + 1))
-        const num = numMatch ? numMatch[0]! : next
+        const num = numMatch ? numMatch[0] : next
         tokens.push({ token: `\\${num}`, meaning: `Backreference to capturing group ${num}` })
         i += 1 + num.length
         continue
@@ -185,24 +208,24 @@ export function explainPattern(pattern: string): PatternToken[] {
       if (next === 'k' && pattern.charAt(i + 2) === '<') {
         const named = /^\\k<([A-Za-z_$][A-Za-z0-9_$]*)>/.exec(pattern.slice(i))
         if (named) {
-          tokens.push({ token: named[0]!, meaning: `Backreference to named group "${named[1]!}"` })
-          i += named[0]!.length
+          tokens.push({ token: named[0], meaning: `Backreference to named group "${named[1]!}"` })
+          i += named[0].length
           continue
         }
       }
       if (next === 'x') {
         const hex = /^\\x[0-9A-Fa-f]{2}/.exec(pattern.slice(i))
         if (hex) {
-          tokens.push({ token: hex[0]!, meaning: `Character with hex code ${hex[0]!.slice(2)}` })
-          i += hex[0]!.length
+          tokens.push({ token: hex[0], meaning: `Character with hex code ${hex[0].slice(2)}` })
+          i += hex[0].length
           continue
         }
       }
       if (next === 'u') {
         const unicode = /^\\u\{[0-9A-Fa-f]+\}|^\\u[0-9A-Fa-f]{4}/.exec(pattern.slice(i))
         if (unicode) {
-          tokens.push({ token: unicode[0]!, meaning: `Unicode character ${unicode[0]!}` })
-          i += unicode[0]!.length
+          tokens.push({ token: unicode[0], meaning: `Unicode character ${unicode[0]}` })
+          i += unicode[0].length
           continue
         }
       }
@@ -212,7 +235,10 @@ export function explainPattern(pattern: string): PatternToken[] {
         i += 2
         continue
       }
-      tokens.push({ token: `\\${next}`, meaning: `Escaped literal "${next}" — matches the character itself, not as a special one` })
+      tokens.push({
+        token: `\\${next}`,
+        meaning: `Escaped literal "${next}" — matches the character itself, not as a special one`,
+      })
       i += 2
       continue
     }
@@ -233,7 +259,7 @@ export function explainPattern(pattern: string): PatternToken[] {
       const braces = /^\{(\d+)(,(\d*))?\}\??/.exec(pattern.slice(i))
       if (braces) {
         flushLiteral()
-        const lazy = braces[0]!.endsWith('?')
+        const lazy = braces[0].endsWith('?')
         const min = braces[1]!
         const hasComma = braces[2] !== undefined
         const max = braces[3]
@@ -242,8 +268,11 @@ export function explainPattern(pattern: string): PatternToken[] {
           : max === '' || max === undefined
             ? `${min} or more`
             : `Between ${min} and ${max}`
-        tokens.push({ token: braces[0]!, meaning: `${base} of the preceding token${lazy ? ', as few times as possible (lazy)' : ''}` })
-        i += braces[0]!.length
+        tokens.push({
+          token: braces[0],
+          meaning: `${base} of the preceding token${lazy ? ', as few times as possible (lazy)' : ''}`,
+        })
+        i += braces[0].length
         continue
       }
     }
@@ -318,7 +347,7 @@ export function detectRisk(pattern: string): RiskWarning[] {
     const quantifier = /^(\*|\+|\{\d+,\d*\})/.exec(after)
     if (!quantifier) continue
 
-    const q = quantifier[0]!
+    const q = quantifier[0]
     const allowsMany = q === '*' || q === '+' || /^\{\d+,\}?$/.test(q)
     if (!allowsMany) continue
 
@@ -343,9 +372,34 @@ export interface SamplePattern {
 }
 
 export const SAMPLE_PATTERNS: SamplePattern[] = [
-  { name: 'Email', pattern: '[\\w.+-]+@[\\w-]+\\.[A-Za-z]{2,}', flags: 'g', sample: 'contact us at hello@example.com or sales@example.co.uk' },
-  { name: 'URL', pattern: 'https?:\\/\\/[\\w.-]+(?:\\/[\\w./?%&=-]*)?', flags: 'g', sample: 'see https://example.com/docs?ref=readme and http://sub.example.org' },
-  { name: 'ISO date', pattern: '\\d{4}-\\d{2}-\\d{2}', flags: 'g', sample: 'shipped on 2026-01-15, delivered 2026-01-20' },
-  { name: 'IPv4', pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', flags: 'g', sample: 'server at 192.168.1.1, gateway 10.0.0.1' },
-  { name: 'Semver', pattern: '\\d+\\.\\d+\\.\\d+(?:-[\\w.]+)?', flags: 'g', sample: 'upgraded from 2.1.0 to 2.2.0-beta.1' },
+  {
+    name: 'Email',
+    pattern: '[\\w.+-]+@[\\w-]+\\.[A-Za-z]{2,}',
+    flags: 'g',
+    sample: 'contact us at hello@example.com or sales@example.co.uk',
+  },
+  {
+    name: 'URL',
+    pattern: 'https?:\\/\\/[\\w.-]+(?:\\/[\\w./?%&=-]*)?',
+    flags: 'g',
+    sample: 'see https://example.com/docs?ref=readme and http://sub.example.org',
+  },
+  {
+    name: 'ISO date',
+    pattern: '\\d{4}-\\d{2}-\\d{2}',
+    flags: 'g',
+    sample: 'shipped on 2026-01-15, delivered 2026-01-20',
+  },
+  {
+    name: 'IPv4',
+    pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b',
+    flags: 'g',
+    sample: 'server at 192.168.1.1, gateway 10.0.0.1',
+  },
+  {
+    name: 'Semver',
+    pattern: '\\d+\\.\\d+\\.\\d+(?:-[\\w.]+)?',
+    flags: 'g',
+    sample: 'upgraded from 2.1.0 to 2.2.0-beta.1',
+  },
 ]

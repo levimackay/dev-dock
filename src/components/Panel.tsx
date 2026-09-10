@@ -42,7 +42,12 @@ export function Panel({
   const hasHead = Boolean(label || status || actions)
   return (
     <section
-      className={cx(styles.panel, flush && styles.flush, tone === 'err' && styles['tone-err'], className)}
+      className={cx(
+        styles.panel,
+        flush && styles.flush,
+        tone === 'err' && styles['tone-err'],
+        className,
+      )}
     >
       {hasHead && (
         <header className={styles.head}>

@@ -156,8 +156,18 @@ describe('diffWords', () => {
 
   it('rebuilds both sides exactly', () => {
     const spans = diffWords('alpha, beta', 'alpha; gamma')
-    expect(spans.filter((s) => s.op !== 'insert').map((s) => s.text).join('')).toBe('alpha, beta')
-    expect(spans.filter((s) => s.op !== 'delete').map((s) => s.text).join('')).toBe('alpha; gamma')
+    expect(
+      spans
+        .filter((s) => s.op !== 'insert')
+        .map((s) => s.text)
+        .join(''),
+    ).toBe('alpha, beta')
+    expect(
+      spans
+        .filter((s) => s.op !== 'delete')
+        .map((s) => s.text)
+        .join(''),
+    ).toBe('alpha; gamma')
   })
 })
 

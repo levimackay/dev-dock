@@ -1,0 +1,37 @@
+.resultList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resultRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
+  border-bottom: var(--hairline) solid var(--line-faint);
+}
+
+.resultRow:hover {
+  background: var(--bg-hover);
+}
+
+.resultLabel {
+  flex: none;
+  width: 11rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--fg-subtle);
+}
+
+.resultValue {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg);
+}

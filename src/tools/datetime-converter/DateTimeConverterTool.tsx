@@ -40,13 +40,38 @@ const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 // independent copy here rather than a shared import, because a tool folder
 // never imports from another tool folder (see docs/ARCHITECTURE.md §2).
 const FALLBACK_ZONES = [
-  'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
-  'America/Anchorage', 'America/Sao_Paulo', 'America/Mexico_City', 'America/Toronto',
-  'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Madrid', 'Europe/Rome',
-  'Europe/Moscow', 'Europe/Istanbul', 'Africa/Cairo', 'Africa/Johannesburg',
-  'Asia/Dubai', 'Asia/Karachi', 'Asia/Kolkata', 'Asia/Dhaka', 'Asia/Bangkok',
-  'Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Tokyo', 'Asia/Seoul', 'Asia/Singapore',
-  'Australia/Sydney', 'Australia/Perth', 'Pacific/Auckland', 'Pacific/Honolulu',
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'America/Sao_Paulo',
+  'America/Mexico_City',
+  'America/Toronto',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Madrid',
+  'Europe/Rome',
+  'Europe/Moscow',
+  'Europe/Istanbul',
+  'Africa/Cairo',
+  'Africa/Johannesburg',
+  'Asia/Dubai',
+  'Asia/Karachi',
+  'Asia/Kolkata',
+  'Asia/Dhaka',
+  'Asia/Bangkok',
+  'Asia/Shanghai',
+  'Asia/Hong_Kong',
+  'Asia/Tokyo',
+  'Asia/Seoul',
+  'Asia/Singapore',
+  'Australia/Sydney',
+  'Australia/Perth',
+  'Pacific/Auckland',
+  'Pacific/Honolulu',
 ]
 
 function listZones(): string[] {
@@ -106,7 +131,15 @@ function ResultRow({ label, value }: { label: string; value: string }) {
       >
         {label}
       </span>
-      <code style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', overflowWrap: 'anywhere' }}>
+      <code
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-sm)',
+          overflowWrap: 'anywhere',
+        }}
+      >
         {value}
       </code>
       <CopyButton value={value} iconOnly label={`Copy ${label}`} />
@@ -130,11 +163,17 @@ export default function DateTimeConverterTool() {
   )
 
   const from = useMemo(
-    () => (state.durationFrom.trim() ? parseFlexible(state.durationFrom, { zone: state.zone, dateOnlyAs: 'zone' }) : undefined),
+    () =>
+      state.durationFrom.trim()
+        ? parseFlexible(state.durationFrom, { zone: state.zone, dateOnlyAs: 'zone' })
+        : undefined,
     [state.durationFrom, state.zone],
   )
   const to = useMemo(
-    () => (state.durationTo.trim() ? parseFlexible(state.durationTo, { zone: state.zone, dateOnlyAs: 'zone' }) : undefined),
+    () =>
+      state.durationTo.trim()
+        ? parseFlexible(state.durationTo, { zone: state.zone, dateOnlyAs: 'zone' })
+        : undefined,
     [state.durationTo, state.zone],
   )
   const duration = from?.ok && to?.ok ? durationBetween(from.date, to.date) : undefined
@@ -143,7 +182,8 @@ export default function DateTimeConverterTool() {
     if (!zone || state.pinnedZones.includes(zone)) return
     patch({ pinnedZones: [...state.pinnedZones, zone] })
   }
-  const removeZone = (zone: string) => patch({ pinnedZones: state.pinnedZones.filter((z) => z !== zone) })
+  const removeZone = (zone: string) =>
+    patch({ pinnedZones: state.pinnedZones.filter((z) => z !== zone) })
 
   return (
     <ToolShell
@@ -152,7 +192,12 @@ export default function DateTimeConverterTool() {
           <Button size="sm" variant="ghost" onClick={() => patch({ input: SAMPLE_INPUT })}>
             Sample
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => patch({ input: '' })} disabled={!state.input}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: '' })}
+            disabled={!state.input}
+          >
             <IconTrash size={13} />
             Clear
           </Button>
@@ -162,7 +207,14 @@ export default function DateTimeConverterTool() {
       <PaneStack>
         {/* -------------------------------------------------------------- input */}
         <Panel label="One moment">
-          <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+          <div
+            style={{
+              padding: 'var(--sp-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--sp-3)',
+            }}
+          >
             <TextInput
               mono
               value={state.input}
@@ -174,8 +226,8 @@ export default function DateTimeConverterTool() {
             {!state.input.trim() ? (
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
                 Type a date or time above in almost any common shape. A bare date like{' '}
-                <code>2026-03-15</code> is genuinely ambiguous — the toggle that appears will let you say
-                which midnight you meant.
+                <code>2026-03-15</code> is genuinely ambiguous — the toggle that appears will let
+                you say which midnight you meant.
               </p>
             ) : !parsed?.ok ? (
               <Callout tone="err" title="Cannot parse this input" live>
@@ -185,21 +237,42 @@ export default function DateTimeConverterTool() {
               <>
                 {parsed.dateOnly && (
                   <Callout tone="info" title="This date has no time — which midnight did you mean?">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', marginTop: 'var(--sp-2)' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--sp-3)',
+                        marginTop: 'var(--sp-2)',
+                      }}
+                    >
                       <SegmentedControl
                         label="Interpret the bare date as"
                         value={state.dateOnlyAs}
                         onChange={(dateOnlyAs) => patch({ dateOnlyAs })}
                         options={[
-                          { value: 'utc', label: 'UTC midnight', title: "new Date('2026-03-15') behaviour" },
-                          { value: 'zone', label: `Midnight in ${state.zone}`, title: "new Date('2026-03-15T00:00') behaviour" },
+                          {
+                            value: 'utc',
+                            label: 'UTC midnight',
+                            title: "new Date('2026-03-15') behaviour",
+                          },
+                          {
+                            value: 'zone',
+                            label: `Midnight in ${state.zone}`,
+                            title: "new Date('2026-03-15T00:00') behaviour",
+                          },
                         ]}
                       />
                     </div>
                   </Callout>
                 )}
 
-                <div style={{ border: 'var(--hairline) solid var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    border: 'var(--hairline) solid var(--line)',
+                    borderRadius: 'var(--radius)',
+                    overflow: 'hidden',
+                  }}
+                >
                   <ResultRow label="ISO 8601" value={toIso8601(parsed.date)} />
                   <ResultRow label="ISO 8601 (no ms)" value={toIso8601(parsed.date, false)} />
                   <ResultRow label="RFC 2822" value={toRfc2822(parsed.date)} />
@@ -218,10 +291,28 @@ export default function DateTimeConverterTool() {
 
         {/* --------------------------------------------------------- zone table */}
         <Panel label="Across time zones" status={`${state.pinnedZones.length} pinned`}>
-          <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              padding: 'var(--sp-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--sp-3)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                gap: 'var(--sp-2)',
+                alignItems: 'flex-end',
+                flexWrap: 'wrap',
+              }}
+            >
               <Field label="Add a zone" htmlFor={zoneFieldId}>
-                <Select id={zoneFieldId} value={state.addZone} onChange={(e) => patch({ addZone: e.target.value })}>
+                <Select
+                  id={zoneFieldId}
+                  value={state.addZone}
+                  onChange={(e) => patch({ addZone: e.target.value })}
+                >
                   {ZONES.map((zone) => (
                     <option key={zone} value={zone}>
                       {zone}
@@ -236,7 +327,13 @@ export default function DateTimeConverterTool() {
             </div>
 
             {parsed?.ok ? (
-              <div style={{ border: 'var(--hairline) solid var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+              <div
+                style={{
+                  border: 'var(--hairline) solid var(--line)',
+                  borderRadius: 'var(--radius)',
+                  overflow: 'hidden',
+                }}
+              >
                 {state.pinnedZones.map((zone) => {
                   const snap = zoneSnapshot(parsed.date, zone)
                   return (
@@ -251,13 +348,33 @@ export default function DateTimeConverterTool() {
                       }}
                     >
                       <IconGlobe size={13} />
-                      <span style={{ width: '11rem', flexShrink: 0, fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>
+                      <span
+                        style={{
+                          width: '11rem',
+                          flexShrink: 0,
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 'var(--text-xs)',
+                        }}
+                      >
                         {zone}
                       </span>
-                      <code style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>
+                      <code
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 'var(--text-sm)',
+                        }}
+                      >
                         {snap.formatted}
                       </code>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', color: 'var(--fg-subtle)' }}>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--fg-subtle)',
+                        }}
+                      >
                         {snap.offset}
                       </span>
                       {snap.isDst && (
@@ -276,7 +393,13 @@ export default function DateTimeConverterTool() {
                         </span>
                       )}
                       <CopyButton value={snap.formatted} iconOnly label={`Copy time in ${zone}`} />
-                      <Button size="sm" variant="ghost" iconOnly aria-label={`Unpin ${zone}`} onClick={() => removeZone(zone)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        iconOnly
+                        aria-label={`Unpin ${zone}`}
+                        onClick={() => removeZone(zone)}
+                      >
                         <IconX size={12} />
                       </Button>
                     </div>
@@ -293,9 +416,20 @@ export default function DateTimeConverterTool() {
 
         {/* ------------------------------------------------------------ duration */}
         <Panel label="Duration between two moments">
-          <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+          <div
+            style={{
+              padding: 'var(--sp-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--sp-3)',
+            }}
+          >
             <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
-              <Field label="From" htmlFor={fromFieldId} error={from && !from.ok ? from.error : undefined}>
+              <Field
+                label="From"
+                htmlFor={fromFieldId}
+                error={from && !from.ok ? from.error : undefined}
+              >
                 <TextInput
                   id={fromFieldId}
                   mono
@@ -323,7 +457,13 @@ export default function DateTimeConverterTool() {
                   {duration.months > 0 && `${duration.months}mo `}
                   {duration.days}d {duration.hours}h {duration.minutes}m {duration.seconds}s
                 </p>
-                <div style={{ border: 'var(--hairline) solid var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    border: 'var(--hairline) solid var(--line)',
+                    borderRadius: 'var(--radius)',
+                    overflow: 'hidden',
+                  }}
+                >
                   <ResultRow label="Total days" value={duration.totalDays.toString()} />
                   <ResultRow label="Total hours" value={duration.totalHours.toString()} />
                   <ResultRow label="Total minutes" value={duration.totalMinutes.toString()} />

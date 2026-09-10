@@ -11,7 +11,13 @@ import { IconArrowSwap, IconGlobe, IconTrash } from '@/components/Icon'
 import { OptionGroup, OptionSpacer, OptionsBar, TwoPane } from '@/tools/shared/TwoPane'
 import { shapeValidator, useShareState } from '@/tools/useShareState'
 import { pluralize } from '@/lib/format'
-import { REPEAT_DECODE_CAP, countChangedChars, decodeUrl, encodeUrl, type UrlEncodeMode } from './urlcodec'
+import {
+  REPEAT_DECODE_CAP,
+  countChangedChars,
+  decodeUrl,
+  encodeUrl,
+  type UrlEncodeMode,
+} from './urlcodec'
 
 interface State {
   input: string
@@ -53,7 +59,12 @@ export default function UrlEncoderTool() {
       return { output, error: undefined as string | undefined, passes: 1, hitCap: false }
     }
     const decoded = decodeUrl(state.input, state.mode, state.repeat)
-    return { output: decoded.text, error: decoded.error, passes: decoded.passes, hitCap: decoded.hitCap }
+    return {
+      output: decoded.text,
+      error: decoded.error,
+      passes: decoded.passes,
+      hitCap: decoded.hitCap,
+    }
   }, [state])
 
   const changedChars = result.error ? 0 : countChangedChars(state.input, result.output)
@@ -67,10 +78,19 @@ export default function UrlEncoderTool() {
     <ToolShell
       actions={
         <>
-          <Button size="sm" variant="ghost" onClick={() => patch({ input: SAMPLE_INPUT, direction: 'encode' })}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: SAMPLE_INPUT, direction: 'encode' })}
+          >
             Sample
           </Button>
-          <Button size="sm" variant="ghost" onClick={swap} disabled={!result.output || Boolean(result.error)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={swap}
+            disabled={!result.output || Boolean(result.error)}
+          >
             <IconArrowSwap size={13} />
             Swap
           </Button>
@@ -115,7 +135,12 @@ export default function UrlEncoderTool() {
 
         <OptionSpacer />
 
-        <Button size="sm" variant="ghost" onClick={() => patch({ input: '' })} disabled={!state.input}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => patch({ input: '' })}
+          disabled={!state.input}
+        >
           <IconTrash size={13} />
           Clear
         </Button>
@@ -163,7 +188,12 @@ export default function UrlEncoderTool() {
                 ? `${pluralize(result.output.length, 'char')} · ${pluralize(changedChars, 'char changed', 'chars changed')}`
                 : undefined
             }
-            actions={<CopyButton value={result.output} disabled={!result.output || Boolean(result.error)} />}
+            actions={
+              <CopyButton
+                value={result.output}
+                disabled={!result.output || Boolean(result.error)}
+              />
+            }
           >
             {result.error ? (
               <div style={{ padding: 'var(--sp-3)' }}>
@@ -174,7 +204,9 @@ export default function UrlEncoderTool() {
             ) : !state.input ? (
               <EmptyState
                 compact
-                title={state.direction === 'encode' ? 'Nothing to encode yet' : 'Nothing to decode yet'}
+                title={
+                  state.direction === 'encode' ? 'Nothing to encode yet' : 'Nothing to decode yet'
+                }
                 mark={<IconGlobe size={24} />}
               >
                 {state.direction === 'encode'
@@ -192,13 +224,16 @@ export default function UrlEncoderTool() {
         <div style={{ padding: '0 var(--sp-3) var(--sp-3)' }}>
           {result.hitCap ? (
             <Callout tone="warn" title={`Hit the ${REPEAT_DECODE_CAP}-pass cap`}>
-              Output was still changing after {REPEAT_DECODE_CAP} decode passes, so decoding stopped rather
-              than risk an infinite loop. This is either very deeply encoded input, or content that
-              happens to look like valid percent-encoding at every layer.
+              Output was still changing after {REPEAT_DECODE_CAP} decode passes, so decoding stopped
+              rather than risk an infinite loop. This is either very deeply encoded input, or
+              content that happens to look like valid percent-encoding at every layer.
             </Callout>
           ) : (
             result.passes > 1 && (
-              <Callout tone="info" title={`Stabilised after ${pluralize(result.passes, 'pass', 'passes')}`}>
+              <Callout
+                tone="info"
+                title={`Stabilised after ${pluralize(result.passes, 'pass', 'passes')}`}
+              >
                 The input was encoded {result.passes} time{result.passes === 1 ? '' : 's'} over.
               </Callout>
             )

@@ -1,3 +1,341 @@
-export default function Placeholder() {
-  return null
+import { useMemo } from 'react'
+import { ToolShell } from '@/components/ToolShell'
+import { Panel } from '@/components/Panel'
+import { CopyButton } from '@/components/CopyButton'
+import { Button } from '@/components/Button'
+import { Callout } from '@/components/Callout'
+import { SegmentedControl, TextInput } from '@/components/Field'
+import { IconClock, IconTrash } from '@/components/Icon'
+import { PaneStack } from '@/tools/shared/TwoPane'
+import { shapeValidator, useShareState } from '@/tools/useShareState'
+import { pluralize } from '@/lib/format'
+import { MACROS, describeCron, explainFields, nextRuns, parseCron } from './cron'
+import { formatRelative } from './relative'
+import { labelCronTokens, tokenizeCronInput } from './ruler'
+
+interface State {
+  expression: string
+  utc: boolean
+}
+
+const DEFAULTS: State = { expression: '', utc: false }
+
+const isState = shapeValidator<State>({
+  expression: 'string',
+  utc: 'boolean',
+})
+
+const SAMPLE = '0 9 * * 1-5'
+
+// The macro table plus about ten expressions people actually reach for.
+// Macros come first (they are the standard's own vocabulary); the rest are
+// ordinary schedules that don't have a one-word name.
+const PRESETS: Array<{ label: string; expression: string }> = [
+  ...Object.entries(MACROS).map(([name, macro]) => ({ label: name, expression: macro.expression })),
+  { label: 'Every weekday at 9am', expression: '0 9 * * 1-5' },
+  { label: 'Every 5 minutes', expression: '*/5 * * * *' },
+  { label: 'Every 15 minutes', expression: '*/15 * * * *' },
+  { label: 'Every 6 hours', expression: '0 */6 * * *' },
+  { label: 'First of the month at midnight', expression: '0 0 1 * *' },
+  { label: 'Every day at 6:30am', expression: '30 6 * * *' },
+  { label: 'Every Monday at 8am', expression: '0 8 * * 1' },
+  { label: 'Twice a day (midnight and noon)', expression: '0 0,12 * * *' },
+  { label: 'Business hours, every 15 minutes', expression: '0,15,30,45 9-17 * * 1-5' },
+  { label: 'Christmas morning at 9am', expression: '0 9 25 12 *' },
+]
+
+const RULER_FONT: React.CSSProperties = {
+  fontFamily: 'var(--font-mono)',
+  fontSize: 'var(--text-sm)',
+  // Matches TextInput's own inset (padding 0 var(--sp-2) plus its 1px
+  // border) so a `ch` offset computed against the raw string lands on the
+  // same character in the input below.
+  paddingLeft: 'calc(var(--sp-2) + var(--hairline))',
+}
+
+export default function CronHelperTool() {
+  const [state, setState] = useShareState<State>(DEFAULTS, isState)
+  const patch = (next: Partial<State>) => setState((prev) => ({ ...prev, ...next }))
+
+  const parsed = useMemo(() => parseCron(state.expression), [state.expression])
+  const labelled = useMemo(
+    () => labelCronTokens(tokenizeCronInput(state.expression)),
+    [state.expression],
+  )
+
+  const runsResult = useMemo(() => {
+    if (!parsed.ok) return undefined
+    return nextRuns(parsed.expression, new Date(), 10, state.utc)
+  }, [parsed, state.utc])
+
+  return (
+    <ToolShell
+      actions={
+        <>
+          <Button size="sm" variant="ghost" onClick={() => patch({ expression: SAMPLE })}>
+            Sample
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ expression: '' })}
+            disabled={!state.expression}
+          >
+            <IconTrash size={13} />
+            Clear
+          </Button>
+        </>
+      }
+    >
+      <PaneStack>
+        <Panel
+          label="Expression"
+          actions={<CopyButton value={state.expression} disabled={!state.expression} />}
+        >
+          <div
+            style={{
+              padding: 'var(--sp-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--sp-2)',
+            }}
+          >
+            {/* The field ruler: labels are positioned in `ch` units directly
+                above the characters they describe, using the same monospace
+                font and left inset as the input beneath them. */}
+            {labelled.length > 0 && (
+              <div style={{ position: 'relative', height: '1.1rem', ...RULER_FONT }}>
+                {labelled.map((token, i) => {
+                  const errored = !parsed.ok && parsed.error.fieldIndex === i
+                  return (
+                    <span
+                      key={`${token.field}-${i}`}
+                      style={{
+                        position: 'absolute',
+                        left: `${token.start}ch`,
+                        fontSize: 'var(--text-2xs)',
+                        letterSpacing: 'var(--tracking-label)',
+                        textTransform: 'uppercase',
+                        whiteSpace: 'nowrap',
+                        color: errored ? 'var(--err)' : 'var(--fg-subtle)',
+                        fontWeight: errored ? 600 : 400,
+                      }}
+                    >
+                      {token.field}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+
+            <div style={{ position: 'relative' }}>
+              {!parsed.ok &&
+                parsed.error.fieldIndex !== undefined &&
+                labelled[parsed.error.fieldIndex] && (
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      bottom: 0,
+                      left: `calc(${labelled[parsed.error.fieldIndex]!.start}ch + var(--sp-2) + var(--hairline))`,
+                      width: `${labelled[parsed.error.fieldIndex]!.end - labelled[parsed.error.fieldIndex]!.start}ch`,
+                      background: 'var(--err-quiet)',
+                      borderRadius: 'var(--radius-sm)',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
+              <TextInput
+                mono
+                value={state.expression}
+                onChange={(e) => patch({ expression: e.target.value })}
+                placeholder="0 9 * * 1-5"
+                aria-label="Cron expression"
+                style={{
+                  position: 'relative',
+                  background: 'transparent',
+                  fontSize: 'var(--text-sm)',
+                }}
+              />
+            </div>
+
+            {!state.expression.trim() ? (
+              <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
+                Type a cron expression — five fields, six with a leading seconds column, or a macro
+                like <code>@daily</code> — or pick a preset below.
+              </p>
+            ) : !parsed.ok ? (
+              <Callout tone="err" title="Cannot parse this expression" live>
+                {parsed.error.message}
+              </Callout>
+            ) : (
+              <Callout tone="info" title={describeCron(parsed.expression)} live />
+            )}
+          </div>
+        </Panel>
+
+        {parsed.ok && (
+          <>
+            <Panel label="Fields">
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {explainFields(parsed.expression).map((row) => (
+                  <div
+                    key={row.field}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 'var(--sp-3)',
+                      padding: 'var(--sp-2) var(--sp-3)',
+                      borderBottom: 'var(--hairline) solid var(--line-faint)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '7.5rem',
+                        flexShrink: 0,
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--fg-muted)',
+                      }}
+                    >
+                      {row.field}
+                    </span>
+                    <code
+                      style={{
+                        width: '5rem',
+                        flexShrink: 0,
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 'var(--text-sm)',
+                        color: 'var(--accent)',
+                      }}
+                    >
+                      {row.raw}
+                    </code>
+                    <span style={{ fontSize: 'var(--text-sm)' }}>{row.meaning}</span>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+
+            <Panel
+              label="Next runs"
+              actions={
+                <SegmentedControl
+                  label="Time zone for next runs"
+                  value={state.utc ? 'utc' : 'local'}
+                  onChange={(v) => patch({ utc: v === 'utc' })}
+                  options={[
+                    { value: 'local', label: 'Local' },
+                    { value: 'utc', label: 'UTC' },
+                  ]}
+                />
+              }
+            >
+              {!runsResult || runsResult.runs.length === 0 ? (
+                <div style={{ padding: 'var(--sp-3)' }}>
+                  <Callout tone="warn" title="This expression may never fire">
+                    No matching instant was found within five years of now. A schedule like{' '}
+                    <code>0 0 30 2 *</code> (30 February) is syntactically valid but describes a
+                    date that never occurs.
+                  </Callout>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {runsResult.runs.map((run, i) => {
+                      const weekday = new Intl.DateTimeFormat('en-US', {
+                        weekday: 'short',
+                        timeZone: state.utc ? 'UTC' : undefined,
+                      }).format(run)
+                      const absolute = new Intl.DateTimeFormat('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false,
+                        timeZone: state.utc ? 'UTC' : undefined,
+                      }).format(run)
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--sp-3)',
+                            padding: 'var(--sp-2) var(--sp-3)',
+                            borderBottom: 'var(--hairline) solid var(--line-faint)',
+                          }}
+                        >
+                          <IconClock size={13} />
+                          <span
+                            style={{
+                              width: '3rem',
+                              flexShrink: 0,
+                              fontSize: 'var(--text-xs)',
+                              color: 'var(--fg-muted)',
+                            }}
+                          >
+                            {weekday}
+                          </span>
+                          <code
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: 'var(--text-sm)',
+                            }}
+                          >
+                            {absolute}
+                          </code>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--fg-subtle)' }}>
+                            {formatRelative(run, new Date())}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {runsResult.exhausted && (
+                    <div style={{ padding: 'var(--sp-3)' }}>
+                      <Callout
+                        tone="warn"
+                        title={`Only ${pluralize(runsResult.runs.length, 'run')} found in the next 5 years`}
+                      >
+                        This expression fires rarely enough that fewer than 10 upcoming runs exist
+                        within a five-year search horizon.
+                      </Callout>
+                    </div>
+                  )}
+                </>
+              )}
+            </Panel>
+          </>
+        )}
+
+        <Panel label="Presets">
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 'var(--sp-2)',
+              padding: 'var(--sp-3)',
+            }}
+          >
+            {PRESETS.map((preset) => (
+              <Button
+                key={preset.label}
+                size="sm"
+                variant="secondary"
+                onClick={() => patch({ expression: preset.expression })}
+                title={preset.expression}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </div>
+        </Panel>
+      </PaneStack>
+    </ToolShell>
+  )
 }

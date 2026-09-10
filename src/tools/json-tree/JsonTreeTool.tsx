@@ -228,10 +228,20 @@ export default function JsonTreeTool() {
           >
             Expand all
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setExpanded(new Set())} disabled={!parsed.ok}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setExpanded(new Set())}
+            disabled={!parsed.ok}
+          >
             Collapse all
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => patch({ input: '' })} disabled={!state.input}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: '' })}
+            disabled={!state.input}
+          >
             <IconTrash size={13} />
             Clear
           </Button>
@@ -261,7 +271,11 @@ export default function JsonTreeTool() {
           </Panel>
         }
         output={
-          <Panel label="Tree" tone={!parsed.ok && state.input ? 'err' : 'default'} bodyClassName={styles.pane}>
+          <Panel
+            label="Tree"
+            tone={!parsed.ok && state.input ? 'err' : 'default'}
+            bodyClassName={styles.pane}
+          >
             {state.input && (
               <div className={styles.filterRow}>
                 <TextInput
@@ -284,7 +298,9 @@ export default function JsonTreeTool() {
             ) : !parsed.ok ? (
               <div style={{ padding: 'var(--sp-3)' }}>
                 <Callout tone="err" title="Cannot parse this JSON" live>
-                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap', font: 'inherit' }}>{parsed.error}</pre>
+                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap', font: 'inherit' }}>
+                    {parsed.error}
+                  </pre>
                 </Callout>
               </div>
             ) : (
@@ -295,8 +311,8 @@ export default function JsonTreeTool() {
                 {budget.exceeded && (
                   <div style={{ padding: '0 var(--sp-3) var(--sp-3)' }}>
                     <Callout tone="warn" title="Row limit reached">
-                      Stopped rendering at {MAX_TOTAL_ROWS.toLocaleString()} rows. Filter to a smaller branch
-                      to see the rest.
+                      Stopped rendering at {MAX_TOTAL_ROWS.toLocaleString()} rows. Filter to a
+                      smaller branch to see the rest.
                     </Callout>
                   </div>
                 )}
@@ -357,7 +373,9 @@ function renderNode(
   const isExpanded = hasChildren && ctx.expanded.has(path)
   const isRoot = path === '$'
 
-  const shownEntries = ctx.fullyShown.has(path) ? entries : entries.slice(0, MAX_CHILDREN_PER_CONTAINER)
+  const shownEntries = ctx.fullyShown.has(path)
+    ? entries
+    : entries.slice(0, MAX_CHILDREN_PER_CONTAINER)
   const hiddenCount = entries.length - shownEntries.length
 
   return (
@@ -392,7 +410,10 @@ function renderNode(
               ctx.focus(path)
             }}
           >
-            <IconChevronRight size={11} className={cx(styles.chevron, isExpanded && styles.chevronOpen)} />
+            <IconChevronRight
+              size={11}
+              className={cx(styles.chevron, isExpanded && styles.chevronOpen)}
+            />
           </button>
         ) : (
           <span className={styles.expanderSpacer} aria-hidden="true" />
@@ -424,7 +445,14 @@ function renderNode(
       {hasChildren && isExpanded && (
         <div role="group" className={styles.group}>
           {shownEntries.map(({ key, value: child }) =>
-            renderNode(child, extendPath(path, key, Array.isArray(value)), key, level + 1, ctx, budget),
+            renderNode(
+              child,
+              extendPath(path, key, Array.isArray(value)),
+              key,
+              level + 1,
+              ctx,
+              budget,
+            ),
           )}
           {hiddenCount > 0 && (
             <div className={styles.more}>
@@ -486,7 +514,9 @@ function handleRowKeyDown(
 
   if (e.key === 'Enter') {
     e.preventDefault()
-    void copyText(path).then((ok) => ctx.toast.show(ok ? `Copied ${path}` : 'Copy failed', ok ? 'ok' : 'err'))
+    void copyText(path).then((ok) =>
+      ctx.toast.show(ok ? `Copied ${path}` : 'Copy failed', ok ? 'ok' : 'err'),
+    )
   }
 }
 
@@ -518,14 +548,26 @@ function pluralizeChildren(count: number, value: JsonValue): string {
 
 /* ---------------------------------------------------------------- filter */
 
-function FilterResults({ result, onJump }: { result: FilterOutcome; onJump: (path: string) => void }) {
+function FilterResults({
+  result,
+  onJump,
+}: {
+  result: FilterOutcome
+  onJump: (path: string) => void
+}) {
   const SHOWN = 100
   const shown = result.matches.slice(0, SHOWN)
 
   return (
     <div className={styles.results}>
       {shown.length === 0 ? (
-        <div style={{ padding: 'var(--sp-2) var(--sp-3)', fontSize: 'var(--text-2xs)', color: 'var(--fg-subtle)' }}>
+        <div
+          style={{
+            padding: 'var(--sp-2) var(--sp-3)',
+            fontSize: 'var(--text-2xs)',
+            color: 'var(--fg-subtle)',
+          }}
+        >
           <IconSearch size={11} /> No match.
         </div>
       ) : (
@@ -544,12 +586,24 @@ function FilterResults({ result, onJump }: { result: FilterOutcome; onJump: (pat
         ))
       )}
       {result.matches.length > SHOWN && (
-        <div style={{ padding: 'var(--sp-1) var(--sp-3)', fontSize: 'var(--text-2xs)', color: 'var(--fg-subtle)' }}>
+        <div
+          style={{
+            padding: 'var(--sp-1) var(--sp-3)',
+            fontSize: 'var(--text-2xs)',
+            color: 'var(--fg-subtle)',
+          }}
+        >
           +{result.matches.length - SHOWN} more not shown
         </div>
       )}
       {result.truncated && (
-        <div style={{ padding: 'var(--sp-1) var(--sp-3)', fontSize: 'var(--text-2xs)', color: 'var(--fg-subtle)' }}>
+        <div
+          style={{
+            padding: 'var(--sp-1) var(--sp-3)',
+            fontSize: 'var(--text-2xs)',
+            color: 'var(--fg-subtle)',
+          }}
+        >
           Search stopped after 500 matches.
         </div>
       )}

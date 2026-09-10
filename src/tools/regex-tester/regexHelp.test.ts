@@ -43,17 +43,26 @@ describe('explainPattern', () => {
 
   it('describes a lazy quantifier', () => {
     const tokens = explainPattern('a*?')
-    expect(tokens[1]).toEqual({ token: '*?', meaning: '0 or more of the preceding token, as few times as possible (lazy)' })
+    expect(tokens[1]).toEqual({
+      token: '*?',
+      meaning: '0 or more of the preceding token, as few times as possible (lazy)',
+    })
   })
 
   it('describes a numbered backreference', () => {
     const tokens = explainPattern('(a)\\1')
-    expect(tokens[tokens.length - 1]).toEqual({ token: '\\1', meaning: 'Backreference to capturing group 1' })
+    expect(tokens[tokens.length - 1]).toEqual({
+      token: '\\1',
+      meaning: 'Backreference to capturing group 1',
+    })
   })
 
   it('describes an escaped special character as a literal', () => {
     const tokens = explainPattern('\\.')
-    expect(tokens[0]).toEqual({ token: '\\.', meaning: 'Escaped literal "." — matches the character itself, not as a special one' })
+    expect(tokens[0]).toEqual({
+      token: '\\.',
+      meaning: 'Escaped literal "." — matches the character itself, not as a special one',
+    })
   })
 
   it('returns nothing for an empty pattern', () => {

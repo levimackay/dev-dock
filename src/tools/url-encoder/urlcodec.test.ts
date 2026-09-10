@@ -41,7 +41,12 @@ describe('decodeUrl', () => {
   })
 
   it('treats empty input as empty output, not an error', () => {
-    expect(decodeUrl('', 'component', false)).toEqual({ ok: true, text: '', passes: 0, hitCap: false })
+    expect(decodeUrl('', 'component', false)).toEqual({
+      ok: true,
+      text: '',
+      passes: 0,
+      hitCap: false,
+    })
   })
 
   it('turns + into a space in form mode', () => {

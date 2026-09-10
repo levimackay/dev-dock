@@ -73,7 +73,11 @@ export default function TextDiffTool() {
     <ToolShell
       actions={
         <>
-          <Button size="sm" variant="ghost" onClick={() => patch({ left: SAMPLE_LEFT, right: SAMPLE_RIGHT })}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ left: SAMPLE_LEFT, right: SAMPLE_RIGHT })}
+          >
             Sample
           </Button>
           <Button
@@ -173,17 +177,17 @@ export default function TextDiffTool() {
         {!hasInput ? (
           <Panel>
             <EmptyState compact title="Nothing to compare yet" mark={<IconLayers size={24} />}>
-              Paste text on both sides above, or load the Sample to see word-level highlighting inside
-              changed lines.
+              Paste text on both sides above, or load the Sample to see word-level highlighting
+              inside changed lines.
             </EmptyState>
           </Panel>
         ) : (
           <>
             {result.degraded && (
               <Callout tone="warn" title="These inputs are too dissimilar for a precise diff">
-                The edit distance between the two texts exceeded the safety ceiling this tool uses to
-                stay responsive, so every line below is shown as a coarse remove-then-add instead of a
-                real line-by-line alignment.
+                The edit distance between the two texts exceeded the safety ceiling this tool uses
+                to stay responsive, so every line below is shown as a coarse remove-then-add instead
+                of a real line-by-line alignment.
               </Callout>
             )}
 
@@ -194,7 +198,8 @@ export default function TextDiffTool() {
             <Panel label="Diff">
               {!hasChanges ? (
                 <EmptyState compact title="No differences" mark={<IconLayers size={24} />}>
-                  The left and right text are identical{state.ignoreWhitespace || state.ignoreCase
+                  The left and right text are identical
+                  {state.ignoreWhitespace || state.ignoreCase
                     ? ' under the current ignore options.'
                     : '.'}
                 </EmptyState>
@@ -207,7 +212,11 @@ export default function TextDiffTool() {
                   idPrefix="text-diff"
                   collapse={
                     state.mode === 'unified'
-                      ? { threshold: state.contextLines * 2 + 1, context: state.contextLines, interactive: false }
+                      ? {
+                          threshold: state.contextLines * 2 + 1,
+                          context: state.contextLines,
+                          interactive: false,
+                        }
                       : undefined
                   }
                   onChangeGroups={setChangeGroups}

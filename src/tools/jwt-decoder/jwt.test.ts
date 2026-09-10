@@ -16,7 +16,11 @@ describe('decodeJwt', () => {
     const result = decodeJwt(SAMPLE_JWT)
     expect(result.ok).toBe(true)
     expect(result.header).toEqual({ alg: 'HS256', typ: 'JWT' })
-    expect(result.payload).toMatchObject({ sub: '1234567890', name: 'Ada Lovelace', iss: 'dev-dock' })
+    expect(result.payload).toMatchObject({
+      sub: '1234567890',
+      name: 'Ada Lovelace',
+      iss: 'dev-dock',
+    })
     expect(result.signatureB64Url).toBeTruthy()
   })
 

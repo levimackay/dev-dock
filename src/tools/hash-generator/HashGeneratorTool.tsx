@@ -182,8 +182,16 @@ export default function HashGeneratorTool() {
     >
       <OptionsBar>
         <OptionGroup>
-          <Checkbox label="Uppercase hex" checked={state.uppercase} onChange={(e) => patch({ uppercase: e.target.checked })} />
-          <Checkbox label="Show Base64" checked={state.base64} onChange={(e) => patch({ base64: e.target.checked })} />
+          <Checkbox
+            label="Uppercase hex"
+            checked={state.uppercase}
+            onChange={(e) => patch({ uppercase: e.target.checked })}
+          />
+          <Checkbox
+            label="Show Base64"
+            checked={state.base64}
+            onChange={(e) => patch({ base64: e.target.checked })}
+          />
         </OptionGroup>
         <OptionSpacer />
       </OptionsBar>
@@ -200,9 +208,17 @@ export default function HashGeneratorTool() {
           }
         >
           {file ? (
-            <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+            <div
+              style={{
+                padding: 'var(--sp-3)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--sp-2)',
+              }}
+            >
               <Callout tone="info" title={file.name}>
-                {formatBytes(file.size)} loaded. Switch back to typed text with Clear, or load a different file.
+                {formatBytes(file.size)} loaded. Switch back to typed text with Clear, or load a
+                different file.
               </Callout>
             </div>
           ) : (
@@ -218,9 +234,20 @@ export default function HashGeneratorTool() {
           )}
         </Panel>
 
-        <Panel label="Digests" status={computing ? 'computing…' : rows.length ? pluralize(rows.length, 'algorithm') : undefined}>
+        <Panel
+          label="Digests"
+          status={
+            computing ? 'computing…' : rows.length ? pluralize(rows.length, 'algorithm') : undefined
+          }
+        >
           {!sourceBytes ? (
-            <div style={{ padding: 'var(--sp-3)', color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
+            <div
+              style={{
+                padding: 'var(--sp-3)',
+                color: 'var(--fg-subtle)',
+                fontSize: 'var(--text-sm)',
+              }}
+            >
               Nothing to hash yet.
             </div>
           ) : (
@@ -252,7 +279,9 @@ export default function HashGeneratorTool() {
                       </span>
                       {broken && (
                         <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--fg-subtle)' }}>
-                          {row.algorithm === 'MD5' ? 'broken — checksums only' : 'broken — legacy only'}
+                          {row.algorithm === 'MD5'
+                            ? 'broken — checksums only'
+                            : 'broken — legacy only'}
                         </div>
                       )}
                     </div>
@@ -277,7 +306,14 @@ export default function HashGeneratorTool() {
 
         {rows.length > 0 && (
           <Panel label="Compare with">
-            <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+            <div
+              style={{
+                padding: 'var(--sp-3)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--sp-2)',
+              }}
+            >
               <Field
                 label="Expected digest"
                 htmlFor={compareFieldId}
@@ -293,7 +329,11 @@ export default function HashGeneratorTool() {
                 />
               </Field>
               {compareResult && (
-                <Callout tone={compareResult.ok ? 'ok' : 'err'} title={compareResult.ok ? 'Match' : 'No match'} live>
+                <Callout
+                  tone={compareResult.ok ? 'ok' : 'err'}
+                  title={compareResult.ok ? 'Match' : 'No match'}
+                  live
+                >
                   {compareResult.message}
                 </Callout>
               )}

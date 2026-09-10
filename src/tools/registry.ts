@@ -13,11 +13,19 @@ import type { ToolCategory, ToolCategoryId, ToolDefinition } from './types'
 
 export const CATEGORIES: ToolCategory[] = [
   { id: 'data', label: 'Data', blurb: 'Read, reshape, and sanity-check structured payloads.' },
-  { id: 'encoding', label: 'Encoding', blurb: 'Move bytes between the representations wires want.' },
+  {
+    id: 'encoding',
+    label: 'Encoding',
+    blurb: 'Move bytes between the representations wires want.',
+  },
   { id: 'text', label: 'Text', blurb: 'Compare, transform, and measure prose and source.' },
   { id: 'time', label: 'Time', blurb: 'Translate between the many ways machines write a moment.' },
   { id: 'web', label: 'Web', blurb: 'Inspect the pieces of a request, a URL, and a colour.' },
-  { id: 'generate', label: 'Generate', blurb: 'Produce identifiers and filler that look real enough.' },
+  {
+    id: 'generate',
+    label: 'Generate',
+    blurb: 'Produce identifiers and filler that look real enough.',
+  },
 ]
 
 export const TOOLS: ToolDefinition[] = [
@@ -206,7 +214,17 @@ export const TOOLS: ToolDefinition[] = [
     name: 'Test Data',
     short: 'Lorem ipsum and believable fake records as text, JSON, CSV, or SQL.',
     category: 'generate',
-    keywords: ['lorem', 'ipsum', 'fake', 'mock', 'seed', 'placeholder', 'test data', 'faker', 'csv'],
+    keywords: [
+      'lorem',
+      'ipsum',
+      'fake',
+      'mock',
+      'seed',
+      'placeholder',
+      'test data',
+      'faker',
+      'csv',
+    ],
     Component: lazy(() => import('./test-data/TestDataTool')),
   },
 ]

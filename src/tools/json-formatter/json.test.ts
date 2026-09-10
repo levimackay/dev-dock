@@ -21,7 +21,11 @@ describe('processJson — pretty', () => {
 
   it('returns empty output for empty input, not an error', () => {
     const result = processJson('   ', 'pretty', opts)
-    expect(result).toEqual({ ok: true, output: '', stats: expect.objectContaining({ root: 'other' }) })
+    expect(result).toEqual({
+      ok: true,
+      output: '',
+      stats: expect.objectContaining({ root: 'other' }),
+    })
   })
 
   it('sorts keys recursively when asked', () => {

@@ -60,15 +60,37 @@ export interface CronParseError {
 }
 
 export type CronParseResult =
-  | { ok: true; expression: CronExpression }
-  | { ok: false; error: CronParseError }
+  { ok: true; expression: CronExpression } | { ok: false; error: CronParseError }
 
-const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+const MONTH_NAMES = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+]
 const DAY_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 const DAY_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const MONTH_LONG = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
 export const MACROS: Record<string, { expression: string; description: string }> = {
@@ -227,7 +249,8 @@ export function parseCron(input: string): CronParseResult {
         return {
           ok: false,
           error: {
-            message: '@every is a Go (robfig/cron) extension, not standard cron. Use a */n step instead.',
+            message:
+              '@every is a Go (robfig/cron) extension, not standard cron. Use a */n step instead.',
           },
         }
       }
@@ -364,7 +387,6 @@ export function nextRuns(
   const horizon = from.getTime() + 5 * 366 * 24 * 60 * 60 * 1000
 
   while (runs.length < count && cursor.getTime() <= horizon) {
-
     if (!expr.months.values.includes((utc ? cursor.getUTCMonth() : cursor.getMonth()) + 1)) {
       advanceToNextDay(cursor, utc)
       continue
@@ -457,8 +479,16 @@ export function describeCron(expr: CronExpression): string {
   if (everySecond) {
     parts.push('Every second')
   } else if (everyMinute && everyHour) {
-    parts.push(expr.hasSeconds ? `At second ${joinList(expr.seconds.values.map(String))} of every minute` : 'Every minute')
-  } else if (!everyMinute && !everyHour && expr.minutes.values.length * expr.hours.values.length <= 24) {
+    parts.push(
+      expr.hasSeconds
+        ? `At second ${joinList(expr.seconds.values.map(String))} of every minute`
+        : 'Every minute',
+    )
+  } else if (
+    !everyMinute &&
+    !everyHour &&
+    expr.minutes.values.length * expr.hours.values.length <= 24
+  ) {
     // Small enough to spell out as clock times, which reads far better than
     // "minute 30 past hour 9 and 17".
     const times: string[] = []
@@ -505,7 +535,9 @@ export function describeCron(expr: CronExpression): string {
 }
 
 /** Field-by-field breakdown for the UI's explanation table. */
-export function explainFields(expr: CronExpression): Array<{ field: string; raw: string; meaning: string }> {
+export function explainFields(
+  expr: CronExpression,
+): Array<{ field: string; raw: string; meaning: string }> {
   const rows: Array<{ field: string; raw: string; meaning: string }> = []
   if (expr.hasSeconds) {
     rows.push({

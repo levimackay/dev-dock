@@ -47,17 +47,16 @@ afterEach(() => {
 
 // jsdom implements neither of these, and several tools depend on them.
 if (!globalThis.matchMedia) {
-  const stub: typeof globalThis.matchMedia = (query: string) =>
-    ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })
+  const stub: typeof globalThis.matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })
   globalThis.matchMedia = stub
 }
 

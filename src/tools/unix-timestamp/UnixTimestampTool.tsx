@@ -39,13 +39,38 @@ const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 // (Firefox before 113, Safari before 17). Full coverage isn't the point —
 // covering the zones someone actually reaches for is.
 const FALLBACK_ZONES = [
-  'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
-  'America/Anchorage', 'America/Sao_Paulo', 'America/Mexico_City', 'America/Toronto',
-  'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Madrid', 'Europe/Rome',
-  'Europe/Moscow', 'Europe/Istanbul', 'Africa/Cairo', 'Africa/Johannesburg',
-  'Asia/Dubai', 'Asia/Karachi', 'Asia/Kolkata', 'Asia/Dhaka', 'Asia/Bangkok',
-  'Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Tokyo', 'Asia/Seoul', 'Asia/Singapore',
-  'Australia/Sydney', 'Australia/Perth', 'Pacific/Auckland', 'Pacific/Honolulu',
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'America/Sao_Paulo',
+  'America/Mexico_City',
+  'America/Toronto',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Madrid',
+  'Europe/Rome',
+  'Europe/Moscow',
+  'Europe/Istanbul',
+  'Africa/Cairo',
+  'Africa/Johannesburg',
+  'Asia/Dubai',
+  'Asia/Karachi',
+  'Asia/Kolkata',
+  'Asia/Dhaka',
+  'Asia/Bangkok',
+  'Asia/Shanghai',
+  'Asia/Hong_Kong',
+  'Asia/Tokyo',
+  'Asia/Seoul',
+  'Asia/Singapore',
+  'Australia/Sydney',
+  'Australia/Perth',
+  'Pacific/Auckland',
+  'Pacific/Honolulu',
 ]
 
 function listZones(): string[] {
@@ -105,7 +130,15 @@ function ResultRow({ label, value }: { label: string; value: string }) {
       >
         {label}
       </span>
-      <code style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', overflowWrap: 'anywhere' }}>
+      <code
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-sm)',
+          overflowWrap: 'anywhere',
+        }}
+      >
         {value}
       </code>
       <CopyButton value={value} iconOnly label={`Copy ${label}`} />
@@ -130,8 +163,12 @@ export default function UnixTimestampTool() {
     return () => clearInterval(id)
   }, [paused])
 
-  const effectiveUnit: TimestampUnit = state.unitOverride === 'auto' ? detectUnit(state.input) : state.unitOverride
-  const parsed = useMemo(() => (state.input.trim() ? toInstant(state.input, effectiveUnit) : undefined), [state.input, effectiveUnit])
+  const effectiveUnit: TimestampUnit =
+    state.unitOverride === 'auto' ? detectUnit(state.input) : state.unitOverride
+  const parsed = useMemo(
+    () => (state.input.trim() ? toInstant(state.input, effectiveUnit) : undefined),
+    [state.input, effectiveUnit],
+  )
 
   const parsedFields = parseDatetimeLocalValue(state.dtLocal)
   const fromPicker = parsedFields ? zonedTimeToUtc(parsedFields, state.zone) : undefined
@@ -152,19 +189,43 @@ export default function UnixTimestampTool() {
       }
     >
       <Panel label="Now" status={paused ? 'paused' : 'live'}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', padding: 'var(--sp-3)', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--sp-3)',
+            padding: 'var(--sp-3)',
+            flexWrap: 'wrap',
+          }}
+        >
           <IconClock size={16} />
-          <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-md)', fontVariantNumeric: 'tabular-nums' }}>
+          <code
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--text-md)',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
             {formatInZone(now, LOCAL_ZONE)}
           </code>
-          <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', color: 'var(--fg-subtle)' }}>
+          <code
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--text-sm)',
+              color: 'var(--fg-subtle)',
+            }}
+          >
             {fromDate(now).seconds}s · {fromDate(now).milliseconds}ms
           </code>
           <OptionSpacer />
           <Button size="sm" variant="ghost" pressed={paused} onClick={() => setPaused((v) => !v)}>
             {paused ? 'Resume' : 'Pause'}
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => patch({ input: fromDate(now).seconds, unitOverride: 'seconds' })}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => patch({ input: fromDate(now).seconds, unitOverride: 'seconds' })}
+          >
             Snap top to now
           </Button>
           <Button
@@ -180,8 +241,22 @@ export default function UnixTimestampTool() {
       <PaneStack>
         {/* -------------------------------------------------- timestamp -> instant */}
         <Panel label="Timestamp → instant">
-          <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--sp-3) var(--sp-4)' }}>
+          <div
+            style={{
+              padding: 'var(--sp-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--sp-3)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 'var(--sp-3) var(--sp-4)',
+              }}
+            >
               <OptionGroup label="Timestamp">
                 <TextInput
                   mono
@@ -198,7 +273,11 @@ export default function UnixTimestampTool() {
                   value={state.unitOverride}
                   onChange={(unitOverride) => patch({ unitOverride })}
                   options={[
-                    { value: 'auto', label: `Auto (${UNIT_LABEL[effectiveUnit]})`, title: 'Detected from the number of digits' },
+                    {
+                      value: 'auto',
+                      label: `Auto (${UNIT_LABEL[effectiveUnit]})`,
+                      title: 'Detected from the number of digits',
+                    },
                     ...UNITS.map((u) => ({ value: u, label: UNIT_LABEL[u] })),
                   ]}
                 />
@@ -208,8 +287,8 @@ export default function UnixTimestampTool() {
             {!state.input.trim() ? (
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
                 Type an epoch timestamp above — seconds, milliseconds, microseconds, or nanoseconds,
-                positive or negative. The unit is guessed from its magnitude; override it if the guess
-                is wrong.
+                positive or negative. The unit is guessed from its magnitude; override it if the
+                guess is wrong.
               </p>
             ) : !parsed?.ok ? (
               <Callout tone="err" title="Cannot parse this timestamp" live>
@@ -219,12 +298,18 @@ export default function UnixTimestampTool() {
               <>
                 {parsed.near2038 && (
                   <Callout tone="warn" title="Near the 2038 rollover">
-                    This instant is within 90 days of 2038-01-19T03:14:07Z, the moment a signed 32-bit
-                    seconds counter overflows. Systems still storing time as a C `time_t` on a 32-bit
-                    build will wrap to a negative value there.
+                    This instant is within 90 days of 2038-01-19T03:14:07Z, the moment a signed
+                    32-bit seconds counter overflows. Systems still storing time as a C `time_t` on
+                    a 32-bit build will wrap to a negative value there.
                   </Callout>
                 )}
-                <div style={{ border: 'var(--hairline) solid var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    border: 'var(--hairline) solid var(--line)',
+                    borderRadius: 'var(--radius)',
+                    overflow: 'hidden',
+                  }}
+                >
                   <ResultRow label="Local" value={formatInZone(parsed.date!, LOCAL_ZONE)} />
                   <ResultRow label="UTC" value={formatInZone(parsed.date!, 'UTC')} />
                   <ResultRow label="ISO 8601" value={toIso8601(parsed.date!)} />
@@ -240,8 +325,22 @@ export default function UnixTimestampTool() {
 
         {/* -------------------------------------------------- instant -> timestamp */}
         <Panel label="Instant → timestamp">
-          <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
-            <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div
+            style={{
+              padding: 'var(--sp-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--sp-3)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                gap: 'var(--sp-3)',
+                flexWrap: 'wrap',
+                alignItems: 'flex-end',
+              }}
+            >
               <Field label="Date & time" htmlFor={dtFieldId}>
                 <TextInput
                   id={dtFieldId}
@@ -252,7 +351,11 @@ export default function UnixTimestampTool() {
                 />
               </Field>
               <Field label="Time zone" htmlFor={zoneFieldId}>
-                <Select id={zoneFieldId} value={state.zone} onChange={(e) => patch({ zone: e.target.value })}>
+                <Select
+                  id={zoneFieldId}
+                  value={state.zone}
+                  onChange={(e) => patch({ zone: e.target.value })}
+                >
                   {ZONES.map((zone) => (
                     <option key={zone} value={zone}>
                       {zone}
@@ -264,11 +367,17 @@ export default function UnixTimestampTool() {
 
             {!parsedFields ? (
               <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--text-sm)' }}>
-                Pick a date and time above — using your browser's own date/time control, interpreted in
-                the time zone you choose — to get its epoch value in every unit.
+                Pick a date and time above — using your browser's own date/time control, interpreted
+                in the time zone you choose — to get its epoch value in every unit.
               </p>
             ) : (
-              <div style={{ border: 'var(--hairline) solid var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+              <div
+                style={{
+                  border: 'var(--hairline) solid var(--line)',
+                  borderRadius: 'var(--radius)',
+                  overflow: 'hidden',
+                }}
+              >
                 <ResultRow label="Seconds" value={pickerEpochs!.seconds} />
                 <ResultRow label="Millis" value={pickerEpochs!.milliseconds} />
                 <ResultRow label="Micros" value={pickerEpochs!.microseconds} />

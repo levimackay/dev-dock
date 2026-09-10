@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  decodeBase64,
-  encodeBase64,
-  looksLikeBase64,
-  normalizeBase64,
-  toHexDump,
-} from './base64'
+import { decodeBase64, encodeBase64, looksLikeBase64, normalizeBase64, toHexDump } from './base64'
 
 const opts = { variant: 'standard' as const, lineBreaks: false, padding: true }
 

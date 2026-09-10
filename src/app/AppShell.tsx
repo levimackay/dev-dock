@@ -91,10 +91,14 @@ export function AppShell() {
     return [...tools, ...actions]
   }, [navigate, cycleTheme, clearRecents, resetEverything])
 
-  useHotkey('mod+k', (e) => {
-    e.preventDefault()
-    setPaletteOpen(true)
-  }, { allowInInput: true })
+  useHotkey(
+    'mod+k',
+    (e) => {
+      e.preventDefault()
+      setPaletteOpen(true)
+    },
+    { allowInInput: true },
+  )
 
   useHotkey('slash', (e) => {
     e.preventDefault()
@@ -106,15 +110,23 @@ export function AppShell() {
     setShortcutsOpen(true)
   })
 
-  useHotkey('mod+b', (e) => {
-    e.preventDefault()
-    setRailOpen((open) => !open)
-  }, { allowInInput: true })
+  useHotkey(
+    'mod+b',
+    (e) => {
+      e.preventDefault()
+      setRailOpen((open) => !open)
+    },
+    { allowInInput: true },
+  )
 
-  useHotkey('mod+shift+l', (e) => {
-    e.preventDefault()
-    cycleTheme()
-  }, { allowInInput: true })
+  useHotkey(
+    'mod+shift+l',
+    (e) => {
+      e.preventDefault()
+      cycleTheme()
+    },
+    { allowInInput: true },
+  )
 
   const ThemeIcon = theme === 'light' ? IconSun : theme === 'dark' ? IconMoon : IconMonitor
   const themeLabel = `Theme: ${theme}. Activate to switch.`

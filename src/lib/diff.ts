@@ -66,8 +66,7 @@ export function diffSequences<T>(
   }
 
   const head: DiffChunk<T>[] = start > 0 ? [{ op: 'equal', values: a.slice(0, start) }] : []
-  const tail: DiffChunk<T>[] =
-    endA < a.length ? [{ op: 'equal', values: a.slice(endA) }] : []
+  const tail: DiffChunk<T>[] = endA < a.length ? [{ op: 'equal', values: a.slice(endA) }] : []
 
   const midA = a.slice(start, endA)
   const midB = b.slice(start, endB)
@@ -233,8 +232,10 @@ export function diffLines(
   let unchanged = 0
 
   if (!chunks) {
-    for (const text of leftLines) lines.push({ op: 'delete', text, leftNo: ++leftNo, rightNo: null })
-    for (const text of rightLines) lines.push({ op: 'insert', text, leftNo: null, rightNo: ++rightNo })
+    for (const text of leftLines)
+      lines.push({ op: 'delete', text, leftNo: ++leftNo, rightNo: null })
+    for (const text of rightLines)
+      lines.push({ op: 'insert', text, leftNo: null, rightNo: ++rightNo })
     return {
       lines,
       added: rightLines.length,

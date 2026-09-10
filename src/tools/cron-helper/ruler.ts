@@ -43,7 +43,8 @@ export interface LabelledToken extends FieldToken {
  * guessing.
  */
 export function labelCronTokens(tokens: FieldToken[]): LabelledToken[] {
-  const names = tokens.length === 6 ? SIX_FIELD_NAMES : tokens.length === 5 ? FIVE_FIELD_NAMES : undefined
+  const names =
+    tokens.length === 6 ? SIX_FIELD_NAMES : tokens.length === 5 ? FIVE_FIELD_NAMES : undefined
   if (!names) return []
   return tokens.map((token, i) => ({ ...token, field: names[i]! }))
 }

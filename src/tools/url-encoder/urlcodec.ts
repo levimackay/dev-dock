@@ -51,7 +51,10 @@ export function encodeUrl(text: string, mode: UrlEncodeMode): string {
  * the first percent escape that is not two valid hex digits, or that starts a
  * UTF-8 sequence the decoder would reject.
  */
-function decodeOnce(text: string, mode: UrlEncodeMode): { ok: true; text: string } | { ok: false; error: string } {
+function decodeOnce(
+  text: string,
+  mode: UrlEncodeMode,
+): { ok: true; text: string } | { ok: false; error: string } {
   const input = mode === 'form' ? text.replace(/\+/g, ' ') : text
 
   try {
@@ -118,9 +121,9 @@ export function decodeUrl(text: string, mode: UrlEncodeMode, repeat: boolean): D
     if (!result.ok) {
       return passes === 0
         ? { ok: false, text: '', error: result.error, passes, hitCap: false }
-        // A later pass failing to decode further just means we are done —
-        // return what stabilised, not an error.
-        : { ok: true, text: current, passes, hitCap: false }
+        : // A later pass failing to decode further just means we are done —
+          // return what stabilised, not an error.
+          { ok: true, text: current, passes, hitCap: false }
     }
     passes++
     if (result.text === current) break // nothing changed; already stable

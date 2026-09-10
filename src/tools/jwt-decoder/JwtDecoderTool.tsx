@@ -64,7 +64,9 @@ export default function JwtDecoderTool() {
   // useState keeps it local to this tab's memory for this session only.
   const [secret, setSecret] = useState('')
   const [showSecret, setShowSecret] = useState(false)
-  const [verifyResult, setVerifyResult] = useState<{ match?: boolean; error?: string } | undefined>()
+  const [verifyResult, setVerifyResult] = useState<
+    { match?: boolean; error?: string } | undefined
+  >()
   const [verifying, setVerifying] = useState(false)
 
   const decoded = useMemo(() => decodeJwt(state.token), [state.token])
@@ -121,7 +123,11 @@ export default function JwtDecoderTool() {
       stats.push({
         label: key,
         value: time.absolute,
-        note: tone ? <span style={{ color: `var(--${tone})` }}>{time.relative}</span> : time.relative,
+        note: tone ? (
+          <span style={{ color: `var(--${tone})` }}>{time.relative}</span>
+        ) : (
+          time.relative
+        ),
       })
     }
     return stats
@@ -155,16 +161,18 @@ export default function JwtDecoderTool() {
       }
     >
       <Callout tone="warn" title="Decoding is not verification">
-        Anyone can construct a JWT with any header and payload — only a valid signature proves it came
-        from whoever holds the key. A token is often itself a credential (a bearer token): treat a token
-        you did not issue as sensitive, and never paste a live session token here and then Share the
-        link.
+        Anyone can construct a JWT with any header and payload — only a valid signature proves it
+        came from whoever holds the key. A token is often itself a credential (a bearer token):
+        treat a token you did not issue as sensitive, and never paste a live session token here and
+        then Share the link.
       </Callout>
 
       <PaneStack>
         <Panel
           label="Token"
-          status={state.token ? pluralize(state.token.trim().split('.').length, 'segment') : undefined}
+          status={
+            state.token ? pluralize(state.token.trim().split('.').length, 'segment') : undefined
+          }
         >
           <CodeArea
             label="Compact JWT (header.payload.signature)"
@@ -193,11 +201,14 @@ export default function JwtDecoderTool() {
         ) : (
           <>
             {decoded.algNone && (
-              <Callout tone="err" title={`alg: "${decoded.header?.alg}" — no signature is possible`}>
-                This token declares the JWS "none" algorithm, which has no signature at all. A server
-                that honours <code>alg: none</code> on an incoming token is trivially bypassable — this
-                is a real, historical vulnerability class, not a theoretical one. Never treat a "none"
-                token as authenticated.
+              <Callout
+                tone="err"
+                title={`alg: "${decoded.header?.alg}" — no signature is possible`}
+              >
+                This token declares the JWS "none" algorithm, which has no signature at all. A
+                server that honours <code>alg: none</code> on an incoming token is trivially
+                bypassable — this is a real, historical vulnerability class, not a theoretical one.
+                Never treat a "none" token as authenticated.
               </Callout>
             )}
 
@@ -206,13 +217,31 @@ export default function JwtDecoderTool() {
               labelFirst="header"
               labelSecond="payload"
               input={
-                <Panel label="Header" actions={<CopyButton value={JSON.stringify(decoded.header, null, 2)} />}>
-                  <CodeArea label="Decoded header" value={JSON.stringify(decoded.header, null, 2)} readOnly lineNumbers softWrap />
+                <Panel
+                  label="Header"
+                  actions={<CopyButton value={JSON.stringify(decoded.header, null, 2)} />}
+                >
+                  <CodeArea
+                    label="Decoded header"
+                    value={JSON.stringify(decoded.header, null, 2)}
+                    readOnly
+                    lineNumbers
+                    softWrap
+                  />
                 </Panel>
               }
               output={
-                <Panel label="Payload" actions={<CopyButton value={JSON.stringify(decoded.payload, null, 2)} />}>
-                  <CodeArea label="Decoded payload" value={JSON.stringify(decoded.payload, null, 2)} readOnly lineNumbers softWrap />
+                <Panel
+                  label="Payload"
+                  actions={<CopyButton value={JSON.stringify(decoded.payload, null, 2)} />}
+                >
+                  <CodeArea
+                    label="Decoded payload"
+                    value={JSON.stringify(decoded.payload, null, 2)}
+                    readOnly
+                    lineNumbers
+                    softWrap
+                  />
                 </Panel>
               }
             />
@@ -226,14 +255,21 @@ export default function JwtDecoderTool() {
             )}
 
             <Panel label="Local HMAC verification">
-              <div style={{ padding: 'var(--sp-3)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+              <div
+                style={{
+                  padding: 'var(--sp-3)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--sp-3)',
+                }}
+              >
                 {!isHmacAlgorithm(alg) ? (
                   <Callout tone="info" title={`${alg ?? 'This algorithm'} is not verifiable here`}>
-                    Only HS256, HS384, and HS512 are offered — those verify against a shared secret, which
-                    is the only kind of key this tool ever asks for. RS*, ES*, and PS* algorithms verify
-                    against a public key instead (a JWK or PEM, with algorithm-specific padding or curve
-                    handling), which is a different code path this tool does not implement rather than
-                    fake.
+                    Only HS256, HS384, and HS512 are offered — those verify against a shared secret,
+                    which is the only kind of key this tool ever asks for. RS*, ES*, and PS*
+                    algorithms verify against a public key instead (a JWK or PEM, with
+                    algorithm-specific padding or curve handling), which is a different code path
+                    this tool does not implement rather than fake.
                   </Callout>
                 ) : (
                   <>
@@ -288,8 +324,8 @@ export default function JwtDecoderTool() {
                           </Callout>
                         ) : verifyResult?.match === false ? (
                           <Callout tone="err" title="Signature does not match">
-                            Either the secret, the algorithm, or the token itself does not match what
-                            actually signed this token.
+                            Either the secret, the algorithm, or the token itself does not match
+                            what actually signed this token.
                           </Callout>
                         ) : null}
                       </div>

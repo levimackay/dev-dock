@@ -86,15 +86,23 @@ export default function Base64Tool() {
     toast.show(`Loaded ${file.name} as Base64 (${formatBytes(file.size)}).`, 'ok')
   }
 
-  useHotkey('mod+shift+c', (e) => {
-    e.preventDefault()
-    void navigator.clipboard?.writeText(result.output)
-  }, { allowInInput: true })
+  useHotkey(
+    'mod+shift+c',
+    (e) => {
+      e.preventDefault()
+      void navigator.clipboard?.writeText(result.output)
+    },
+    { allowInInput: true },
+  )
 
-  useHotkey('mod+shift+backspace', (e) => {
-    e.preventDefault()
-    patch({ input: '' })
-  }, { allowInInput: true })
+  useHotkey(
+    'mod+shift+backspace',
+    (e) => {
+      e.preventDefault()
+      patch({ input: '' })
+    },
+    { allowInInput: true },
+  )
 
   const suggestDecode =
     state.direction === 'encode' && state.input.length > 24 && looksLikeBase64(state.input)
@@ -216,7 +224,9 @@ export default function Base64Tool() {
             status={
               result.output && !result.error ? pluralize(result.output.length, 'char') : undefined
             }
-            actions={<CopyButton value={result.output} disabled={!result.output || !!result.error} />}
+            actions={
+              <CopyButton value={result.output} disabled={!result.output || !!result.error} />
+            }
           >
             {result.error ? (
               <div style={{ padding: 'var(--sp-3)' }}>
@@ -227,7 +237,9 @@ export default function Base64Tool() {
             ) : !state.input ? (
               <EmptyState
                 compact
-                title={state.direction === 'encode' ? 'Nothing to encode yet' : 'Nothing to decode yet'}
+                title={
+                  state.direction === 'encode' ? 'Nothing to encode yet' : 'Nothing to decode yet'
+                }
                 mark={<IconLayers size={24} />}
               >
                 {state.direction === 'encode'

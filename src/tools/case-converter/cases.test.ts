@@ -51,7 +51,14 @@ describe('splitWords', () => {
   })
 
   it('handles a realistic mixed identifier', () => {
-    expect(splitWords('get_XMLHttpRequest2Value')).toEqual(['get', 'XML', 'Http', 'Request', '2', 'Value'])
+    expect(splitWords('get_XMLHttpRequest2Value')).toEqual([
+      'get',
+      'XML',
+      'Http',
+      'Request',
+      '2',
+      'Value',
+    ])
   })
 })
 

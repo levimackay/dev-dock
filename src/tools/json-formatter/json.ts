@@ -76,14 +76,24 @@ export function processJson(input: string, mode: JsonMode, options: JsonFormatOp
   // Validate is read-only: it reports on the structure without rewriting what
   // was pasted, so there is nothing to show as "after" size.
   if (mode === 'validate') {
-    return { ok: true, output: '', stats: { ...measure(shaped), bytesBefore, bytesAfter: bytesBefore } }
+    return {
+      ok: true,
+      output: '',
+      stats: { ...measure(shaped), bytesBefore, bytesAfter: bytesBefore },
+    }
   }
 
   let output =
-    mode === 'minify' ? JSON.stringify(shaped) : JSON.stringify(shaped, null, INDENTS[options.indent])
+    mode === 'minify'
+      ? JSON.stringify(shaped)
+      : JSON.stringify(shaped, null, INDENTS[options.indent])
   if (options.escapeNonAscii) output = escapeNonAsciiText(output)
 
-  return { ok: true, output, stats: { ...measure(shaped), bytesBefore, bytesAfter: byteLength(output) } }
+  return {
+    ok: true,
+    output,
+    stats: { ...measure(shaped), bytesBefore, bytesAfter: byteLength(output) },
+  }
 }
 
 function byteLength(text: string): number {
@@ -94,7 +104,9 @@ function byteLength(text: string): number {
 export function sortKeysDeep(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sortKeysDeep)
   if (value !== null && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
+    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
+      a.localeCompare(b),
+    )
     const out: Record<string, unknown> = {}
     for (const [key, entryValue] of entries) out[key] = sortKeysDeep(entryValue)
     return out
@@ -138,7 +150,11 @@ function measure(value: unknown): Omit<JsonStats, 'bytesBefore' | 'bytesAfter'> 
   }
   walk(value, 1)
 
-  const root = Array.isArray(value) ? 'array' : value !== null && typeof value === 'object' ? 'object' : 'other'
+  const root = Array.isArray(value)
+    ? 'array'
+    : value !== null && typeof value === 'object'
+      ? 'object'
+      : 'other'
   return { root, maxDepth, objectCount, arrayCount, keyCount }
 }
 
@@ -192,7 +208,8 @@ function scanForKnownIssues(input: string): ScanIssue[] {
       const offset = i
       issues.push({
         offset,
-        headline: () => 'Single quotes are not valid JSON — object keys and string values need double quotes (").',
+        headline: () =>
+          'Single quotes are not valid JSON — object keys and string values need double quotes (").',
       })
       // Skip the rest of this pseudo-string so its contents cannot trigger
       // a second, misleading issue below.
@@ -211,7 +228,10 @@ function scanForKnownIssues(input: string): ScanIssue[] {
 
     if (ch === '/' && input.charAt(i + 1) === '*') {
       const offset = i
-      issues.push({ offset, headline: () => 'JSON has no comments — remove this /* */ block comment.' })
+      issues.push({
+        offset,
+        headline: () => 'JSON has no comments — remove this /* */ block comment.',
+      })
       const close = input.indexOf('*/', i + 2)
       i = close === -1 ? n : close + 2
       continue
@@ -225,7 +245,8 @@ function scanForKnownIssues(input: string): ScanIssue[] {
         const offset = i
         issues.push({
           offset,
-          headline: () => `Trailing comma before the closing "${next}" — remove it, JSON has no trailing commas.`,
+          headline: () =>
+            `Trailing comma before the closing "${next}" — remove it, JSON has no trailing commas.`,
         })
       }
       i++
@@ -244,7 +265,8 @@ function scanForKnownIssues(input: string): ScanIssue[] {
         if (input.charAt(k) === ':') {
           issues.push({
             offset: start,
-            headline: () => `Unquoted key "${word}" — object keys must be wrapped in double quotes.`,
+            headline: () =>
+              `Unquoted key "${word}" — object keys must be wrapped in double quotes.`,
           })
         } else if (word === 'NaN' || word === 'Infinity' || word === 'undefined') {
           issues.push({
@@ -262,7 +284,8 @@ function scanForKnownIssues(input: string): ScanIssue[] {
       const offset = i
       issues.push({
         offset,
-        headline: () => '"-Infinity" is not a valid JSON value — JSON has no Infinity. Use null, or a quoted string.',
+        headline: () =>
+          '"-Infinity" is not a valid JSON value — JSON has no Infinity. Use null, or a quoted string.',
       })
       i += 9
       continue
@@ -334,7 +357,10 @@ function findTruncation(input: string): { offset: number; message: string } | un
   }
 
   if (inString) {
-    return { offset: stringStart, message: 'Truncated input — this string is opened here but never closed.' }
+    return {
+      offset: stringStart,
+      message: 'Truncated input — this string is opened here but never closed.',
+    }
   }
   const last = stack.at(-1)
   if (last) {
@@ -379,7 +405,11 @@ function describeFromEngineMessage(input: string, message: string): string {
       )
     }
     if (/Unterminated string/.test(message)) {
-      return withLocation('Truncated input — this string is opened here but never closed.', input, offset)
+      return withLocation(
+        'Truncated input — this string is opened here but never closed.',
+        input,
+        offset,
+      )
     }
     return withLocation(cleanEngineMessage(message), input, offset)
   }
@@ -392,7 +422,9 @@ function describeFromEngineMessage(input: string, message: string): string {
 
 /** Strips the "in JSON" filler and any trailing position clause the engine adds. */
 function cleanEngineMessage(message: string): string {
-  return message.replace(/\s*in JSON at position \d+.*$/s, '').replace(/\s*\(line \d+ column \d+\)\s*$/, '')
+  return message
+    .replace(/\s*in JSON at position \d+.*$/s, '')
+    .replace(/\s*\(line \d+ column \d+\)\s*$/, '')
 }
 
 export function describeJsonError(input: string, error: unknown): string {

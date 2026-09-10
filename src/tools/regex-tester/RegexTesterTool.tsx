@@ -91,6 +91,9 @@ export default function RegexTesterTool() {
   const [response, setResponse] = useState<RegexResponse | null>(null)
   useEffect(() => {
     if (debounced.pattern === '') {
+      // Clearing the previous worker result, not deriving state: there is no
+      // render-time expression for "the last async answer is now void".
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResponse(null)
       return
     }
@@ -127,7 +130,12 @@ export default function RegexTesterTool() {
     <ToolShell
       actions={
         <>
-          <Button size="sm" variant="ghost" onClick={() => setShowCheatsheet((v) => !v)} pressed={showCheatsheet}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowCheatsheet((v) => !v)}
+            pressed={showCheatsheet}
+          >
             Cheatsheet
           </Button>
           <Button
@@ -207,10 +215,7 @@ export default function RegexTesterTool() {
           labelFirst="test text"
           labelSecond="highlighted matches"
           input={
-            <Panel
-              label="Test text"
-              status={pluralize(state.text.length, 'char')}
-            >
+            <Panel label="Test text" status={pluralize(state.text.length, 'char')}>
               <CodeArea
                 label="Text to test the pattern against"
                 value={state.text}
@@ -232,8 +237,8 @@ export default function RegexTesterTool() {
             >
               {!state.pattern ? (
                 <EmptyState compact title="Enter a pattern above" mark={<IconSearch size={24} />}>
-                  Matches highlight here as you type, with a 150ms debounce so every keystroke does not
-                  run the pattern.
+                  Matches highlight here as you type, with a 150ms debounce so every keystroke does
+                  not run the pattern.
                 </EmptyState>
               ) : response === null ? (
                 <EmptyState compact title="Waiting…" mark={<IconSearch size={24} />} />
@@ -250,7 +255,9 @@ export default function RegexTesterTool() {
                   The pattern is valid but does not match anything in the test text.
                 </EmptyState>
               ) : (
-                <div className={styles.highlighted}>{renderHighlighted(state.text, response.matches)}</div>
+                <div className={styles.highlighted} role="status" aria-live="polite">
+                  {renderHighlighted(state.text, response.matches)}
+                </div>
               )}
             </Panel>
           }
@@ -273,14 +280,18 @@ export default function RegexTesterTool() {
                         <li key={`g${gi}`} className={styles.groupItem}>
                           <span className={styles.groupLabel}>${gi + 1}</span>
                           <code className={styles.groupValue}>{g ?? '(no match)'}</code>
-                          {g !== undefined && <CopyButton value={g} size="sm" variant="ghost" iconOnly />}
+                          {g !== undefined && (
+                            <CopyButton value={g} size="sm" variant="ghost" iconOnly />
+                          )}
                         </li>
                       ))}
                       {Object.entries(m.named).map(([name, value]) => (
                         <li key={name} className={styles.groupItem}>
                           <span className={styles.groupLabel}>{name}</span>
                           <code className={styles.groupValue}>{value ?? '(no match)'}</code>
-                          {value !== undefined && <CopyButton value={value} size="sm" variant="ghost" iconOnly />}
+                          {value !== undefined && (
+                            <CopyButton value={value} size="sm" variant="ghost" iconOnly />
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -309,13 +320,18 @@ export default function RegexTesterTool() {
                 />
                 {response?.ok && response.replaced !== undefined ? (
                   <div className={styles.replaceResult}>
-                    <CodeArea label="Replacement result" value={response.replaced} readOnly softWrap />
+                    <CodeArea
+                      label="Replacement result"
+                      value={response.replaced}
+                      readOnly
+                      softWrap
+                    />
                     <CopyButton value={response.replaced} />
                   </div>
                 ) : (
                   <p className={styles.replaceHint}>
-                    Use <code>$1</code>, <code>$2</code> for numbered groups and <code>$&lt;name&gt;</code>{' '}
-                    for named ones.
+                    Use <code>$1</code>, <code>$2</code> for numbered groups and{' '}
+                    <code>$&lt;name&gt;</code> for named ones.
                   </p>
                 )}
               </>
@@ -357,8 +373,8 @@ function FailureCallout({ response }: { response: Extract<RegexResponse, { ok: f
   if (response.kind === 'syntax') {
     return (
       <Callout tone="err" title="Invalid pattern" live>
-        {response.error} — check for unbalanced parentheses or brackets, or a quantifier with nothing
-        before it to repeat.
+        {response.error} — check for unbalanced parentheses or brackets, or a quantifier with
+        nothing before it to repeat.
       </Callout>
     )
   }

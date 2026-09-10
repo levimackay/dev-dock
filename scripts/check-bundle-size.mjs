@@ -55,7 +55,8 @@ const rawTotalKb = files.reduce((sum, name) => sum + statSync(join(DIST, name)).
 const fmt = (kb) => `${kb.toFixed(1)} KB`
 
 console.log('Initial download (gzipped)')
-for (const name of initial.sort()) console.log(`  ${fmt(gzipKb(join(DIST, name))).padStart(9)}  ${name}`)
+for (const name of initial.sort())
+  console.log(`  ${fmt(gzipKb(join(DIST, name))).padStart(9)}  ${name}`)
 console.log(`  ${fmt(initialKb).padStart(9)}  total — budget ${BUDGET_INITIAL_KB} KB\n`)
 
 console.log('Largest lazy chunks (gzipped)')

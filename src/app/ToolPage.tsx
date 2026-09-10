@@ -116,15 +116,23 @@ function ToolRoute({ toolId }: { toolId: string | undefined }) {
     )
   }, [tool, toast])
 
-  useHotkey('mod+shift+s', (e) => {
-    e.preventDefault()
-    void share()
-  }, { allowInInput: true, enabled: Boolean(tool) })
+  useHotkey(
+    'mod+shift+s',
+    (e) => {
+      e.preventDefault()
+      void share()
+    },
+    { allowInInput: true, enabled: Boolean(tool) },
+  )
 
-  useHotkey('mod+d', (e) => {
-    e.preventDefault()
-    if (tool) togglePin(tool.id)
-  }, { allowInInput: true, enabled: Boolean(tool) })
+  useHotkey(
+    'mod+d',
+    (e) => {
+      e.preventDefault()
+      if (tool) togglePin(tool.id)
+    },
+    { allowInInput: true, enabled: Boolean(tool) },
+  )
 
   if (!tool) return <NotFoundPage missing={toolId} />
 
@@ -163,7 +171,9 @@ function ToolRoute({ toolId }: { toolId: string | undefined }) {
     <ShareContext.Provider value={bridge}>
       <ToolChromeProvider value={chrome}>
         <ToolErrorBoundary toolId={tool.id} toolName={tool.name}>
-          <Suspense fallback={<ToolSkeleton />}>{ready ? <Component /> : <ToolSkeleton />}</Suspense>
+          <Suspense fallback={<ToolSkeleton />}>
+            {ready ? <Component /> : <ToolSkeleton />}
+          </Suspense>
         </ToolErrorBoundary>
       </ToolChromeProvider>
     </ShareContext.Provider>

@@ -99,7 +99,10 @@ export function decodeJwt(token: string): JwtDecodeResult {
     ['signature', signatureSeg],
   ] as const) {
     if (!B64URL_RE.test(seg)) {
-      return { ok: false, error: `The ${name} segment is not valid base64url — it contains a character outside A-Z, a-z, 0-9, "-", "_".` }
+      return {
+        ok: false,
+        error: `The ${name} segment is not valid base64url — it contains a character outside A-Z, a-z, 0-9, "-", "_".`,
+      }
     }
   }
 
@@ -107,7 +110,11 @@ export function decodeJwt(token: string): JwtDecodeResult {
   try {
     headerRaw = base64UrlDecodeText(headerSeg)
   } catch {
-    return { ok: false, error: 'The header segment could not be base64url-decoded (invalid encoding or invalid UTF-8).' }
+    return {
+      ok: false,
+      error:
+        'The header segment could not be base64url-decoded (invalid encoding or invalid UTF-8).',
+    }
   }
 
   // `JSON.parse` returns `any`, which is assignable to `JwtHeader` with no
@@ -121,21 +128,37 @@ export function decodeJwt(token: string): JwtDecodeResult {
     // deliberate step rather than `any` leaking through the whole function.
     header = JSON.parse(headerRaw) as JwtHeader
   } catch {
-    return { ok: false, error: 'The header decodes fine as base64url, but is not valid JSON.', headerRaw }
+    return {
+      ok: false,
+      error: 'The header decodes fine as base64url, but is not valid JSON.',
+      headerRaw,
+    }
   }
 
   let payloadRaw: string
   try {
     payloadRaw = base64UrlDecodeText(payloadSeg)
   } catch {
-    return { ok: false, error: 'The payload segment could not be base64url-decoded (invalid encoding or invalid UTF-8).', header, headerRaw }
+    return {
+      ok: false,
+      error:
+        'The payload segment could not be base64url-decoded (invalid encoding or invalid UTF-8).',
+      header,
+      headerRaw,
+    }
   }
 
   let payload: JwtPayload
   try {
     payload = JSON.parse(payloadRaw) as JwtPayload
   } catch {
-    return { ok: false, error: 'The payload decodes fine as base64url, but is not valid JSON.', header, headerRaw, payloadRaw }
+    return {
+      ok: false,
+      error: 'The payload decodes fine as base64url, but is not valid JSON.',
+      header,
+      headerRaw,
+      payloadRaw,
+    }
   }
 
   const algNone = typeof header.alg === 'string' && header.alg.toLowerCase() === 'none'
@@ -168,7 +191,11 @@ export function readClaimTime(value: unknown): ClaimTime | undefined {
   const ms = value * 1000
   const date = new Date(ms)
   if (Number.isNaN(date.getTime())) return undefined
-  return { epochSeconds: value, absolute: date.toLocaleString(), relative: formatRelative(ms, Date.now()) }
+  return {
+    epochSeconds: value,
+    absolute: date.toLocaleString(),
+    relative: formatRelative(ms, Date.now()),
+  }
 }
 
 export function formatRelative(targetMs: number, nowMs: number): string {
@@ -246,7 +273,9 @@ export async function verifyHmacSignature(
     false,
     ['sign'],
   )
-  const computed = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingInput)))
+  const computed = new Uint8Array(
+    await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingInput)),
+  )
 
   return { ok: true, match: constantTimeEqual(computed, expected) }
 }

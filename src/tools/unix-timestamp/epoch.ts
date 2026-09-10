@@ -11,7 +11,12 @@
 
 export type TimestampUnit = 'seconds' | 'milliseconds' | 'microseconds' | 'nanoseconds'
 
-export const UNITS: readonly TimestampUnit[] = ['seconds', 'milliseconds', 'microseconds', 'nanoseconds']
+export const UNITS: readonly TimestampUnit[] = [
+  'seconds',
+  'milliseconds',
+  'microseconds',
+  'nanoseconds',
+]
 
 /**
  * Guesses which unit a raw timestamp is in, from its magnitude alone.
@@ -33,7 +38,12 @@ export const UNITS: readonly TimestampUnit[] = ['seconds', 'milliseconds', 'micr
  * point the user can override, never a claim of certainty.
  */
 export function detectUnit(value: string): TimestampUnit {
-  const digits = value.trim().replace(/^[+-]/, '').split('.')[0]?.replace(/^0+(?=\d)/, '') ?? ''
+  const digits =
+    value
+      .trim()
+      .replace(/^[+-]/, '')
+      .split('.')[0]
+      ?.replace(/^0+(?=\d)/, '') ?? ''
   const count = digits.length || 1
   if (count <= 10) return 'seconds'
   if (count <= 13) return 'milliseconds'
@@ -207,7 +217,14 @@ function tzOffsetMs(instantMs: number, timeZone: string): number {
     second: '2-digit',
   }).formatToParts(new Date(instantMs))
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0')
-  const asIfUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+  const asIfUtc = Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    get('hour'),
+    get('minute'),
+    get('second'),
+  )
   return asIfUtc - instantMs
 }
 
@@ -232,7 +249,14 @@ export interface WallTime {
  * which would otherwise leave the offset one hour off right at the edge.
  */
 export function zonedTimeToUtc(fields: WallTime, timeZone: string): Date {
-  const guess = Date.UTC(fields.year, fields.month - 1, fields.day, fields.hour, fields.minute, fields.second)
+  const guess = Date.UTC(
+    fields.year,
+    fields.month - 1,
+    fields.day,
+    fields.hour,
+    fields.minute,
+    fields.second,
+  )
   const offset1 = tzOffsetMs(guess, timeZone)
   const once = guess - offset1
   const offset2 = tzOffsetMs(once, timeZone)

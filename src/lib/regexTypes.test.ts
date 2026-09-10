@@ -53,7 +53,9 @@ describe('executeRegex', () => {
   })
 
   it('truncates at maxMatches and says so', () => {
-    const result = executeRegex(req({ pattern: '.', flags: 'g', text: 'x'.repeat(50), maxMatches: 10 }))
+    const result = executeRegex(
+      req({ pattern: '.', flags: 'g', text: 'x'.repeat(50), maxMatches: 10 }),
+    )
     expect(result.ok && result.matches).toHaveLength(10)
     expect(result.ok && result.truncated).toBe(true)
   })
