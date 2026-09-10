@@ -215,7 +215,7 @@ export function escapeHtml(text: string, mode: EscapeMode): string {
  * disappears silently) and matches how a browser's text-content parser
  * behaves for an unrecognised named reference.
  */
-const ENTITY_RE = /&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]*);/g
+const ENTITY_RE = /&(#[xX][0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]*);/g
 
 export function unescapeHtml(text: string): string {
   if (text === '') return ''
