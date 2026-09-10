@@ -12,7 +12,17 @@ updates:
       react:
         patterns: ['react', 'react-dom', '@types/react', '@types/react-dom', 'react-router-dom']
       tooling:
-        patterns: ['vite', 'vitest', '@vitejs/*', 'typescript', 'eslint*', 'typescript-eslint', 'prettier', '@vitest/*']
+        patterns:
+          [
+            'vite',
+            'vitest',
+            '@vitejs/*',
+            'typescript',
+            'eslint*',
+            'typescript-eslint',
+            'prettier',
+            '@vitest/*',
+          ]
       testing:
         patterns: ['@playwright/*', '@testing-library/*', 'jsdom']
   - package-ecosystem: github-actions

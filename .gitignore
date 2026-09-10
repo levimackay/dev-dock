@@ -37,3 +37,4 @@ pnpm-debug.log*
 
 # typescript incremental build info
 *.tsbuildinfo
+.impeccable/

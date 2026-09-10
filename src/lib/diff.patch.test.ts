@@ -1,3 +1,7 @@
+/// <reference types="node" />
+// This test shells out to git, so it needs Node types. They are pulled in
+// per-file rather than added to tsconfig.app.json, which would put Node
+// globals in scope for browser code that must never use them.
 import { describe, expect, it } from 'vitest'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -21,7 +25,7 @@ import { toUnifiedDiff } from './diff'
 function applies(before: string, after: string): { ok: boolean; error?: string; result?: string } {
   const dir = mkdtempSync(join(tmpdir(), 'devdock-patch-'))
   try {
-    const git = (...args: string[]) =>
+    const git = (...args: string[]): string =>
       execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' })
     git('init', '--quiet')
     git('config', 'user.email', 'test@example.invalid')
