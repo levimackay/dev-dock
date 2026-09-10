@@ -22,7 +22,8 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "verify": "pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test"
+    "verify": "pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test && pnpm run size",
+    "size": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "^5.2.6",

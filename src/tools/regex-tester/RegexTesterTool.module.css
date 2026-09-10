@@ -1,0 +1,280 @@
+/* ---- pattern row -------------------------------------------------------- */
+
+.patternRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-3);
+  border-bottom: var(--hairline) solid var(--line-faint);
+}
+
+.slash {
+  flex: none;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  font-size: var(--text-base);
+}
+
+.patternInput {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-base);
+}
+
+.flagsDisplay {
+  flex: none;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  min-width: 2.5rem;
+}
+
+.flagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: var(--hairline) solid var(--line-faint);
+}
+
+.sampleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: var(--hairline) solid var(--line-faint);
+}
+
+.sampleLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.warnings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  padding-bottom: 0;
+}
+
+.cheatsheet {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-1) var(--sp-4);
+  padding: var(--sp-3);
+  border-top: var(--hairline) solid var(--line-faint);
+  background: var(--bg-sunken);
+}
+
+.cheatRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.cheatToken {
+  flex: none;
+  min-width: 8rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+}
+
+.cheatMeaning {
+  color: var(--fg-muted);
+  font-size: var(--text-xs);
+}
+
+/* ---- highlighted test text ----------------------------------------------- */
+
+.highlighted {
+  padding: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+
+.match {
+  background: var(--accent-quiet);
+  color: var(--fg);
+  border: var(--hairline) solid var(--accent-line);
+  border-radius: var(--radius-sm);
+}
+
+/* ---- match list ----------------------------------------------------------- */
+
+.matchList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 16rem;
+  overflow: auto;
+}
+
+.matchItem {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: var(--hairline) solid var(--line-faint);
+}
+
+.matchHead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.matchIndex {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+}
+
+.matchText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+}
+
+.matchAt {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+}
+
+.groupList {
+  list-style: none;
+  margin: var(--sp-1) 0 0;
+  padding: 0 0 0 var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.groupItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.groupLabel {
+  flex: none;
+  min-width: 3rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+}
+
+.groupValue {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+/* ---- replace -------------------------------------------------------------- */
+
+.replaceBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.replaceResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 6rem;
+}
+
+.replaceHint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--fg-subtle);
+}
+
+.replaceHint code {
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+}
+
+/* ---- explain pattern -------------------------------------------------------- */
+
+.explainToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  background: none;
+  border: none;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.explainToggle:hover {
+  background: var(--bg-hover);
+  color: var(--fg);
+}
+
+.explainList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: var(--hairline) solid var(--line-faint);
+}
+
+.explainRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
+}
+
+.explainRow:nth-child(even) {
+  background: var(--bg-sunken);
+}
+
+.explainToken {
+  flex: none;
+  min-width: 6rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+}
+
+.explainMeaning {
+  color: var(--fg-muted);
+  font-size: var(--text-xs);
+}
+
+.explainEmpty {
+  padding: var(--sp-3);
+  color: var(--fg-subtle);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 40rem) {
+  .cheatsheet {
+    grid-template-columns: 1fr;
+  }
+}
