@@ -92,7 +92,7 @@ pnpm e2e:ui           # the same, in Playwright's UI mode
 
 pnpm lint             # ESLint
 pnpm format           # Prettier, writing
-pnpm verify           # everything CI runs, in one command
+pnpm verify           # format check, lint, build, test, and bundle size, as CI runs them
 ```
 
 First run of the end-to-end suite needs the browser binary:
