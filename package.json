@@ -34,7 +34,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4",
-    "sql-formatter": "^15.6.10"
+    "sql-formatter": "^15.9.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
