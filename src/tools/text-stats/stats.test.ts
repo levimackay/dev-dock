@@ -68,6 +68,14 @@ describe('countSentences', () => {
   it('does not count trailing whitespace-only content as a sentence', () => {
     expect(countSentences('One sentence.   ')).toBe(1)
   })
+
+  it('counts an unpunctuated final sentence after punctuated ones', () => {
+    expect(countSentences('Hello world. Still typing')).toBe(2)
+  })
+
+  it('is 0 for punctuation with no words', () => {
+    expect(countSentences('...')).toBe(0)
+  })
 })
 
 describe('countParagraphs', () => {

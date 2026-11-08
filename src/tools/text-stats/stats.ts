@@ -31,16 +31,21 @@ export function countUniqueWords(text: string): number {
  * followed by whitespace-or-end as one sentence boundary, and requires at
  * least one word character before it so trailing punctuation on its own
  * (or an ellipsis with nothing before it) does not count as an extra
- * sentence.
+ * sentence. Words left after the last boundary are an unfinished sentence,
+ * which still counts: text being typed rarely ends in punctuation.
  */
+const SENTENCE_RE = /[^.!?]*[A-Za-z0-9][^.!?]*[.!?]+(?=\s|$)/g
+
 export function countSentences(text: string): number {
   const trimmed = text.trim()
-  if (trimmed === '') return 0
-  const matches = trimmed.match(/[^.!?]*[A-Za-z0-9][^.!?]*[.!?]+(?=\s|$)/g)
-  if (matches) return matches.length
-  // No terminal punctuation at all, the whole thing is one sentence
-  // fragment, which is still one sentence for averaging purposes.
-  return 1
+  let count = 0
+  let end = 0
+  for (const match of trimmed.matchAll(SENTENCE_RE)) {
+    count++
+    end = match.index + match[0].length
+  }
+  if (/[A-Za-z0-9]/.test(trimmed.slice(end))) count++
+  return count
 }
 
 export function countParagraphs(text: string): number {
